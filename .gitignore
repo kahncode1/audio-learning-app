@@ -1,0 +1,83 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code related
+.vscode/
+
+# Flutter/Dart/Pub related (in audio_learning_app subdirectory)
+audio_learning_app/**/doc/api/
+audio_learning_app/**/ios/Flutter/.last_build_id
+audio_learning_app/.dart_tool/
+audio_learning_app/.flutter-plugins
+audio_learning_app/.flutter-plugins-dependencies
+audio_learning_app/.packages
+audio_learning_app/.pub-cache/
+audio_learning_app/.pub/
+audio_learning_app/build/
+
+# Symbolication related
+audio_learning_app/app.*.symbols
+
+# Obfuscation related
+audio_learning_app/app.*.map.json
+
+# Android Studio will place build artifacts here
+audio_learning_app/android/app/debug
+audio_learning_app/android/app/profile
+audio_learning_app/android/app/release
+
+# iOS/XCode related
+audio_learning_app/**/ios/**/*.mode1v3
+audio_learning_app/**/ios/**/*.mode2v3
+audio_learning_app/**/ios/**/*.moved-aside
+audio_learning_app/**/ios/**/*.pbxuser
+audio_learning_app/**/ios/**/*.perspectivev3
+audio_learning_app/**/ios/**/*sync/
+audio_learning_app/**/ios/**/.sconsign.dblite
+audio_learning_app/**/ios/**/.tags*
+audio_learning_app/**/ios/**/.vagrant/
+audio_learning_app/**/ios/**/DerivedData/
+audio_learning_app/**/ios/**/Icon?
+audio_learning_app/**/ios/**/Pods/
+audio_learning_app/**/ios/**/.symlinks/
+audio_learning_app/**/ios/**/profile
+audio_learning_app/**/ios/**/xcuserdata
+audio_learning_app/**/ios/.generated/
+audio_learning_app/**/ios/Flutter/App.framework
+audio_learning_app/**/ios/Flutter/Flutter.framework
+audio_learning_app/**/ios/Flutter/Flutter.podspec
+audio_learning_app/**/ios/Flutter/Generated.xcconfig
+audio_learning_app/**/ios/Flutter/ephemeral/
+audio_learning_app/**/ios/Flutter/app.flx
+audio_learning_app/**/ios/Flutter/app.zip
+audio_learning_app/**/ios/Flutter/flutter_assets/
+audio_learning_app/**/ios/Flutter/flutter_export_environment.sh
+audio_learning_app/**/ios/ServiceDefinitions.json
+audio_learning_app/**/ios/Runner/GeneratedPluginRegistrant.*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Coverage
+coverage/
+*.lcov
+
+# Exceptions to above rules.
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages

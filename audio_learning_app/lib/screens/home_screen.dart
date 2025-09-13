@@ -1,0 +1,46 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+/// HomePage displays the list of available courses
+/// This is a placeholder implementation for Milestone 1
+class HomePage extends ConsumerWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Courses'),
+        backgroundColor: Theme.of(context).primaryColor,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.school,
+              size: 80,
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Your courses will appear here',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Complete authentication setup to load courses',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
