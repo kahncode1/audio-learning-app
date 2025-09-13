@@ -41,8 +41,8 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 - [x] 1.8 Configure environment variables file for API keys (2025-09-13)
   📚 Reference: `/references/common-pitfalls.md` - #11 Hardcoding API Endpoints or Keys
 - [x] 1.9 Create README.md with setup instructions (2025-09-13)
-- [ ] 1.10 Set up CI/CD pipeline configuration files
-- [x] 1.11 Set up VS Code or Android Studio with Flutter extensions (basic - platform-specific setup deferred to Milestone 7) (2025-09-13)
+- [x] 1.10 Set up CI/CD pipeline configuration files (2025-09-13)
+- [x] 1.11 Set up VS Code or Android Studio with Flutter extensions (basic setup) (2025-09-13)
 
 ### Package Installation
 - [x] 1.12 Add all required packages to pubspec.yaml and run flutter pub get: (2025-09-13) 🔗 `/documentation/apis/flutter-packages.md`
@@ -69,16 +69,32 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 - [x] 1.18 Create test folder structure and utilities (2025-09-13)
   📚 Reference: `/references/implementation-standards.md` - Unit Test Template
 - [x] 1.19 Configure code coverage and create smoke tests (2025-09-13)
-- [ ] 1.20 Note: Patrol CLI installation deferred to Milestone 9 (Comprehensive Testing)
+- [x] 1.20 Install Xcode for iOS development and testing: (2025-09-13)
+  ```bash
+  # Install Xcode from Mac App Store (~10GB, 1-2 hours)
+  # Accept license and install additional components
+  sudo xcodebuild -license accept
+  xcodebuild -runFirstLaunch
+  # Install CocoaPods
+  brew install cocoapods
+  ```
+- [x] 1.21 Verify iOS development environment: (2025-09-13)
+  ```bash
+  flutter doctor -v  # Should show no critical issues for iOS
+  flutter run  # Test on iOS Simulator
+  ```
+- [ ] 1.22 Note: Patrol CLI installation deferred to Milestone 9 (Comprehensive Testing)
 
 **Milestone 1 Definition of Done:**
 - Core development environment fully functional (Flutter, Dart, Homebrew)
 - All Flutter packages installed without version conflicts (`flutter pub get` successful)
-- `flutter doctor` reports no critical issues for core development
+- `flutter doctor` reports no critical issues for core development AND iOS development
+- Xcode installed and configured with CocoaPods
+- App runs successfully on iOS Simulator
 - Basic navigation between placeholder screens works (no external services)
 - Unit test infrastructure runs successfully
 - Project can be analyzed and tested with `flutter analyze` and `flutter test`
-- **Note:** Platform builds (iOS/Android), external services (Supabase/Cognito), and integration testing deferred to later milestones
+- **Note:** Android development, external services (Supabase/Cognito), and integration testing deferred to later milestones
 
 ## Milestone 2: Authentication & Data Layer
 
@@ -379,15 +395,7 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 ## Milestone 7: Platform Configuration
 
 ### Platform-Specific Tools Installation (Phase 2)
-- [ ] 7.0 Install iOS development tools:
-  ```bash
-  # Install Xcode from Mac App Store (~10GB, 1-2 hours)
-  # Accept license and install additional components
-  sudo xcodebuild -license accept
-  xcodebuild -runFirstLaunch
-  # Install CocoaPods
-  brew install cocoapods
-  ```
+- [x] 7.0 iOS development tools (moved to Milestone 1 task 1.20) (2025-09-13)
 - [ ] 7.1 Install Android development tools:
   ```bash
   # Install Java 11 runtime
@@ -396,11 +404,14 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
   brew install --cask android-studio
   # Configure Android SDK through Android Studio setup wizard
   ```
-- [ ] 7.2 Verify platform-specific installations:
+- [ ] 7.2 Verify Android development installation:
   ```bash
-  flutter doctor -v  # Should show no critical issues for iOS/Android
-  flutter build ios --debug
+  flutter doctor -v  # Should show no critical issues for Android
   flutter build apk --debug
+  ```
+- [ ] 7.2b Verify iOS production builds (iOS Simulator testing moved to Milestone 1):
+  ```bash
+  flutter build ios --debug
   ```
 
 ### iOS Configuration
