@@ -111,6 +111,27 @@ After each installation phase:
 - ✅ **Prevents tool drift** - Install closer to usage time
 - ✅ **Faster onboarding** - Core setup completes quickly
 
+## MCP Server Tools
+
+### Available MCP Servers
+This project has access to specialized MCP (Model Context Protocol) servers that provide direct integration with key services:
+
+1. **supabase** - Database & Backend Management
+   - Use for: Direct database operations, migrations, SQL execution
+   - Commands: Project management, table operations, edge functions, logs
+   - Essential for: Milestone 2 (Authentication & Data Layer) implementation
+   - Key features: Create tables, apply migrations, execute SQL, deploy edge functions
+
+2. **playwright** - Browser Automation & E2E Testing
+   - Use for: Automated browser testing and UI validation
+   - Commands: Browser control, element interaction, screenshot capture
+   - Essential for: Milestone 9 (Comprehensive Testing) E2E test scenarios
+
+### When to Use MCP Servers
+- **Always use Supabase MCP** when working on database tasks in Milestone 2
+- **Use Playwright MCP** for E2E testing instead of or alongside Patrol in Milestone 9
+- **Prefer MCP servers** over manual approaches when available for efficiency
+
 ## Development Standards
 
 ### File Organization

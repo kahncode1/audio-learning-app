@@ -99,20 +99,24 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 ## Milestone 2: Authentication & Data Layer
 
 ### External Services Setup (Phase 4)
-- [ ] 2.0 Create Supabase project and configure environment variables 🔗 `/documentation/apis/supabase-backend.md`
-- [ ] 2.1 Create all database tables with enhanced schemas: 🔗 `/documentation/apis/supabase-backend.md`
+- [x] 2.0 Create Supabase project and configure environment variables 🔗 `/documentation/apis/supabase-backend.md` (2025-09-13)
+  **🔧 MCP:** Use `supabase` MCP server to create project and manage configuration
+- [x] 2.1 Create all database tables with enhanced schemas: 🔗 `/documentation/apis/supabase-backend.md` (2025-09-13)
   - users, courses (with gradient fields), enrollments
   - assignments (with assignment_number field)
   - learning_objects (with sentence-indexed word_timings)
   - progress (with font_size_index and is_in_progress fields)
+  **🔧 MCP:** Use `supabase` MCP `apply_migration` to create tables via SQL migrations
   📚 Reference: `/references/common-pitfalls.md` - #12 Direct String Queries to Supabase
-- [ ] 2.2 Implement all RLS policies: 🔗 `/documentation/apis/supabase-backend.md`
+- [x] 2.2 Implement all RLS policies: 🔗 `/documentation/apis/supabase-backend.md` (2025-09-13)
   - "Users see their active enrollments"
   - Progress table RLS with preference protection
   - Learning objects RLS
+  **🔧 MCP:** Use `supabase` MCP to apply RLS policies and verify with `get_advisors`
 - [ ] 2.3 Configure Supabase JWT validation for Cognito tokens 🔗 `/documentation/integrations/cognito-supabase-bridge.md`
-- [ ] 2.4 Set up real-time subscriptions and create performance indexes 🔗 `/documentation/apis/supabase-backend.md`
-- [ ] 2.5 Test database connections and queries with sample data
+- [x] 2.4 Set up real-time subscriptions and create performance indexes 🔗 `/documentation/apis/supabase-backend.md` (2025-09-13)
+- [x] 2.5 Test database connections and queries with sample data (2025-09-13)
+  **🔧 MCP:** Use `supabase` MCP `execute_sql` to test queries and `get_logs` for debugging
 - [ ] 2.6 Write unit tests for database operations
   📚 Reference: `/references/implementation-standards.md` - Testing Standards
 
@@ -122,14 +126,14 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 - [ ] 2.9 Write unit tests for Amplify configuration 📁 `/implementations/auth-service.dart`
 
 ### AuthService Implementation
-- [ ] 2.10 Create AuthService class with all authentication methods: 🔗 `/documentation/apis/aws-cognito-sso.md` 🔗 `/documentation/integrations/cognito-supabase-bridge.md` 📁 `/implementations/auth-service.dart`
+- [x] 2.10 Create AuthService class with all authentication methods: 🔗 `/documentation/apis/aws-cognito-sso.md` 🔗 `/documentation/integrations/cognito-supabase-bridge.md` 📁 `/implementations/auth-service.dart` (2025-09-13)
   - configureAmplify(), authenticate(), bridgeToSupabase()
   - federateToIdentityPool(), token refresh, logout
   📚 Reference: `/references/implementation-standards.md` - Service Implementation Pattern
   📚 Reference: `/references/common-pitfalls.md` - #13 Not Handling Token Expiration
-- [ ] 2.11 Implement session caching with SharedPreferences 📁 `/implementations/auth-service.dart`
+- [x] 2.11 Implement session caching with SharedPreferences 📁 `/implementations/auth-service.dart` (2025-09-13)
   📚 Reference: `/references/technical-requirements.md` - SharedPreferences Service
-- [ ] 2.12 Create auth state provider with Riverpod 🔗 `/documentation/apis/flutter-packages.md` 📁 `/implementations/providers.dart`
+- [x] 2.12 Create auth state provider with Riverpod 🔗 `/documentation/apis/flutter-packages.md` 📁 `/implementations/providers.dart` (2025-09-13)
   📚 Reference: `/references/code-patterns.md` - Provider Pattern
 - [ ] 2.13 Add biometric unlock support (optional)
 - [ ] 2.14 Write comprehensive unit tests for AuthService 📁 `/implementations/auth-service.dart`
@@ -137,7 +141,7 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 - [ ] 2.15 Write integration tests for complete auth flow
 
 ### Data Models with Enhanced Properties
-- [ ] 2.16 Create all model classes with fromJson/toJson: 📁 `/implementations/models.dart`
+- [x] 2.16 Create all model classes with fromJson/toJson: 📁 `/implementations/models.dart` (2025-09-13)
   - Course (with LinearGradient gradient property)
   - Assignment (with int number for display)
   - LearningObject (with isInProgress boolean)
@@ -148,14 +152,14 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 - [ ] 2.17 Write unit tests for model serialization/deserialization 📁 `/implementations/models.dart`
 
 ### Data Providers with UI State
-- [ ] 2.18 Create all Riverpod providers: 🔗 `/documentation/apis/flutter-packages.md` 📁 `/implementations/providers.dart`
+- [x] 2.18 Create all Riverpod providers: 🔗 `/documentation/apis/flutter-packages.md` 📁 `/implementations/providers.dart` (2025-09-13)
   - coursesProvider, progressProvider, playbackSpeedProvider
   - fontSizeIndexProvider (default: 1 for Medium)
   - currentSentenceIndexProvider, currentWordIndexProvider
   - assignmentProvider, learningObjectsProvider
   📚 Reference: `/references/code-patterns.md` - State Management with Riverpod
   📚 Reference: `/references/implementation-standards.md` - Provider Pattern Template
-- [ ] 2.19 Implement data fetching with enrollment filtering 📁 `/implementations/providers.dart`
+- [x] 2.19 Implement data fetching with enrollment filtering 📁 `/implementations/providers.dart` (2025-09-13)
 - [ ] 2.20 Write unit tests for all providers with mock data 📁 `/implementations/providers.dart`
 
 **Milestone 2 Definition of Done:**
@@ -509,6 +513,7 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 
 ### Integration Testing Suite with UI Polish
 - [ ] 9.3 Complete end-to-end test scenarios with Patrol:
+  **🔧 MCP:** Consider using `playwright` MCP for browser-based E2E testing as alternative/supplement to Patrol
   - Full authentication flow
   - Complete course playback with dual-level highlighting
   - Font size adjustment persistence
@@ -573,6 +578,7 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
   - Error tracking with UI polish monitoring
   - Analytics for feature usage
   - Performance monitoring
+  **🔧 MCP:** Use `supabase` MCP to set up production project, deploy edge functions, and monitor logs
   📚 Reference: `/references/common-pitfalls.md` - #15 Using print() Instead of Logger
 
 ### App Store Preparation
