@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.sws.speechify.com)",
+      "WebFetch(domain:speechify.com)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
