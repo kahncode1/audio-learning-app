@@ -65,7 +65,6 @@ class EnvConfig {
     return dotenv.env[key] ?? fallback;
   }
 
-
   // ============================================================================
   // SPEECHIFY CONFIGURATION
   // ============================================================================
@@ -95,37 +94,50 @@ class EnvConfig {
       _get('COGNITO_IDENTITY_POOL_ID', 'YOUR_IDENTITY_POOL_ID_HERE');
 
   /// Cognito Region
-  static String get cognitoRegion =>
-      _get('COGNITO_REGION', 'us-east-1');
+  static String get cognitoRegion => _get('COGNITO_REGION', 'us-east-1');
 
   // ============================================================================
   // SUPABASE CONFIGURATION
   // ============================================================================
 
   /// Supabase URL
-  static String get supabaseUrl =>
-      _get('SUPABASE_URL', 'https://cmjdciktvfxiyapdseqn.supabase.co');
+  static String get supabaseUrl {
+    final url = _get('SUPABASE_URL', '');
+    if (url.isEmpty) {
+      // In development mode with mock auth, we can return a placeholder
+      if (isDevelopment && !isSupabaseConfigured) {
+        return 'https://placeholder.supabase.co';
+      }
+      throw Exception('SUPABASE_URL environment variable is required. Please set it in your .env file.');
+    }
+    return url;
+  }
 
   /// Supabase Anonymous Key
-  static String get supabaseAnonKey =>
-      _get('SUPABASE_ANON_KEY',
-           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtamRjaWt0dmZ4aXlhcGRzZXFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3ODAwODAsImV4cCI6MjA3MzM1NjA4MH0.qIhF8LgDnm6OrlnhNWNJziNc6OopUu0qCYtgJhXouB8');
+  static String get supabaseAnonKey {
+    final key = _get('SUPABASE_ANON_KEY', '');
+    if (key.isEmpty) {
+      // In development mode with mock auth, we can return a placeholder
+      if (isDevelopment && !isSupabaseConfigured) {
+        return 'placeholder-key';
+      }
+      throw Exception('SUPABASE_ANON_KEY environment variable is required. Please set it in your .env file.');
+    }
+    return key;
+  }
 
   // ============================================================================
   // ENVIRONMENT CONFIGURATION
   // ============================================================================
 
   /// Current environment (development, staging, production)
-  static String get environment =>
-      _get('ENVIRONMENT', 'development');
+  static String get environment => _get('ENVIRONMENT', 'development');
 
   /// Check if running in development
-  static bool get isDevelopment =>
-      environment.toLowerCase() == 'development';
+  static bool get isDevelopment => environment.toLowerCase() == 'development';
 
   /// Check if running in production
-  static bool get isProduction =>
-      environment.toLowerCase() == 'production';
+  static bool get isProduction => environment.toLowerCase() == 'production';
 
   // ============================================================================
   // VALIDATION HELPERS
@@ -146,6 +158,17 @@ class EnvConfig {
       cognitoClientId != 'your_client_id_here' &&
       cognitoClientId.isNotEmpty;
 
+  /// Check if Supabase is configured
+  static bool get isSupabaseConfigured {
+    try {
+      final url = _get('SUPABASE_URL', '');
+      final key = _get('SUPABASE_ANON_KEY', '');
+      return url.isNotEmpty && key.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
+  }
+
   /// Check if all required services are configured
   static bool get isFullyConfigured =>
       isSpeechifyConfigured; // Cognito is optional with mock auth
@@ -154,8 +177,10 @@ class EnvConfig {
   static void printConfigurationStatus() {
     debugPrint('\n=== Environment Configuration Status ===');
     debugPrint('Environment: $environment');
-    debugPrint('Speechify: ${isSpeechifyConfigured ? "✅ Configured" : "❌ Not configured"}');
-    debugPrint('Cognito: ${isCognitoConfigured ? "✅ Configured" : "ℹ️ Not configured (using mock auth)"}');
+    debugPrint(
+        'Speechify: ${isSpeechifyConfigured ? "✅ Configured" : "❌ Not configured"}');
+    debugPrint(
+        'Cognito: ${isCognitoConfigured ? "✅ Configured" : "ℹ️ Not configured (using mock auth)"}');
     debugPrint('Supabase: ✅ Configured');
     debugPrint('=====================================\n');
   }

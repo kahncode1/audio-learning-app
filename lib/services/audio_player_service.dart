@@ -31,8 +31,10 @@ class AudioPlayerService {
 
   // State streams
   final BehaviorSubject<bool> _isPlayingSubject = BehaviorSubject.seeded(false);
-  final BehaviorSubject<Duration> _positionSubject = BehaviorSubject.seeded(Duration.zero);
-  final BehaviorSubject<Duration> _durationSubject = BehaviorSubject.seeded(Duration.zero);
+  final BehaviorSubject<Duration> _positionSubject =
+      BehaviorSubject.seeded(Duration.zero);
+  final BehaviorSubject<Duration> _durationSubject =
+      BehaviorSubject.seeded(Duration.zero);
   final BehaviorSubject<double> _speedSubject = BehaviorSubject.seeded(1.0);
   final BehaviorSubject<ProcessingState> _processingStateSubject =
       BehaviorSubject.seeded(ProcessingState.idle);
@@ -108,9 +110,11 @@ class AudioPlayerService {
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration(
       avAudioSessionCategory: AVAudioSessionCategory.playback,
-      avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.allowBluetooth,
+      avAudioSessionCategoryOptions:
+          AVAudioSessionCategoryOptions.allowBluetooth,
       avAudioSessionMode: AVAudioSessionMode.spokenAudio,
-      avAudioSessionRouteSharingPolicy: AVAudioSessionRouteSharingPolicy.defaultPolicy,
+      avAudioSessionRouteSharingPolicy:
+          AVAudioSessionRouteSharingPolicy.defaultPolicy,
       avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
       androidAudioAttributes: AndroidAudioAttributes(
         contentType: AndroidAudioContentType.speech,
@@ -175,7 +179,8 @@ class AudioPlayerService {
 
       // Restore previous position if available
       if (learningObject.currentPositionMs > 0) {
-        await seekToPosition(Duration(milliseconds: learningObject.currentPositionMs));
+        await seekToPosition(
+            Duration(milliseconds: learningObject.currentPositionMs));
       }
 
       debugPrint('Audio loaded successfully for: ${learningObject.title}');
@@ -319,7 +324,8 @@ class AudioPlayerService {
   Stream<Duration> get positionStream => _positionSubject.stream;
   Stream<Duration> get durationStream => _durationSubject.stream;
   Stream<double> get speedStream => _speedSubject.stream;
-  Stream<ProcessingState> get processingStateStream => _processingStateSubject.stream;
+  Stream<ProcessingState> get processingStateStream =>
+      _processingStateSubject.stream;
 
   // Current state getters
   bool get isPlaying => _isPlayingSubject.value;
@@ -359,16 +365,20 @@ void validateAudioPlayerService() {
   // Test 1: Singleton pattern
   final instance1 = AudioPlayerService.instance;
   final instance2 = AudioPlayerService.instance;
-  assert(identical(instance1, instance2), 'AudioPlayerService must be a singleton');
+  assert(identical(instance1, instance2),
+      'AudioPlayerService must be a singleton');
   debugPrint('✓ Singleton pattern verified');
 
   // Test 2: Speed options
-  assert(AudioPlayerService.speedOptions.length == 6, 'Must have 6 speed options');
-  assert(AudioPlayerService.speedOptions.contains(1.0), 'Must include 1.0x speed');
+  assert(
+      AudioPlayerService.speedOptions.length == 6, 'Must have 6 speed options');
+  assert(
+      AudioPlayerService.speedOptions.contains(1.0), 'Must include 1.0x speed');
   debugPrint('✓ Speed options verified');
 
   // Test 3: Skip duration
-  assert(AudioPlayerService.skipDuration == const Duration(seconds: 30), 'Skip must be 30 seconds');
+  assert(AudioPlayerService.skipDuration == const Duration(seconds: 30),
+      'Skip must be 30 seconds');
   debugPrint('✓ Skip duration verified');
 
   // Test 4: Initial state

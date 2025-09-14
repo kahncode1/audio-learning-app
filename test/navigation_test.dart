@@ -22,7 +22,8 @@ void main() {
       });
     });
 
-    testWidgets('Splash screen navigates to main screen', (WidgetTester tester) async {
+    testWidgets('Splash screen navigates to main screen',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: AudioLearningApp(),
@@ -38,7 +39,8 @@ void main() {
       expect(find.byType(BottomNavigationBar), findsOneWidget);
     });
 
-    testWidgets('Bottom navigation shows correct screens', (WidgetTester tester) async {
+    testWidgets('Bottom navigation shows correct screens',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
@@ -68,7 +70,8 @@ void main() {
       expect(find.byType(HomePage), findsOneWidget);
     });
 
-    testWidgets('Bottom navigation bar has correct items', (WidgetTester tester) async {
+    testWidgets('Bottom navigation bar has correct items',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(

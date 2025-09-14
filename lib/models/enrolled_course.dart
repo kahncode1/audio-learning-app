@@ -78,7 +78,8 @@ class EnrolledCourse {
       enrolledAt: DateTime.parse(json['enrolled_at'] as String),
       expiresAt: DateTime.parse(json['expires_at'] as String),
       isActive: json['is_active'] as bool? ?? true,
-      completionPercentage: (json['completion_percentage'] as num?)?.toDouble() ?? 0.0,
+      completionPercentage:
+          (json['completion_percentage'] as num?)?.toDouble() ?? 0.0,
       course: course,
     );
   }
@@ -137,7 +138,6 @@ class EnrolledCourse {
 
 /// Validation function to verify EnrolledCourse model implementation
 void validateEnrolledCourseModel() {
-
   // Test JSON parsing without course
   final testJson = {
     'id': 'enrollment-123',
@@ -192,5 +192,4 @@ void validateEnrolledCourseModel() {
 
   final completed = enrollment.copyWith(completionPercentage: 100.0);
   assert(completed.completionStatus == 'Completed');
-
 }

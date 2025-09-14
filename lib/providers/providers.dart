@@ -72,7 +72,8 @@ final isAuthenticatedProvider = Provider<bool>((ref) {
 // Data Providers
 
 /// Enrolled courses provider
-final enrolledCoursesProvider = FutureProvider<List<EnrolledCourse>>((ref) async {
+final enrolledCoursesProvider =
+    FutureProvider<List<EnrolledCourse>>((ref) async {
   final supabaseService = ref.watch(supabaseServiceProvider);
 
   // Only fetch if authenticated
@@ -84,7 +85,8 @@ final enrolledCoursesProvider = FutureProvider<List<EnrolledCourse>>((ref) async
 });
 
 /// Assignments provider for a specific course
-final assignmentsProvider = FutureProvider.family<List<Assignment>, String>((ref, courseId) async {
+final assignmentsProvider =
+    FutureProvider.family<List<Assignment>, String>((ref, courseId) async {
   final supabaseService = ref.watch(supabaseServiceProvider);
 
   if (!supabaseService.isAuthenticated) {
@@ -95,7 +97,9 @@ final assignmentsProvider = FutureProvider.family<List<Assignment>, String>((ref
 });
 
 /// Learning objects provider for a specific assignment
-final learningObjectsProvider = FutureProvider.family<List<LearningObject>, String>((ref, assignmentId) async {
+final learningObjectsProvider =
+    FutureProvider.family<List<LearningObject>, String>(
+        (ref, assignmentId) async {
   final supabaseService = ref.watch(supabaseServiceProvider);
 
   if (!supabaseService.isAuthenticated) {
@@ -106,7 +110,8 @@ final learningObjectsProvider = FutureProvider.family<List<LearningObject>, Stri
 });
 
 /// Progress provider for a specific learning object
-final progressProvider = FutureProvider.family<ProgressState?, String>((ref, learningObjectId) async {
+final progressProvider = FutureProvider.family<ProgressState?, String>(
+    (ref, learningObjectId) async {
   final supabaseService = ref.watch(supabaseServiceProvider);
 
   if (!supabaseService.isAuthenticated) {
@@ -119,7 +124,8 @@ final progressProvider = FutureProvider.family<ProgressState?, String>((ref, lea
 // User Preference Providers
 
 /// Font size index provider (0-3: Small, Medium, Large, X-Large)
-final fontSizeIndexProvider = StateNotifierProvider<FontSizeNotifier, int>((ref) {
+final fontSizeIndexProvider =
+    StateNotifierProvider<FontSizeNotifier, int>((ref) {
   return FontSizeNotifier();
 });
 
@@ -141,7 +147,8 @@ class FontSizeNotifier extends StateNotifier<int> {
 }
 
 /// Playback speed provider
-final playbackSpeedProvider = StateNotifierProvider<PlaybackSpeedNotifier, double>((ref) {
+final playbackSpeedProvider =
+    StateNotifierProvider<PlaybackSpeedNotifier, double>((ref) {
   return PlaybackSpeedNotifier();
 });
 
@@ -188,12 +195,14 @@ final selectedCourseProvider = StateProvider<Course?>((ref) => null);
 final selectedAssignmentProvider = StateProvider<Assignment?>((ref) => null);
 
 /// Currently selected learning object
-final selectedLearningObjectProvider = StateProvider<LearningObject?>((ref) => null);
+final selectedLearningObjectProvider =
+    StateProvider<LearningObject?>((ref) => null);
 
 // Progress Management
 
 /// Progress update notifier
-final progressUpdateProvider = StateNotifierProvider<ProgressUpdateNotifier, AsyncValue<void>>((ref) {
+final progressUpdateProvider =
+    StateNotifierProvider<ProgressUpdateNotifier, AsyncValue<void>>((ref) {
   return ProgressUpdateNotifier(ref);
 });
 
@@ -286,7 +295,6 @@ final appInitializationProvider = FutureProvider<bool>((ref) async {
 
 /// Validation function to verify providers implementation
 void validateProviders() {
-
   // Test font size notifier
   final fontSizeNotifier = FontSizeNotifier();
   assert(fontSizeNotifier.fontSizeName == 'Medium');
@@ -300,5 +308,4 @@ void validateProviders() {
 
   speedNotifier.cycleToNext();
   assert(speedNotifier.formattedSpeed == '1.25x');
-
 }

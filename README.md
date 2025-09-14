@@ -44,6 +44,69 @@ lib/
 └── widgets/            # Reusable components
 ```
 
+## Development Workflow
+
+### Pre-commit Hooks
+
+Our project uses automated pre-commit hooks to ensure code quality. These hooks run automatically before each commit to catch issues early.
+
+#### Initial Setup (one-time)
+
+```bash
+# Run the setup script to install hooks
+./scripts/setup-hooks.sh
+```
+
+#### What Gets Checked
+
+1. **Flutter analyze** - Blocks commit if errors are found
+2. **Code formatting** - Ensures consistent code style
+3. **Unit tests** - Verifies all tests pass
+4. **TODO comments** - Warns about remaining TODOs (non-blocking)
+
+#### Manual Checks
+
+Run all CI checks locally before pushing:
+
+```bash
+# Full check (mirrors CI pipeline)
+./check-local.sh
+
+# Quick check (skips tests for speed)
+./check-local.sh --quick
+
+# Auto-fix formatting issues
+./check-local.sh --fix
+```
+
+#### Bypassing Hooks (Emergency Only)
+
+In rare cases where you need to commit despite failures:
+
+```bash
+# Skip all pre-commit hooks
+git commit --no-verify -m "Emergency fix: [description]"
+
+# Skip tests only
+SKIP_TESTS=1 git commit -m "Your message"
+```
+
+⚠️ **Warning**: Bypassing checks may cause CI pipeline failures. Use sparingly.
+
+### VS Code Setup
+
+For the best development experience, VS Code will automatically:
+- Format code on save
+- Show linting errors inline
+- Organize imports automatically
+- Provide Flutter-specific features
+
+Install recommended extensions:
+1. Open VS Code in the project directory
+2. Go to Extensions view (⌘+Shift+X / Ctrl+Shift+X)
+3. Search for "@recommended"
+4. Install all recommended extensions
+
 ## Testing
 
 ```bash

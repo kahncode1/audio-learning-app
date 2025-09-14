@@ -66,14 +66,16 @@ class LearningObject {
     if (json['word_timings'] != null) {
       if (json['word_timings'] is List) {
         timings = (json['word_timings'] as List)
-            .map((timing) => WordTiming.fromJson(timing as Map<String, dynamic>))
+            .map(
+                (timing) => WordTiming.fromJson(timing as Map<String, dynamic>))
             .toList();
       } else if (json['word_timings'] is Map) {
         // Handle JSONB format from Supabase
         final timingsData = json['word_timings'] as Map<String, dynamic>;
         if (timingsData['timings'] != null) {
           timings = (timingsData['timings'] as List)
-              .map((timing) => WordTiming.fromJson(timing as Map<String, dynamic>))
+              .map((timing) =>
+                  WordTiming.fromJson(timing as Map<String, dynamic>))
               .toList();
         }
       }
@@ -173,7 +175,6 @@ class LearningObject {
 
 /// Validation function to verify LearningObject model implementation
 void validateLearningObjectModel() {
-
   // Test JSON parsing without word timings
   final testJson = {
     'id': 'lo-123',
@@ -214,5 +215,4 @@ void validateLearningObjectModel() {
   final json = learningObject.toJson();
   assert(json['id'] == 'lo-123');
   assert(json['is_in_progress'] == true);
-
 }

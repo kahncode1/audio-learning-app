@@ -33,7 +33,8 @@ class AuthService implements AuthServiceInterface {
 
   bool _isConfigured = false;
   Timer? _refreshTimer;
-  final StreamController<AuthState> _authStateController = StreamController<AuthState>.broadcast();
+  final StreamController<AuthState> _authStateController =
+      StreamController<AuthState>.broadcast();
 
   /// Stream of authentication state changes (internal)
   Stream<AuthState> get _authStateStream => _authStateController.stream;
@@ -186,7 +187,8 @@ class AuthService implements AuthServiceInterface {
   /// Get current session with tokens
   Future<CognitoAuthSession?> getSession() async {
     try {
-      final session = await Amplify.Auth.fetchAuthSession() as CognitoAuthSession;
+      final session =
+          await Amplify.Auth.fetchAuthSession() as CognitoAuthSession;
 
       if (session.isSignedIn) {
         return session;
@@ -339,8 +341,10 @@ class AuthService implements AuthServiceInterface {
       final session = await getSession();
 
       if (session != null) {
-        await prefs.setString('cached_user_id', session.identityIdResult.value ?? '');
-        await prefs.setInt('session_cached_at', DateTime.now().millisecondsSinceEpoch);
+        await prefs.setString(
+            'cached_user_id', session.identityIdResult.value ?? '');
+        await prefs.setInt(
+            'session_cached_at', DateTime.now().millisecondsSinceEpoch);
       }
     } catch (e) {
       safePrint('Error caching session: $e');
@@ -364,9 +368,8 @@ class AuthService implements AuthServiceInterface {
   }
 
   @override
-  Stream<bool> get authStateChanges => _authStateStream.map(
-    (state) => state == AuthState.authenticated
-  );
+  Stream<bool> get authStateChanges =>
+      _authStateStream.map((state) => state == AuthState.authenticated);
 }
 
 /// Authentication state enum
@@ -378,7 +381,6 @@ enum AuthState {
 
 /// Validation function to verify AuthService implementation
 void validateAuthService() {
-
   final authService = AuthService();
 
   // Test singleton pattern
@@ -387,5 +389,4 @@ void validateAuthService() {
 
   // Test initial state
   assert(authService.isConfigured == false);
-
 }

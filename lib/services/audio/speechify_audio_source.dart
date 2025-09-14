@@ -63,12 +63,14 @@ class SpeechifyAudioSource extends StreamAudioSource {
       // Extract content headers
       final contentLength = _parseContentLength(response.headers);
       final contentRange = _parseContentRange(response.headers);
-      final contentType = response.headers.value('content-type') ?? 'audio/mpeg';
+      final contentType =
+          response.headers.value('content-type') ?? 'audio/mpeg';
 
       debugPrint('Content-Type: $contentType');
       debugPrint('Content-Length: $contentLength');
       if (contentRange != null) {
-        debugPrint('Content-Range: bytes ${contentRange.start}-${contentRange.end}/${contentRange.total}');
+        debugPrint(
+            'Content-Range: bytes ${contentRange.start}-${contentRange.end}/${contentRange.total}');
       }
 
       // Create stream transformer for buffering
@@ -103,7 +105,8 @@ class SpeechifyAudioSource extends StreamAudioSource {
       } else if (e.type == DioExceptionType.receiveTimeout) {
         throw AudioSourceException('Receive timeout while streaming audio');
       } else if (e.response?.statusCode == 403) {
-        throw AudioSourceException('Audio URL expired. Please refresh the content.');
+        throw AudioSourceException(
+            'Audio URL expired. Please refresh the content.');
       } else if (e.response?.statusCode == 404) {
         throw AudioSourceException('Audio not found. Please try again.');
       }
@@ -195,14 +198,16 @@ void validateSpeechifyAudioSource() {
   debugPrint('✓ Source tag verified');
 
   // Test 3: Buffer size constants
-  assert(SpeechifyAudioSource._bufferSize == 64 * 1024, 'Buffer size must be 64KB');
+  assert(SpeechifyAudioSource._bufferSize == 64 * 1024,
+      'Buffer size must be 64KB');
   assert(SpeechifyAudioSource._minBufferMs == 10000, 'Min buffer must be 10s');
   assert(SpeechifyAudioSource._maxBufferMs == 30000, 'Max buffer must be 30s');
   debugPrint('✓ Buffer configuration verified');
 
   // Test 4: Exception handling
   final exception = AudioSourceException('Test error');
-  assert(exception.toString().contains('Test error'), 'Exception message must be included');
+  assert(exception.toString().contains('Test error'),
+      'Exception message must be included');
   debugPrint('✓ Exception handling verified');
 
   debugPrint('=== All SpeechifyAudioSource validations passed ===');

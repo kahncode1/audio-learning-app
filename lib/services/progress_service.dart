@@ -28,7 +28,12 @@ class ProgressService {
   static const Duration _debounceDuration = Duration(seconds: 5);
 
   // Font size configuration
-  static const List<String> fontSizeNames = ['Small', 'Medium', 'Large', 'X-Large'];
+  static const List<String> fontSizeNames = [
+    'Small',
+    'Medium',
+    'Large',
+    'X-Large'
+  ];
   static const List<double> fontSizeValues = [14.0, 16.0, 18.0, 20.0];
   static const int defaultFontSizeIndex = 1; // Medium
 
@@ -44,7 +49,8 @@ class ProgressService {
       BehaviorSubject.seeded(1.0);
 
   // Debounce subjects for saving
-  final PublishSubject<_ProgressUpdate> _progressUpdateSubject = PublishSubject();
+  final PublishSubject<_ProgressUpdate> _progressUpdateSubject =
+      PublishSubject();
 
   // Active timers for debouncing
   Timer? _saveTimer;
@@ -85,7 +91,8 @@ class ProgressService {
     final savedSpeed = _prefs.getDouble(_playbackSpeedKey) ?? 1.0;
     _playbackSpeedSubject.add(savedSpeed);
 
-    debugPrint('Preferences loaded - Font size: $savedFontSize, Speed: $savedSpeed');
+    debugPrint(
+        'Preferences loaded - Font size: $savedFontSize, Speed: $savedSpeed');
   }
 
   /// Save progress for a learning object (debounced)
@@ -138,9 +145,8 @@ class ProgressService {
     };
 
     // Convert to string for storage
-    final dataString = progressData.entries
-        .map((e) => '${e.key}:${e.value}')
-        .join(',');
+    final dataString =
+        progressData.entries.map((e) => '${e.key}:${e.value}').join(',');
 
     await _prefs.setString(key, dataString);
   }
@@ -176,7 +182,8 @@ class ProgressService {
     try {
       // Try cloud first if authenticated
       if (userId != null) {
-        final cloudProgress = await _loadProgressCloud(learningObjectId, userId);
+        final cloudProgress =
+            await _loadProgressCloud(learningObjectId, userId);
         if (cloudProgress != null) {
           // Update local with cloud data (server wins)
           await _saveProgressLocal(_ProgressUpdate(
@@ -238,7 +245,8 @@ class ProgressService {
         isInProgress: dataMap['is_in_progress'] ?? false,
         fontSizeIndex: dataMap['font_size_index'] ?? defaultFontSizeIndex,
         playbackSpeed: dataMap['playback_speed'] ?? 1.0,
-        lastAccessedAt: DateTime.tryParse(dataMap['updated_at'] ?? '') ?? DateTime.now(),
+        lastAccessedAt:
+            DateTime.tryParse(dataMap['updated_at'] ?? '') ?? DateTime.now(),
       );
     } catch (e) {
       debugPrint('Error parsing local progress: $e');
@@ -247,7 +255,8 @@ class ProgressService {
   }
 
   /// Load progress from Supabase
-  Future<ProgressState?> _loadProgressCloud(String learningObjectId, String userId) async {
+  Future<ProgressState?> _loadProgressCloud(
+      String learningObjectId, String userId) async {
     try {
       final response = await _supabase
           .from('progress')
@@ -267,7 +276,8 @@ class ProgressService {
         isInProgress: response['is_in_progress'] ?? false,
         fontSizeIndex: response['font_size_index'] ?? defaultFontSizeIndex,
         playbackSpeed: response['playback_speed'] ?? 1.0,
-        lastAccessedAt: DateTime.tryParse(response['updated_at'] ?? '') ?? DateTime.now(),
+        lastAccessedAt:
+            DateTime.tryParse(response['updated_at'] ?? '') ?? DateTime.now(),
       );
     } catch (e) {
       debugPrint('Error loading from Supabase: $e');
@@ -300,7 +310,8 @@ class ProgressService {
 
   /// Clear all progress (for logout)
   Future<void> clearAllProgress() async {
-    final keys = _prefs.getKeys()
+    final keys = _prefs
+        .getKeys()
         .where((key) => key.startsWith(_progressPrefix))
         .toList();
 
@@ -364,18 +375,19 @@ Future<void> validateProgressService() async {
 
   // Test 2: Font size configuration
   assert(ProgressService.fontSizeNames.length == 4, 'Must have 4 font sizes');
-  assert(ProgressService.fontSizeValues.length == 4, 'Must have 4 font size values');
+  assert(ProgressService.fontSizeValues.length == 4,
+      'Must have 4 font size values');
   assert(ProgressService.defaultFontSizeIndex == 1, 'Default must be Medium');
   debugPrint('✓ Font size configuration verified');
 
   // Test 3: Debounce duration
   assert(ProgressService._debounceDuration == const Duration(seconds: 5),
-         'Debounce must be 5 seconds');
+      'Debounce must be 5 seconds');
   debugPrint('✓ Debounce configuration verified');
 
   // Test 4: Initial state
   assert(service.fontSizeIndex >= 0 && service.fontSizeIndex < 4,
-         'Font size index must be valid');
+      'Font size index must be valid');
   assert(service.playbackSpeed > 0, 'Playback speed must be positive');
   debugPrint('✓ Initial state verified');
 

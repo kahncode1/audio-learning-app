@@ -58,7 +58,8 @@ Please update your .env file with your actual API key.
 
     try {
       // Test with a simple text
-      const testText = 'Hello! This is a test of the Speechify text-to-speech API.';
+      const testText =
+          'Hello! This is a test of the Speechify text-to-speech API.';
 
       setState(() {
         _status = 'Generating audio stream...';

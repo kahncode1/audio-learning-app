@@ -144,7 +144,6 @@ class User {
 
 /// Validation function to verify User model implementation
 void validateUserModel() {
-
   // Test JSON parsing
   final testJson = {
     'id': 'user-123',
@@ -203,6 +202,6 @@ void validateUserModel() {
   // Test Supabase JSON
   final supabaseJson = user.toSupabaseJson();
   assert(supabaseJson['cognito_sub'] == 'cognito-sub-456');
-  assert(!supabaseJson.containsKey('created_at')); // Database handles timestamps
-
+  assert(
+      !supabaseJson.containsKey('created_at')); // Database handles timestamps
 }

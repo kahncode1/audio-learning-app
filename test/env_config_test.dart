@@ -24,8 +24,7 @@ void main() {
       expect(apiKey, isNotEmpty);
 
       if (EnvConfig.isSpeechifyConfigured) {
-      } else {
-      }
+      } else {}
     });
 
     test('AppConfig uses environment variables', () {
@@ -35,7 +34,6 @@ void main() {
       expect(AppConfig.speechifyApiKey, equals(EnvConfig.speechifyApiKey));
       expect(AppConfig.supabaseUrl, equals(EnvConfig.supabaseUrl));
       expect(AppConfig.cognitoUserPoolId, equals(EnvConfig.cognitoUserPoolId));
-
     });
 
     test('Configuration validation', () {

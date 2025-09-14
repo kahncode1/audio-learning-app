@@ -1,0 +1,99 @@
+{
+  // Flutter and Dart settings
+  "dart.flutterSdkPath": "${env:HOME}/flutter",
+  "[dart]": {
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.rulers": [80],
+    "editor.selectionHighlight": false,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": false,
+    "editor.defaultFormatter": "Dart-Code.dart-code"
+  },
+
+  // Code formatting
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true,
+    "source.organizeImports": true
+  },
+
+  // Flutter specific
+  "dart.analyzeExcludedFolders": false,
+  "dart.enableSdkFormatter": true,
+  "dart.lineLength": 80,
+  "dart.showTodos": true,
+  "dart.flutterCreateOrganization": "com.modia",
+  "dart.debugExternalPackageLibraries": false,
+  "dart.debugSdkLibraries": false,
+  "dart.evaluateGettersInDebugViews": true,
+  "dart.previewFlutterUiGuides": true,
+  "dart.previewFlutterUiGuidesCustomTracking": true,
+  "dart.autoImportCompletions": true,
+
+  // Linting
+  "dart.showLintMessages": true,
+  "dart.showDartPadSampleCodeLens": false,
+  "dart.showTestCodeLens": true,
+
+  // Performance
+  "dart.analysisServerFolding": true,
+  "dart.analyzerInspectHost": "127.0.0.1",
+  "dart.automaticCommentSlashes": "all",
+
+  // Editor enhancements
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.snippetSuggestions": "top",
+  "editor.inlineSuggest.enabled": true,
+
+  // Files to exclude from explorer
+  "files.exclude": {
+    "**/.dart_tool": true,
+    "**/.flutter-plugins": true,
+    "**/.flutter-plugins-dependencies": true,
+    "**/.packages": true,
+    "**/.pub-cache": true,
+    "**/build": true
+  },
+
+  // Search exclusions
+  "search.exclude": {
+    "**/.dart_tool": true,
+    "**/build": true,
+    "**/ios/Pods": true,
+    "**/android/.gradle": true
+  },
+
+  // Terminal
+  "terminal.integrated.env.osx": {
+    "PATH": "${env:PATH}:${env:HOME}/flutter/bin"
+  },
+  "terminal.integrated.env.linux": {
+    "PATH": "${env:PATH}:${env:HOME}/flutter/bin"
+  },
+
+  // Flutter testing
+  "dart.flutterTestAdditionalArgs": [
+    "--coverage"
+  ],
+
+  // Project specific
+  "dart.flutterRunAdditionalArgs": [
+    "--dart-define=USE_MOCK_AUTH=true"
+  ],
+
+  // Git
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.autofetch": true,
+
+  // File associations
+  "files.associations": {
+    "*.arb": "json",
+    "pubspec.lock": "yaml",
+    "*.yaml": "yaml"
+  }
+}

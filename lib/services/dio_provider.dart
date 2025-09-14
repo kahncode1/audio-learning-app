@@ -17,6 +17,7 @@ import '../config/app_config.dart';
 class DioProvider {
   static DioProvider? _instance;
   static Dio? _dio;
+  static Dio? _speechifyDio;
 
   // Cache configuration
   static final _cacheOptions = CacheOptions(
@@ -50,15 +51,15 @@ class DioProvider {
 
   /// Base options for all requests
   static BaseOptions get _baseOptions => BaseOptions(
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 30),
-    sendTimeout: const Duration(seconds: 30),
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    validateStatus: (status) => status != null && status < 500,
-  );
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        validateStatus: (status) => status != null && status < 500,
+      );
 
   /// Configure all interceptors
   static void _setupInterceptors() {
@@ -90,10 +91,16 @@ class DioProvider {
     _dio!.interceptors.add(_RetryInterceptor(_dio!));
   }
 
-  /// Create a separate Dio instance for Speechify streaming
+  /// Get or create a singleton Dio instance for Speechify streaming
   /// This instance has special configuration for audio streaming
   static Dio createSpeechifyClient() {
-    final speechifyDio = Dio(BaseOptions(
+    // Return existing instance if available
+    if (_speechifyDio != null) {
+      return _speechifyDio!;
+    }
+
+    // Create new instance
+    _speechifyDio = Dio(BaseOptions(
       baseUrl: AppConfig.speechifyApiUrl,
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(minutes: 5), // Longer for streaming
@@ -107,16 +114,16 @@ class DioProvider {
     ));
 
     // Add connection pooling
-    (speechifyDio.httpClientAdapter as dynamic).onHttpClientCreate = (client) {
+    (_speechifyDio!.httpClientAdapter as dynamic).onHttpClientCreate = (client) {
       client.maxConnectionsPerHost = 5; // Connection pooling
       return client;
     };
 
     // Add minimal interceptors for streaming
-    speechifyDio.interceptors.add(_RetryInterceptor(speechifyDio));
+    _speechifyDio!.interceptors.add(_RetryInterceptor(_speechifyDio!));
 
     if (kDebugMode) {
-      speechifyDio.interceptors.add(LogInterceptor(
+      _speechifyDio!.interceptors.add(LogInterceptor(
         requestBody: false, // Don't log audio data
         responseBody: false,
         error: true,
@@ -124,14 +131,16 @@ class DioProvider {
       ));
     }
 
-    return speechifyDio;
+    return _speechifyDio!;
   }
 
-  /// Reset the singleton instance (mainly for testing)
+  /// Reset the singleton instances (mainly for testing)
   @visibleForTesting
   static void reset() {
     _dio?.close();
+    _speechifyDio?.close();
     _dio = null;
+    _speechifyDio = null;
     _instance = null;
   }
 }
@@ -167,7 +176,8 @@ class _RetryInterceptor extends Interceptor {
   final int maxRetries;
   final List<int> retryDelays;
 
-  _RetryInterceptor(this.dio, {
+  _RetryInterceptor(
+    this.dio, {
     this.maxRetries = 3,
     this.retryDelays = const [1000, 2000, 4000], // Exponential backoff in ms
   });
@@ -184,7 +194,8 @@ class _RetryInterceptor extends Interceptor {
           ? retryDelays[retryCount]
           : retryDelays.last;
 
-      debugPrint('Retrying request (attempt ${retryCount + 1}/$maxRetries) after ${delay}ms...');
+      debugPrint(
+          'Retrying request (attempt ${retryCount + 1}/$maxRetries) after ${delay}ms...');
 
       // Wait before retrying
       await Future.delayed(Duration(milliseconds: delay));
@@ -242,19 +253,23 @@ void validateDioProvider() {
 
   // Test 2: Dio instance configuration
   final dio = DioProvider.dio;
-  assert(dio.options.connectTimeout == const Duration(seconds: 10), 'Connect timeout not set correctly');
+  assert(dio.options.connectTimeout == const Duration(seconds: 10),
+      'Connect timeout not set correctly');
   assert(dio.interceptors.length >= 3, 'Missing interceptors');
   debugPrint('✓ Dio configuration verified');
 
   // Test 3: Speechify client creation
   final speechifyDio = DioProvider.createSpeechifyClient();
-  assert(speechifyDio.options.baseUrl == AppConfig.speechifyApiUrl, 'Speechify base URL not set');
-  assert(speechifyDio.options.responseType == ResponseType.stream, 'Stream response type not set');
+  assert(speechifyDio.options.baseUrl == AppConfig.speechifyApiUrl,
+      'Speechify base URL not set');
+  assert(speechifyDio.options.responseType == ResponseType.stream,
+      'Stream response type not set');
   debugPrint('✓ Speechify client configuration verified');
 
   // Test 4: Interceptor order (retry must be last)
   final lastInterceptor = dio.interceptors.last;
-  assert(lastInterceptor is _RetryInterceptor, 'Retry interceptor must be last');
+  assert(
+      lastInterceptor is _RetryInterceptor, 'Retry interceptor must be last');
   debugPrint('✓ Interceptor order verified');
 
   debugPrint('=== All DioProvider validations passed ===');

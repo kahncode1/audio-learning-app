@@ -131,7 +131,6 @@ class Course {
 
 /// Validation function to verify Course model implementation
 void validateCourseModel() {
-
   // Test JSON parsing
   final testJson = {
     'id': 'test-id-123',
@@ -164,5 +163,4 @@ void validateCourseModel() {
   final updated = course.copyWith(title: 'Updated Title');
   assert(updated.title == 'Updated Title');
   assert(updated.id == course.id);
-
 }

@@ -25,7 +25,8 @@ class MockAuthService implements AuthServiceInterface {
 
   @override
   Future<SignInResult> signIn(String email, String password) async {
-    await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+    await Future.delayed(
+        const Duration(milliseconds: 500)); // Simulate network delay
 
     // Check against test users
     if (_testUsers[email] != password) {
@@ -37,7 +38,8 @@ class MockAuthService implements AuthServiceInterface {
 
     // Sign in to Supabase with the test account
     try {
-      final response = await supabase.Supabase.instance.client.auth.signInWithPassword(
+      final response =
+          await supabase.Supabase.instance.client.auth.signInWithPassword(
         email: email,
         password: password,
       );
@@ -48,7 +50,8 @@ class MockAuthService implements AuthServiceInterface {
           username: email.split('@')[0],
           email: email,
         );
-        _mockJwtToken = response.session?.accessToken ?? 'mock-jwt-token-${DateTime.now().millisecondsSinceEpoch}';
+        _mockJwtToken = response.session?.accessToken ??
+            'mock-jwt-token-${DateTime.now().millisecondsSinceEpoch}';
         _authStateController.add(true);
 
         return const SignInResult(
@@ -84,7 +87,8 @@ class MockAuthService implements AuthServiceInterface {
 
   @override
   Future<void> signOut() async {
-    await Future.delayed(const Duration(milliseconds: 200)); // Simulate network delay
+    await Future.delayed(
+        const Duration(milliseconds: 200)); // Simulate network delay
 
     try {
       await supabase.Supabase.instance.client.auth.signOut();
@@ -163,7 +167,8 @@ class MockAuthService implements AuthServiceInterface {
 
     try {
       // Try to refresh Supabase session if initialized
-      final response = await supabase.Supabase.instance.client.auth.refreshSession();
+      final response =
+          await supabase.Supabase.instance.client.auth.refreshSession();
       if (response.session != null) {
         _mockJwtToken = response.session!.accessToken;
         return;
@@ -173,7 +178,8 @@ class MockAuthService implements AuthServiceInterface {
     }
 
     // Fall back to generating new mock token
-    _mockJwtToken = 'mock-jwt-token-refreshed-${DateTime.now().millisecondsSinceEpoch}';
+    _mockJwtToken =
+        'mock-jwt-token-refreshed-${DateTime.now().millisecondsSinceEpoch}';
   }
 
   @override

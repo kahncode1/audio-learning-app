@@ -9,7 +9,6 @@ import 'dart:io';
 import 'dart:convert';
 
 void main() async {
-
   // Read environment variables
   final envFile = File('.env');
   if (!envFile.existsSync()) {
@@ -33,7 +32,6 @@ void main() async {
     exit(1);
   }
 
-
   // Test connection
   try {
     final client = HttpClient();
@@ -47,10 +45,8 @@ void main() async {
     final responseBody = await response.transform(utf8.decoder).join();
 
     if (response.statusCode == 200) {
-
       final data = jsonDecode(responseBody);
-    } else {
-    }
+    } else {}
 
     client.close();
   } catch (e) {
@@ -62,13 +58,10 @@ void main() async {
 
   if (input?.toLowerCase() == 'y') {
     await createSampleData(supabaseUrl, supabaseAnonKey);
-  } else {
-  }
-
+  } else {}
 }
 
 Future<void> createSampleData(String supabaseUrl, String anonKey) async {
-
   final client = HttpClient();
 
   try {
@@ -77,7 +70,8 @@ Future<void> createSampleData(String supabaseUrl, String anonKey) async {
       {
         'course_number': 'INS-101',
         'title': 'Introduction to Insurance Fundamentals',
-        'description': 'Learn the basics of insurance principles, risk management, and industry practices.',
+        'description':
+            'Learn the basics of insurance principles, risk management, and industry practices.',
         'gradient_start_color': '#2196F3',
         'gradient_end_color': '#1976D2',
         'total_duration_ms': 7200000, // 2 hours
@@ -85,7 +79,8 @@ Future<void> createSampleData(String supabaseUrl, String anonKey) async {
       {
         'course_number': 'INS-201',
         'title': 'Advanced Risk Management',
-        'description': 'Deep dive into risk assessment, mitigation strategies, and enterprise risk management.',
+        'description':
+            'Deep dive into risk assessment, mitigation strategies, and enterprise risk management.',
         'gradient_start_color': '#4CAF50',
         'gradient_end_color': '#388E3C',
         'total_duration_ms': 10800000, // 3 hours
@@ -93,7 +88,8 @@ Future<void> createSampleData(String supabaseUrl, String anonKey) async {
       {
         'course_number': 'INS-301',
         'title': 'Insurance Law and Regulations',
-        'description': 'Comprehensive overview of insurance law, regulations, and compliance requirements.',
+        'description':
+            'Comprehensive overview of insurance law, regulations, and compliance requirements.',
         'gradient_start_color': '#FF5722',
         'gradient_end_color': '#E64A19',
         'total_duration_ms': 9000000, // 2.5 hours
@@ -116,15 +112,14 @@ Future<void> createSampleData(String supabaseUrl, String anonKey) async {
         final responseBody = await response.transform(utf8.decoder).join();
         final created = jsonDecode(responseBody);
         if (created is List && created.isNotEmpty) {
-
           // Create assignments for this course
-          await createAssignments(supabaseUrl, anonKey, created[0]['id'] as String, course['course_number'] as String);
+          await createAssignments(supabaseUrl, anonKey,
+              created[0]['id'] as String, course['course_number'] as String);
         }
       } else {
         final error = await response.transform(utf8.decoder).join();
       }
     }
-
   } catch (e) {
   } finally {
     client.close();
@@ -180,7 +175,6 @@ Future<void> createAssignments(
         final responseBody = await response.transform(utf8.decoder).join();
         final created = jsonDecode(responseBody);
         if (created is List && created.isNotEmpty) {
-
           // Create learning objects for this assignment
           await createLearningObjects(supabaseUrl, anonKey, created[0]['id']);
         }
@@ -188,7 +182,6 @@ Future<void> createAssignments(
         final error = await response.transform(utf8.decoder).join();
       }
     }
-
   } catch (e) {
   } finally {
     client.close();
@@ -208,7 +201,8 @@ Future<void> createLearningObjects(
         'assignment_id': assignmentId,
         'title': 'Introduction Video',
         'content_type': 'video',
-        'plain_text': 'Welcome to this module. In this section, we will explore the fundamental concepts that form the foundation of our subject matter.',
+        'plain_text':
+            'Welcome to this module. In this section, we will explore the fundamental concepts that form the foundation of our subject matter.',
         'duration_ms': 300000, // 5 minutes
         'order_index': 0,
       },
@@ -216,8 +210,10 @@ Future<void> createLearningObjects(
         'assignment_id': assignmentId,
         'title': 'Main Content',
         'content_type': 'text',
-        'plain_text': 'This is the main content of the learning module. It contains detailed information about the topic, with examples and explanations.',
-        'ssml_content': '<speak>This is the main content of the learning module. <break time="500ms"/> It contains detailed information about the topic, with examples and explanations.</speak>',
+        'plain_text':
+            'This is the main content of the learning module. It contains detailed information about the topic, with examples and explanations.',
+        'ssml_content':
+            '<speak>This is the main content of the learning module. <break time="500ms"/> It contains detailed information about the topic, with examples and explanations.</speak>',
         'duration_ms': 600000, // 10 minutes
         'order_index': 1,
       },
@@ -225,7 +221,8 @@ Future<void> createLearningObjects(
         'assignment_id': assignmentId,
         'title': 'Summary and Review',
         'content_type': 'text',
-        'plain_text': 'Let\'s review what we\'ve learned in this module. The key takeaways are important for your understanding.',
+        'plain_text':
+            'Let\'s review what we\'ve learned in this module. The key takeaways are important for your understanding.',
         'duration_ms': 180000, // 3 minutes
         'order_index': 2,
       },
@@ -246,13 +243,11 @@ Future<void> createLearningObjects(
       if (response.statusCode == 201) {
         final responseBody = await response.transform(utf8.decoder).join();
         final created = jsonDecode(responseBody);
-        if (created is List && created.isNotEmpty) {
-        }
+        if (created is List && created.isNotEmpty) {}
       } else {
         final error = await response.transform(utf8.decoder).join();
       }
     }
-
   } catch (e) {
   } finally {
     client.close();

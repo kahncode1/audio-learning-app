@@ -98,7 +98,6 @@ class Assignment {
 
 /// Validation function to verify Assignment model implementation
 void validateAssignmentModel() {
-
   // Test JSON parsing
   final testJson = {
     'id': 'assignment-123',
@@ -126,5 +125,4 @@ void validateAssignmentModel() {
   final updated = assignment.copyWith(title: 'Updated Title');
   assert(updated.title == 'Updated Title');
   assert(updated.id == assignment.id);
-
 }

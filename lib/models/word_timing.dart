@@ -23,7 +23,11 @@ class WordTiming {
     required this.startMs,
     required this.endMs,
     required this.sentenceIndex,
-  });
+  })  : assert(word.isNotEmpty, 'Word cannot be empty'),
+        assert(startMs >= 0, 'Start time must be non-negative'),
+        assert(endMs >= 0, 'End time must be non-negative'),
+        assert(endMs >= startMs, 'End time must be after or equal to start time'),
+        assert(sentenceIndex >= 0, 'Sentence index must be non-negative');
 
   /// Duration of this word in milliseconds
   int get durationMs => endMs - startMs;
@@ -162,7 +166,6 @@ class WordTimingCollection {
 
 /// Validation function to verify WordTiming model implementation
 void validateWordTimingModel() {
-
   // Test JSON parsing
   final testJson = {
     'word': 'Hello',
@@ -212,5 +215,4 @@ void validateWordTimingModel() {
   assert(boundaries != null);
   assert(boundaries!.$1 == 1500);
   assert(boundaries?.$2 == 3000);
-
 }

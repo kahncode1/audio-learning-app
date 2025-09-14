@@ -5,7 +5,6 @@ import 'config/app_config.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-
   // Load environment
   await EnvConfig.load();
 
@@ -15,12 +14,10 @@ void main() async {
   // Check if it's reading from .env properly
   if (speechifyKey == 'your_speechify_api_key_here' ||
       speechifyKey == 'YOUR_SPEECHIFY_API_KEY_HERE') {
-  } else {
-  }
+  } else {}
 
   // Print full status
   EnvConfig.printConfigurationStatus();
-
 
   runApp(MaterialApp(
     home: Scaffold(

@@ -273,6 +273,24 @@ For complete package information and configuration: `/documentation/apis/flutter
 - `/implementations/` - Production-ready reference code
 - `/references/` - Detailed implementation guides
 
+## Automated Quality Checks
+
+**MANDATORY before every commit:**
+1. Run `./check-local.sh` to verify all checks pass
+2. Flutter analyze must show 0 errors (warnings allowed but discouraged)
+3. All tests must pass (can skip temporarily with SKIP_TESTS=1)
+4. Code must be properly formatted (dart format)
+
+**Pre-commit hooks are configured to enforce these automatically.**
+- Hooks will block commits if errors are found
+- Use `git commit --no-verify` ONLY in emergencies
+- Run `./check-local.sh --fix` to auto-fix formatting issues
+
+**CI/CD Pipeline Requirements:**
+- GitHub Actions runs the same checks on every push
+- Failing CI checks will block PR merges
+- Keep local checks passing to avoid CI failures
+
 ## Detailed References
 
 ### Primary Documentation (Start Here)

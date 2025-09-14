@@ -271,8 +271,9 @@ class _EnhancedAudioPlayerScreenState
                               label: Text('${speed}x'),
                               onPressed: _audioService.cycleSpeed,
                               style: TextButton.styleFrom(
-                                backgroundColor:
-                                    Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                                backgroundColor: Theme.of(context)
+                                    .primaryColor
+                                    .withValues(alpha: 0.1),
                               ),
                             );
                           },
@@ -291,8 +292,9 @@ class _EnhancedAudioPlayerScreenState
                                 setState(() {}); // Refresh UI
                               },
                               style: TextButton.styleFrom(
-                                backgroundColor:
-                                    Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                                backgroundColor: Theme.of(context)
+                                    .primaryColor
+                                    .withValues(alpha: 0.1),
                               ),
                             );
                           },
@@ -337,16 +339,23 @@ void validateEnhancedAudioPlayerScreen() {
     return '${duration.inHours > 0 ? '${duration.inHours}:' : ''}$minutes:$seconds';
   }
 
-  assert(formatDuration(const Duration(seconds: 45)) == '00:45', 'Format 45 seconds');
-  assert(formatDuration(const Duration(minutes: 3, seconds: 25)) == '03:25', 'Format 3:25');
-  assert(formatDuration(const Duration(hours: 1, minutes: 15, seconds: 30)) == '1:15:30',
-         'Format 1:15:30');
+  assert(formatDuration(const Duration(seconds: 45)) == '00:45',
+      'Format 45 seconds');
+  assert(formatDuration(const Duration(minutes: 3, seconds: 25)) == '03:25',
+      'Format 3:25');
+  assert(
+      formatDuration(const Duration(hours: 1, minutes: 15, seconds: 30)) ==
+          '1:15:30',
+      'Format 1:15:30');
   debugPrint('✓ Duration formatting verified');
 
   // Test 2: Keyboard key mapping
-  assert(LogicalKeyboardKey.space == LogicalKeyboardKey.space, 'Space key mapping');
-  assert(LogicalKeyboardKey.arrowLeft == LogicalKeyboardKey.arrowLeft, 'Left arrow mapping');
-  assert(LogicalKeyboardKey.arrowRight == LogicalKeyboardKey.arrowRight, 'Right arrow mapping');
+  assert(LogicalKeyboardKey.space == LogicalKeyboardKey.space,
+      'Space key mapping');
+  assert(LogicalKeyboardKey.arrowLeft == LogicalKeyboardKey.arrowLeft,
+      'Left arrow mapping');
+  assert(LogicalKeyboardKey.arrowRight == LogicalKeyboardKey.arrowRight,
+      'Right arrow mapping');
   debugPrint('✓ Keyboard shortcuts verified');
 
   debugPrint('=== All EnhancedAudioPlayerScreen validations passed ===');

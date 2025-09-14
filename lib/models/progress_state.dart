@@ -25,7 +25,12 @@ class ProgressState {
   final DateTime? completedAt;
 
   // Font size mapping
-  static const List<String> fontSizeNames = ['Small', 'Medium', 'Large', 'X-Large'];
+  static const List<String> fontSizeNames = [
+    'Small',
+    'Medium',
+    'Large',
+    'X-Large'
+  ];
   static const List<double> fontSizeValues = [14.0, 16.0, 18.0, 20.0];
 
   ProgressState({
@@ -39,7 +44,14 @@ class ProgressState {
     this.fontSizeIndex = 1, // Default to Medium
     required this.lastAccessedAt,
     this.completedAt,
-  });
+  })  : assert(currentPositionMs >= 0, 'Position must be non-negative'),
+        assert(playbackSpeed > 0 && playbackSpeed <= 3.0,
+            'Playback speed must be between 0 and 3.0'),
+        assert(fontSizeIndex >= 0 && fontSizeIndex < fontSizeNames.length,
+            'Font size index must be valid'),
+        assert(id.isNotEmpty, 'ID cannot be empty'),
+        assert(userId.isNotEmpty, 'User ID cannot be empty'),
+        assert(learningObjectId.isNotEmpty, 'Learning object ID cannot be empty');
 
   /// Get font size name for display
   String get fontSizeName {
@@ -180,7 +192,6 @@ class ProgressState {
 
 /// Validation function to verify ProgressState model implementation
 void validateProgressStateModel() {
-
   // Test JSON parsing
   final testJson = {
     'id': 'progress-123',
@@ -236,5 +247,4 @@ void validateProgressStateModel() {
   final json = progress.toJson();
   assert(json['id'] == 'progress-123');
   assert(json['font_size_index'] == 2);
-
 }

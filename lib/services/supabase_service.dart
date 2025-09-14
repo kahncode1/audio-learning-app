@@ -22,6 +22,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
+import '../config/env_config.dart';
 import '../models/models.dart';
 
 class SupabaseService {
@@ -29,13 +30,24 @@ class SupabaseService {
   factory SupabaseService() => _instance;
   SupabaseService._internal();
 
-  late SupabaseClient _client;
-  final AuthService _authService = AuthService();
+  SupabaseClient? _client;
+  AuthService? _authService;
   Timer? _refreshTimer;
   bool _isInitialized = false;
 
   /// Get Supabase client
-  SupabaseClient get client => _client;
+  SupabaseClient get client {
+    if (_client == null) {
+      throw StateError('SupabaseService not initialized. Call initialize() first.');
+    }
+    return client!;
+  }
+
+  /// Get or create AuthService instance
+  AuthService get authService {
+    _authService ??= AuthService();
+    return _authService!;
+  }
 
   /// Check if service is initialized
   bool get isInitialized => _isInitialized;
@@ -48,15 +60,14 @@ class SupabaseService {
     }
 
     try {
+      // Use EnvConfig to get Supabase configuration
+      // This will throw an exception if the values are not set in production
+      final supabaseUrl = EnvConfig.supabaseUrl;
+      final supabaseAnonKey = EnvConfig.supabaseAnonKey;
+
       await Supabase.initialize(
-        url: const String.fromEnvironment(
-          'SUPABASE_URL',
-          defaultValue: 'https://cmjdciktvfxiyapdseqn.supabase.co',
-        ),
-        anonKey: const String.fromEnvironment(
-          'SUPABASE_ANON_KEY',
-          defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtamRjaWt0dmZ4aXlhcGRzZXFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3ODAwODAsImV4cCI6MjA3MzM1NjA4MH0.qIhF8LgDnm6OrlnhNWNJziNc6OopUu0qCYtgJhXouB8',
-        ),
+        url: supabaseUrl,
+        anonKey: supabaseAnonKey,
         authOptions: const FlutterAuthClientOptions(
           authFlowType: AuthFlowType.implicit,
         ),
@@ -81,14 +92,14 @@ class SupabaseService {
   Future<bool> bridgeFromCognito() async {
     try {
       // Get Cognito ID token
-      final idToken = await _authService.getIdToken();
+      final idToken = await authService.getIdToken();
       if (idToken == null) {
         debugPrint('No Cognito ID token available');
         return false;
       }
 
       // Get Cognito user data
-      final cognitoUser = await _authService.createUserFromCognito();
+      final cognitoUser = await authService.createUserFromCognito();
       if (cognitoUser == null) {
         debugPrint('Failed to get Cognito user data');
         return false;
@@ -99,7 +110,7 @@ class SupabaseService {
 
       // Sign in to Supabase with custom JWT
       // Note: This requires Supabase to be configured to accept Cognito JWTs
-      final response = await _client.auth.signInWithIdToken(
+      final response = await client.auth.signInWithIdToken(
         provider: OAuthProvider.google,
         idToken: idToken,
       );
@@ -122,7 +133,7 @@ class SupabaseService {
   Future<void> _ensureUserExists(User cognitoUser) async {
     try {
       // Check if user exists
-      final response = await _client
+      final response = await client
           .from('users')
           .select()
           .eq('cognito_sub', cognitoUser.cognitoSub)
@@ -130,7 +141,7 @@ class SupabaseService {
 
       if (response == null) {
         // Create new user
-        await _client.from('users').insert({
+        await client.from('users').insert({
           'cognito_sub': cognitoUser.cognitoSub,
           'email': cognitoUser.email,
           'full_name': cognitoUser.fullName,
@@ -139,14 +150,11 @@ class SupabaseService {
         debugPrint('Created new user in Supabase');
       } else {
         // Update existing user
-        await _client
-            .from('users')
-            .update({
-              'email': cognitoUser.email,
-              'full_name': cognitoUser.fullName,
-              'organization': cognitoUser.organization,
-            })
-            .eq('cognito_sub', cognitoUser.cognitoSub);
+        await client.from('users').update({
+          'email': cognitoUser.email,
+          'full_name': cognitoUser.fullName,
+          'organization': cognitoUser.organization,
+        }).eq('cognito_sub', cognitoUser.cognitoSub);
         debugPrint('Updated existing user in Supabase');
       }
     } catch (e) {
@@ -157,23 +165,23 @@ class SupabaseService {
 
   /// Get current Supabase user
   dynamic getCurrentUser() {
-    return _client.auth.currentUser;
+    return client.auth.currentUser;
   }
 
   /// Get current session
   Session? getCurrentSession() {
-    return _client.auth.currentSession;
+    return client.auth.currentSession;
   }
 
   /// Check if authenticated
   bool get isAuthenticated {
-    return _client.auth.currentSession != null;
+    return client.auth.currentSession != null;
   }
 
   /// Sign out from Supabase
   Future<void> signOut() async {
     try {
-      await _client.auth.signOut();
+      await client.auth.signOut();
       await _clearCachedSession();
       _refreshTimer?.cancel();
       debugPrint('Signed out from Supabase');
@@ -190,7 +198,7 @@ class SupabaseService {
       final userId = await _getCurrentUserId();
       if (userId == null) throw Exception('User not authenticated');
 
-      final response = await _client
+      final response = await client
           .from('enrollments')
           .select('*, courses(*)')
           .eq('user_id', userId)
@@ -208,7 +216,7 @@ class SupabaseService {
   /// Fetch assignments for a course
   Future<List<Assignment>> fetchAssignments(String courseId) async {
     try {
-      final response = await _client
+      final response = await client
           .from('assignments')
           .select()
           .eq('course_id', courseId)
@@ -226,7 +234,7 @@ class SupabaseService {
   /// Fetch learning objects for an assignment
   Future<List<LearningObject>> fetchLearningObjects(String assignmentId) async {
     try {
-      final response = await _client
+      final response = await client
           .from('learning_objects')
           .select()
           .eq('assignment_id', assignmentId)
@@ -247,7 +255,7 @@ class SupabaseService {
       final userId = await _getCurrentUserId();
       if (userId == null) return null;
 
-      final response = await _client
+      final response = await client
           .from('progress')
           .select()
           .eq('user_id', userId)
@@ -267,10 +275,10 @@ class SupabaseService {
   /// Save progress
   Future<void> saveProgress(ProgressState progress) async {
     try {
-      await _client.from('progress').upsert(
-        progress.toJson(),
-        onConflict: 'user_id,learning_object_id',
-      );
+      await client.from('progress').upsert(
+            progress.toJson(),
+            onConflict: 'user_id,learning_object_id',
+          );
     } catch (e) {
       debugPrint('Error saving progress: $e');
       rethrow;
@@ -278,8 +286,9 @@ class SupabaseService {
   }
 
   /// Set up real-time subscription for progress updates
-  RealtimeChannel subscribeToProgress(String userId, Function(ProgressState) onUpdate) {
-    return _client
+  RealtimeChannel subscribeToProgress(
+      String userId, Function(ProgressState) onUpdate) {
+    return client
         .channel('progress_changes')
         .onPostgresChanges(
           event: PostgresChangeEvent.update,
@@ -302,10 +311,10 @@ class SupabaseService {
 
   Future<String?> _getCurrentUserId() async {
     try {
-      final cognitoUser = await _authService.getCurrentUser();
+      final cognitoUser = await authService.getCurrentUser();
       if (cognitoUser == null) return null;
 
-      final response = await _client
+      final response = await client
           .from('users')
           .select('id')
           .eq('cognito_sub', cognitoUser.userId)
@@ -319,7 +328,7 @@ class SupabaseService {
   }
 
   void _setupAuthStateListener() {
-    _client.auth.onAuthStateChange.listen((event) {
+    client.auth.onAuthStateChange.listen((event) {
       switch (event.event) {
         case AuthChangeEvent.signedIn:
           debugPrint('Supabase auth: signed in');
@@ -341,7 +350,7 @@ class SupabaseService {
     _refreshTimer?.cancel();
     _refreshTimer = Timer.periodic(const Duration(minutes: 50), (timer) async {
       if (isAuthenticated) {
-        await _client.auth.refreshSession();
+        await client.auth.refreshSession();
       }
     });
   }
@@ -375,7 +384,6 @@ class SupabaseService {
 
 /// Validation function to verify SupabaseService implementation
 void validateSupabaseService() {
-
   final supabaseService = SupabaseService();
 
   // Test singleton pattern
@@ -385,5 +393,4 @@ void validateSupabaseService() {
   // Test initial state
   assert(supabaseService.isInitialized == false);
   assert(supabaseService.isAuthenticated == false);
-
 }

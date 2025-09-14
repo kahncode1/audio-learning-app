@@ -81,8 +81,10 @@ void main() {
       await authService.signOut();
       await Future.delayed(const Duration(milliseconds: 100));
 
-      expect(states.contains(true), isTrue, reason: 'Should emit signed in state');
-      expect(states.contains(false), isTrue, reason: 'Should emit signed out state');
+      expect(states.contains(true), isTrue,
+          reason: 'Should emit signed in state');
+      expect(states.contains(false), isTrue,
+          reason: 'Should emit signed out state');
 
       await subscription.cancel();
     });

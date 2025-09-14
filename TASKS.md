@@ -643,6 +643,16 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 - Monitoring and analytics operational
 - No critical bugs in production
 
+## Developer Experience Improvements
+
+- [x] D.1 Create pre-commit hooks for automated quality checks (2025-09-14)
+- [x] D.2 Set up VS Code settings for format-on-save (2025-09-14)
+- [x] D.3 Create check-local.sh script for manual validation (2025-09-14)
+- [x] D.4 Document automated check workflow in README.md (2025-09-14)
+- [x] D.5 Add enforcement rules to CLAUDE.md for AI assistants (2025-09-14)
+- [x] D.6 Create setup-hooks.sh for easy developer onboarding (2025-09-14)
+- [x] D.7 Add VS Code recommended extensions configuration (2025-09-14)
+
 ## Bug Fixes & Polish
 
 - [ ] B.1 Address all UI inconsistencies and edge cases

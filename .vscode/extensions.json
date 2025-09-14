@@ -1,0 +1,38 @@
+{
+  "recommendations": [
+    // Essential Flutter/Dart
+    "Dart-Code.dart-code",
+    "Dart-Code.flutter",
+
+    // Code quality
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+
+    // Git
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+
+    // Productivity
+    "usernamehw.errorlens",
+    "Gruntfuggly.todo-tree",
+    "streetsidesoftware.code-spell-checker",
+
+    // Flutter specific helpers
+    "alexisvt.flutter-files",
+    "gornivv.vscode-flutter-files",
+    "Nash.awesome-flutter-snippets",
+
+    // Testing
+    "hbenl.vscode-test-explorer",
+    "ryanluker.vscode-coverage-gutters",
+
+    // YAML support
+    "redhat.vscode-yaml",
+
+    // Markdown
+    "yzhang.markdown-all-in-one",
+
+    // Environment files
+    "mikestead.dotenv"
+  ]
+}

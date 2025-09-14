@@ -58,14 +58,16 @@ class SpeechifyService {
         }
         return streamUrl;
       } else {
-        throw Exception('Failed to generate audio stream: ${response.statusMessage}');
+        throw Exception(
+            'Failed to generate audio stream: ${response.statusMessage}');
       }
     } on DioException catch (e) {
       debugPrint('Speechify API error: ${e.message}');
       if (e.response?.statusCode == 429) {
         throw Exception('Rate limit exceeded. Please try again later.');
       } else if (e.response?.statusCode == 401) {
-        throw Exception('Invalid API key. Please check your Speechify configuration.');
+        throw Exception(
+            'Invalid API key. Please check your Speechify configuration.');
       }
       throw Exception('Failed to connect to Speechify: ${e.message}');
     } catch (e) {
@@ -101,7 +103,8 @@ class SpeechifyService {
 
         return _parseWordTimings(timingsData);
       } else {
-        throw Exception('Failed to fetch word timings: ${response.statusMessage}');
+        throw Exception(
+            'Failed to fetch word timings: ${response.statusMessage}');
       }
     } on DioException catch (e) {
       debugPrint('Speechify timing API error: ${e.message}');
@@ -204,7 +207,7 @@ class SpeechifyService {
   /// Validate API key configuration
   bool isConfigured() {
     return AppConfig.speechifyApiKey != 'YOUR_SPEECHIFY_API_KEY_HERE' &&
-           AppConfig.speechifyApiKey.isNotEmpty;
+        AppConfig.speechifyApiKey.isNotEmpty;
   }
 
   /// Clean up resources
