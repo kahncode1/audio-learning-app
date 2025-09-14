@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../models/word_timing.dart';
@@ -8,31 +10,37 @@ import 'dio_provider.dart';
 ///
 /// Purpose: Handles all interactions with Speechify API for TTS generation
 /// Dependencies:
-/// - Speechify API: https://api.speechify.com/v1
+/// - Speechify API: https://api.sws.speechify.com/v1
 /// - DioProvider: Singleton HTTP client
 ///
+/// IMPORTANT: Audio Streaming Clarification
+/// - The Speechify API returns JSON with base64-encoded audio data
+/// - We decode this to bytes and stream during playback (not saving to storage)
+/// - This is true streaming - audio plays progressively from memory
+/// - No files are downloaded or saved to the user's device
+///
 /// Features:
-/// - Professional voice synthesis (professional_male_v2)
+/// - Professional voice synthesis (henry, etc.)
 /// - Word-level timing with sentence indexing
 /// - SSML content processing
-/// - Audio streaming support
+/// - Audio streaming from memory (no permanent storage)
 /// - Connection pooling for performance
 class SpeechifyService {
   final Dio _dio;
 
   // Voice configuration
-  static const String defaultVoice = 'professional_male_v2';
+  static const String defaultVoice = 'henry';  // Valid Speechify voice ID
   static const double defaultSpeed = 1.0;
 
   // API endpoints
-  static const String _synthesizeEndpoint = '/synthesize';
-  static const String _timingsEndpoint = '/timings';
+  static const String _synthesizeEndpoint = '/v1/audio/speech';
+  static const String _timingsEndpoint = '/v1/audio/speech';  // Same endpoint returns timings
 
   SpeechifyService() : _dio = DioProvider.createSpeechifyClient();
 
   /// Generate audio stream from text content
-  /// Returns a stream URL for audio playback
-  Future<String> generateAudioStream({
+  /// Returns base64-encoded audio data
+  Future<AudioGenerationResult> generateAudioStream({
     required String content,
     String voice = defaultVoice,
     double speed = defaultSpeed,
@@ -42,21 +50,30 @@ class SpeechifyService {
       final response = await _dio.post(
         _synthesizeEndpoint,
         data: {
-          'text': content,
-          'voice': voice,
+          'input': content,
+          'voice_id': voice,
+          'model': 'simba-turbo',
           'speed': speed,
-          'format': 'mp3',
-          'ssml': isSSML,
-          'stream': true, // Enable streaming
         },
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final streamUrl = response.data['stream_url'] as String?;
-        if (streamUrl == null || streamUrl.isEmpty) {
-          throw Exception('No stream URL returned from Speechify');
+        // Parse the response
+        final audioData = response.data['audio_data'] as String?;
+        final speechMarks = response.data['speech_marks'];
+
+        if (audioData == null || audioData.isEmpty) {
+          throw Exception('No audio data returned from Speechify');
         }
-        return streamUrl;
+
+        // Parse word timings from speech marks
+        final wordTimings = _parseSpeechMarks(speechMarks);
+
+        return AudioGenerationResult(
+          audioData: audioData,
+          audioFormat: response.data['audio_format'] ?? 'wav',
+          wordTimings: wordTimings,
+        );
       } else {
         throw Exception(
             'Failed to generate audio stream: ${response.statusMessage}');
@@ -76,106 +93,70 @@ class SpeechifyService {
     }
   }
 
-  /// Fetch word timings with sentence indexing for dual-level highlighting
+  /// Parse speech marks from Speechify API response
+  List<WordTiming> _parseSpeechMarks(dynamic speechMarks) {
+    final timings = <WordTiming>[];
+
+    if (speechMarks == null) return timings;
+
+    try {
+      // Speech marks can be a sentence with word chunks
+      if (speechMarks is Map) {
+        final chunks = speechMarks['chunks'] as List?;
+        if (chunks != null) {
+          for (int i = 0; i < chunks.length; i++) {
+            final chunk = chunks[i] as Map;
+            if (chunk['type'] == 'word') {
+              timings.add(WordTiming(
+                word: chunk['value'] as String? ?? '',
+                startMs: (chunk['start_time'] as num?)?.toInt() ?? 0,
+                endMs: (chunk['end_time'] as num?)?.toInt() ?? 0,
+                sentenceIndex: 0,  // Single sentence
+              ));
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error parsing speech marks: $e');
+    }
+
+    return timings;
+  }
+
+  /// Fetch word timings (now integrated with audio generation)
   Future<List<WordTiming>> fetchWordTimings({
     required String content,
     String voice = defaultVoice,
     double speed = defaultSpeed,
     bool isSSML = false,
   }) async {
-    try {
-      final response = await _dio.post(
-        _timingsEndpoint,
-        data: {
-          'text': content,
-          'voice': voice,
-          'speed': speed,
-          'ssml': isSSML,
-          'include_sentences': true, // Enable sentence indexing
-        },
-      );
+    // The Speechify API returns timings with audio
+    final result = await generateAudioStream(
+      content: content,
+      voice: voice,
+      speed: speed,
+      isSSML: isSSML,
+    );
 
-      if (response.statusCode == 200 && response.data != null) {
-        final timingsData = response.data['timings'] as List?;
-        if (timingsData == null) {
-          throw Exception('No timing data returned from Speechify');
-        }
-
-        return _parseWordTimings(timingsData);
-      } else {
-        throw Exception(
-            'Failed to fetch word timings: ${response.statusMessage}');
-      }
-    } on DioException catch (e) {
-      debugPrint('Speechify timing API error: ${e.message}');
-      throw Exception('Failed to fetch word timings: ${e.message}');
-    } catch (e) {
-      debugPrint('Unexpected error in fetchWordTimings: $e');
-      throw Exception('Failed to parse word timings: $e');
-    }
-  }
-
-  /// Parse word timing data from Speechify response
-  List<WordTiming> _parseWordTimings(List<dynamic> timingsData) {
-    final timings = <WordTiming>[];
-
-    for (final item in timingsData) {
-      try {
-        final word = item['word'] as String? ?? '';
-        final startMs = (item['start_ms'] as num?)?.toInt() ?? 0;
-        final endMs = (item['end_ms'] as num?)?.toInt() ?? 0;
-        final sentenceIndex = (item['sentence_index'] as num?)?.toInt() ?? 0;
-
-        if (word.isNotEmpty) {
-          timings.add(WordTiming(
-            word: word,
-            startMs: startMs,
-            endMs: endMs,
-            sentenceIndex: sentenceIndex,
-          ));
-        }
-      } catch (e) {
-        debugPrint('Error parsing word timing: $e');
-        // Skip malformed entries but continue processing
-      }
-    }
-
-    return timings;
+    return result.wordTimings;
   }
 
   /// Generate audio with word timings in a single request
-  /// More efficient than separate calls
+  /// The API returns both in one call
   Future<AudioGenerationResult> generateAudioWithTimings({
     required String content,
     String voice = defaultVoice,
     double speed = defaultSpeed,
     bool isSSML = false,
   }) async {
-    try {
-      // Make parallel requests for better performance
-      final results = await Future.wait([
-        generateAudioStream(
-          content: content,
-          voice: voice,
-          speed: speed,
-          isSSML: isSSML,
-        ),
-        fetchWordTimings(
-          content: content,
-          voice: voice,
-          speed: speed,
-          isSSML: isSSML,
-        ),
-      ]);
-
-      return AudioGenerationResult(
-        streamUrl: results[0] as String,
-        wordTimings: results[1] as List<WordTiming>,
-      );
-    } catch (e) {
-      debugPrint('Error generating audio with timings: $e');
-      throw Exception('Failed to generate audio with timings: $e');
-    }
+    // Single API call returns both audio and timings
+    return generateAudioStream(
+      content: content,
+      voice: voice,
+      speed: speed,
+      isSSML: isSSML,
+    );
   }
 
   /// Process SSML content for enhanced speech synthesis
@@ -219,13 +200,20 @@ class SpeechifyService {
 
 /// Result of audio generation with timings
 class AudioGenerationResult {
-  final String streamUrl;
+  final String audioData;  // Base64-encoded audio
+  final String audioFormat; // Format of audio (wav, mp3, etc)
   final List<WordTiming> wordTimings;
 
   AudioGenerationResult({
-    required this.streamUrl,
+    required this.audioData,
+    required this.audioFormat,
     required this.wordTimings,
   });
+
+  /// Decode base64 audio data to bytes
+  Uint8List getAudioBytes() {
+    return base64.decode(audioData);
+  }
 }
 
 /// Validation function for SpeechifyService

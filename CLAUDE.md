@@ -24,6 +24,9 @@ Build a Flutter-based mobile application that streams narrated audio of educatio
 - **Authentication:** AWS Cognito SSO with JWT bridging
   - See: `/documentation/apis/aws-cognito-sso.md` and `/documentation/integrations/cognito-supabase-bridge.md`
 - **Audio:** Speechify API with custom Dio streaming
+  - API Endpoint: `https://api.sws.speechify.com/v1/audio/speech`
+  - Valid Models: `simba-turbo`, `simba-base`, `simba-english`, `simba-multilingual`
+  - Voice IDs: `henry` (default), others available
   - See: `/documentation/apis/speechify-api.md` and `/documentation/integrations/audio-streaming.md`
 - **State Management:** Riverpod 2.4.9
   - See: `/documentation/apis/flutter-packages.md`

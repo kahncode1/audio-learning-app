@@ -171,8 +171,10 @@ class AudioPlayerService {
       // Store word timings
       _currentWordTimings = result.wordTimings;
 
-      // Create audio source
-      final audioSource = await createSpeechifyAudioSource(result.streamUrl);
+      // Create audio source from base64 data
+      // For now, we need to handle the base64 audio data
+      // This will require updating SpeechifyAudioSource to handle base64
+      final audioSource = await createSpeechifyAudioSource(result.audioData);
 
       // Set the audio source
       await _player.setAudioSource(audioSource);

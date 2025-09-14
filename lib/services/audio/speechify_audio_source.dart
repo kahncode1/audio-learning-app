@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
@@ -167,19 +169,49 @@ class AudioSourceException implements Exception {
   String toString() => 'AudioSourceException: $message';
 }
 
-/// Factory function to create audio source with retry
-Future<AudioSource> createSpeechifyAudioSource(String streamUrl) async {
+/// Factory function to create audio source from base64 audio data
+Future<AudioSource> createSpeechifyAudioSource(String audioData) async {
   try {
-    final source = SpeechifyAudioSource(streamUrl: streamUrl);
+    // Decode base64 audio data
+    final bytes = base64.decode(audioData);
 
-    // Verify the source can be loaded
-    // This is a lightweight check that doesn't download the full stream
-    await source.request(0, 1);
+    // Create audio source from bytes
+    // Using MemoryAudioSource or similar approach
+    // For now, we'll create a custom data source
+    final source = CustomAudioSource(bytes);
 
     return source;
   } catch (e) {
     debugPrint('Failed to create audio source: $e');
-    throw AudioSourceException('Unable to initialize audio stream: $e');
+    throw AudioSourceException('Unable to initialize audio from data: $e');
+  }
+}
+
+/// Custom audio source for in-memory audio data
+class CustomAudioSource extends StreamAudioSource {
+  final Uint8List audioData;
+
+  CustomAudioSource(this.audioData) : super(tag: 'CustomAudioSource');
+
+  @override
+  Future<StreamAudioResponse> request([int? start, int? end]) async {
+    final effectiveStart = start ?? 0;
+    final effectiveEnd = end ?? audioData.length;
+
+    // Ensure bounds are valid
+    final safeStart = effectiveStart.clamp(0, audioData.length);
+    final safeEnd = effectiveEnd.clamp(safeStart, audioData.length);
+
+    // Create a stream from the byte range
+    final chunk = audioData.sublist(safeStart, safeEnd);
+
+    return StreamAudioResponse(
+      sourceLength: audioData.length,
+      contentLength: safeEnd - safeStart,
+      offset: safeStart,
+      stream: Stream.value(chunk),
+      contentType: 'audio/wav',
+    );
   }
 }
 

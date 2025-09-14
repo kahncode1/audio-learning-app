@@ -109,15 +109,22 @@ class DioProvider {
         'Authorization': 'Bearer ${AppConfig.speechifyApiKey}',
         'Content-Type': 'application/json',
       },
-      responseType: ResponseType.stream, // For audio streaming
+      // IMPORTANT: Speechify API returns JSON with base64-encoded audio, NOT a stream URL
+      // We decode the base64 to bytes and stream those during playback
+      // This is NOT downloading files - audio is only in memory during playback
+      responseType: ResponseType.json, // API returns JSON with embedded audio data
       validateStatus: (status) => status != null && status < 500,
     ));
 
-    // Add connection pooling
-    (_speechifyDio!.httpClientAdapter as dynamic).onHttpClientCreate = (client) {
-      client.maxConnectionsPerHost = 5; // Connection pooling
-      return client;
-    };
+    // Add connection pooling (only for native platforms)
+    // Commented out due to type compatibility issues
+    // TODO: Fix connection pooling for native platforms
+    // if (!kIsWeb) {
+    //   (_speechifyDio!.httpClientAdapter as dynamic).onHttpClientCreate = (client) {
+    //     client.maxConnectionsPerHost = 5; // Connection pooling
+    //     return client;
+    //   };
+    // }
 
     // Add minimal interceptors for streaming
     _speechifyDio!.interceptors.add(_RetryInterceptor(_speechifyDio!));

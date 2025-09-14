@@ -75,7 +75,7 @@ class EnvConfig {
 
   /// Speechify base URL
   static String get speechifyBaseUrl =>
-      _get('SPEECHIFY_BASE_URL', 'https://api.speechify.com');
+      _get('SPEECHIFY_BASE_URL', 'https://api.sws.speechify.com');
 
   // ============================================================================
   // AWS COGNITO CONFIGURATION

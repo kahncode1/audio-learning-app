@@ -145,6 +145,12 @@ The system implements a clean separation of concerns across four primary layers:
 
 ### External APIs
 - **Speechify API** - Professional text-to-speech with word timing and sentence indexing (requires custom Dio implementation - no SDK available)
+  - **Base URL:** `https://api.sws.speechify.com`
+  - **Main Endpoint:** `/v1/audio/speech`
+  - **Response Format:** JSON with base64-encoded WAV audio and speech marks
+  - **Valid Models:** `simba-turbo` (default), `simba-base`, `simba-english`, `simba-multilingual`
+  - **Voice IDs:** `henry` (default), other voices available
+  - **Required Parameters:** `input` (text), `voice_id`, `model`
 - **Comprehensive Guide:** `/documentation/apis/speechify-api.md`
 - **Integration Guide:** `/documentation/integrations/audio-streaming.md`
 - **Reference Implementation:** `/implementations/audio-service.dart`
