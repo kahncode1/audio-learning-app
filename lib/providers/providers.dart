@@ -17,15 +17,17 @@
 ///   - Supports real-time updates
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/auth_factory.dart';
+import '../services/auth/auth_service_interface.dart';
 import '../services/auth_service.dart';
 import '../services/supabase_service.dart';
 import '../models/models.dart';
 
 // Service Providers
 
-/// Auth service provider
-final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService();
+/// Auth service provider using factory pattern
+final authServiceProvider = Provider<AuthServiceInterface>((ref) {
+  return AuthFactory.instance;
 });
 
 /// Supabase service provider
@@ -36,7 +38,7 @@ final supabaseServiceProvider = Provider<SupabaseService>((ref) {
 // Authentication State Providers
 
 /// Current authentication state
-final authStateProvider = StreamProvider<AuthState>((ref) {
+final authStateProvider = StreamProvider<bool>((ref) {
   final authService = ref.watch(authServiceProvider);
   return authService.authStateChanges;
 });
@@ -44,14 +46,26 @@ final authStateProvider = StreamProvider<AuthState>((ref) {
 /// Current user provider
 final currentUserProvider = FutureProvider<User?>((ref) async {
   final authService = ref.watch(authServiceProvider);
-  return await authService.createUserFromCognito();
+  final authUser = await authService.getCurrentUser();
+  if (authUser == null) return null;
+
+  // Create User model from AuthUser
+  return User(
+    id: authUser.userId,
+    cognitoSub: authUser.userId,
+    email: authUser.username ?? '',
+    name: authUser.username,
+    organization: null,
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+  );
 });
 
 /// Is authenticated provider
 final isAuthenticatedProvider = Provider<bool>((ref) {
   final authState = ref.watch(authStateProvider);
   return authState.when(
-    data: (state) => state == AuthState.authenticated,
+    data: (isAuthenticated) => isAuthenticated,
     loading: () => false,
     error: (_, __) => false,
   );
@@ -251,16 +265,19 @@ final appInitializationProvider = FutureProvider<bool>((ref) async {
   try {
     // Initialize auth service
     final authService = ref.read(authServiceProvider);
-    await authService.configureAmplify();
+    await authService.initialize();
 
     // Initialize Supabase
     final supabaseService = ref.read(supabaseServiceProvider);
     await supabaseService.initialize();
 
     // Check if user is already authenticated
-    if (await authService.isAuthenticated()) {
-      // Bridge to Supabase
-      await supabaseService.bridgeFromCognito();
+    if (await authService.isSignedIn()) {
+      // Bridge to Supabase if using real auth
+      final token = await authService.getJwtToken();
+      if (token != null && !token.startsWith('mock-')) {
+        await supabaseService.bridgeFromCognito();
+      }
     }
 
     return true;

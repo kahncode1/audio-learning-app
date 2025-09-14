@@ -19,12 +19,14 @@
 
 import 'dart:async';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart' as amplify;
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../config/app_config.dart';
+import 'auth/auth_service_interface.dart';
 
-class AuthService {
+class AuthService implements AuthServiceInterface {
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
   AuthService._internal();
@@ -33,11 +35,16 @@ class AuthService {
   Timer? _refreshTimer;
   final StreamController<AuthState> _authStateController = StreamController<AuthState>.broadcast();
 
-  /// Stream of authentication state changes
-  Stream<AuthState> get authStateChanges => _authStateController.stream;
+  /// Stream of authentication state changes (internal)
+  Stream<AuthState> get _authStateStream => _authStateController.stream;
 
   /// Check if Amplify is configured
   bool get isConfigured => _isConfigured;
+
+  @override
+  Future<void> initialize() async {
+    await configureAmplify();
+  }
 
   /// Configure Amplify with Cognito
   Future<void> configureAmplify() async {
@@ -100,11 +107,8 @@ class AuthService {
     }
   }
 
-  /// Sign in with username and password (for testing)
-  Future<AuthUser?> signInWithCredentials({
-    required String email,
-    required String password,
-  }) async {
+  @override
+  Future<amplify.SignInResult> signIn(String email, String password) async {
     try {
       final result = await Amplify.Auth.signIn(
         username: email,
@@ -112,13 +116,22 @@ class AuthService {
       );
 
       if (result.isSignedIn) {
-        final user = await getCurrentUser();
         await _cacheUserSession();
         _authStateController.add(AuthState.authenticated);
-        return user;
+        return const amplify.SignInResult(
+          isSignedIn: true,
+          nextStep: amplify.AuthNextSignInStep(
+            signInStep: amplify.AuthSignInStep.done,
+          ),
+        );
       }
 
-      return null;
+      return const amplify.SignInResult(
+        isSignedIn: false,
+        nextStep: amplify.AuthNextSignInStep(
+          signInStep: amplify.AuthSignInStep.done,
+        ),
+      );
     } on AuthException catch (e) {
       safePrint('Sign in error: ${e.message}');
       _authStateController.add(AuthState.unauthenticated);
@@ -126,8 +139,24 @@ class AuthService {
     }
   }
 
-  /// Get current authenticated user
-  Future<AuthUser?> getCurrentUser() async {
+  /// Sign in with username and password (for testing)
+  Future<AuthUser?> signInWithCredentials({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final result = await signIn(email, password);
+      if (result.isSignedIn) {
+        return await getCurrentUser();
+      }
+      return null;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<amplify.AuthUser?> getCurrentUser() async {
     try {
       final user = await Amplify.Auth.getCurrentUser();
       return user;
@@ -170,6 +199,11 @@ class AuthService {
     }
   }
 
+  @override
+  Future<String?> getJwtToken() async {
+    return await getIdToken();
+  }
+
   /// Get ID token for Supabase bridging
   Future<String?> getIdToken() async {
     try {
@@ -198,6 +232,11 @@ class AuthService {
     }
   }
 
+  @override
+  Future<void> refreshTokens() async {
+    await refreshSession();
+  }
+
   /// Refresh session tokens
   Future<bool> refreshSession() async {
     try {
@@ -217,7 +256,7 @@ class AuthService {
     }
   }
 
-  /// Sign out user
+  @override
   Future<void> signOut() async {
     try {
       await Amplify.Auth.signOut();
@@ -228,6 +267,11 @@ class AuthService {
     } catch (e) {
       safePrint('Error signing out: $e');
     }
+  }
+
+  @override
+  Future<bool> isSignedIn() async {
+    return await isAuthenticated();
   }
 
   /// Check if user is authenticated
@@ -295,7 +339,7 @@ class AuthService {
       final session = await getSession();
 
       if (session != null) {
-        await prefs.setString('cached_user_id', session.userSub ?? '');
+        await prefs.setString('cached_user_id', session.identityIdResult.value ?? '');
         await prefs.setInt('session_cached_at', DateTime.now().millisecondsSinceEpoch);
       }
     } catch (e) {
@@ -313,10 +357,16 @@ class AuthService {
     }
   }
 
+  @override
   void dispose() {
     _refreshTimer?.cancel();
     _authStateController.close();
   }
+
+  @override
+  Stream<bool> get authStateChanges => _authStateStream.map(
+    (state) => state == AuthState.authenticated
+  );
 }
 
 /// Authentication state enum
