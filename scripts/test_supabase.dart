@@ -9,13 +9,10 @@ import 'dart:io';
 import 'dart:convert';
 
 void main() async {
-  print('🔌 Testing Supabase Connection...\n');
 
   // Read environment variables
   final envFile = File('.env');
   if (!envFile.existsSync()) {
-    print('❌ .env file not found!');
-    print('   Please create .env file with Supabase credentials');
     exit(1);
   }
 
@@ -33,15 +30,11 @@ void main() async {
   }
 
   if (supabaseUrl == null || supabaseAnonKey == null) {
-    print('❌ Supabase credentials not found in .env file!');
     exit(1);
   }
 
-  print('📍 Supabase URL: $supabaseUrl');
-  print('🔑 Using anonymous key\n');
 
   // Test connection
-  print('Testing database connection...');
   try {
     final client = HttpClient();
     final request = await client.getUrl(
@@ -54,43 +47,32 @@ void main() async {
     final responseBody = await response.transform(utf8.decoder).join();
 
     if (response.statusCode == 200) {
-      print('✅ Successfully connected to Supabase!');
 
       final data = jsonDecode(responseBody);
-      print('   Current courses in database: ${data.length > 0 ? data[0]['count'] ?? 0 : 0}');
     } else {
-      print('⚠️  Connection successful but got status ${response.statusCode}');
-      print('   Response: $responseBody');
     }
 
     client.close();
   } catch (e) {
-    print('❌ Failed to connect to Supabase:');
-    print('   $e');
     exit(1);
   }
 
   // Prompt to create sample data
-  print('\n📝 Would you like to create sample data? (y/n)');
   final input = stdin.readLineSync();
 
   if (input?.toLowerCase() == 'y') {
     await createSampleData(supabaseUrl, supabaseAnonKey);
   } else {
-    print('Skipping sample data creation.');
   }
 
-  print('\n✨ Setup verification complete!');
 }
 
 Future<void> createSampleData(String supabaseUrl, String anonKey) async {
-  print('\n🎨 Creating sample data...\n');
 
   final client = HttpClient();
 
   try {
     // Create sample courses
-    print('Creating sample courses...');
     final coursesData = [
       {
         'course_number': 'INS-101',
@@ -134,19 +116,16 @@ Future<void> createSampleData(String supabaseUrl, String anonKey) async {
         final responseBody = await response.transform(utf8.decoder).join();
         final created = jsonDecode(responseBody);
         if (created is List && created.isNotEmpty) {
-          print('   ✅ Created course: ${created[0]['title']}');
 
           // Create assignments for this course
           await createAssignments(supabaseUrl, anonKey, created[0]['id'] as String, course['course_number'] as String);
         }
       } else {
         final error = await response.transform(utf8.decoder).join();
-        print('   ⚠️  Failed to create course ${course['course_number']}: $error');
       }
     }
 
   } catch (e) {
-    print('❌ Error creating sample data: $e');
   } finally {
     client.close();
   }
@@ -201,19 +180,16 @@ Future<void> createAssignments(
         final responseBody = await response.transform(utf8.decoder).join();
         final created = jsonDecode(responseBody);
         if (created is List && created.isNotEmpty) {
-          print('      ✅ Created assignment: ${created[0]['title']}');
 
           // Create learning objects for this assignment
           await createLearningObjects(supabaseUrl, anonKey, created[0]['id']);
         }
       } else {
         final error = await response.transform(utf8.decoder).join();
-        print('      ⚠️  Failed to create assignment: $error');
       }
     }
 
   } catch (e) {
-    print('❌ Error creating assignments: $e');
   } finally {
     client.close();
   }
@@ -271,16 +247,13 @@ Future<void> createLearningObjects(
         final responseBody = await response.transform(utf8.decoder).join();
         final created = jsonDecode(responseBody);
         if (created is List && created.isNotEmpty) {
-          print('         ✅ Created learning object: ${created[0]['title']}');
         }
       } else {
         final error = await response.transform(utf8.decoder).join();
-        print('         ⚠️  Failed to create learning object: $error');
       }
     }
 
   } catch (e) {
-    print('❌ Error creating learning objects: $e');
   } finally {
     client.close();
   }

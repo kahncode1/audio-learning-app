@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:just_audio/just_audio.dart';
 import '../services/audio_player_service.dart';
 import '../services/progress_service.dart';
 import '../models/learning_object.dart';
@@ -60,7 +59,7 @@ class _EnhancedAudioPlayerScreenState
         positionMs: position.inMilliseconds,
         isCompleted: false,
         isInProgress: true,
-        userId: ref.read(currentUserProvider)?.id,
+        userId: ref.read(currentUserProvider).valueOrNull?.id,
       );
     });
 
@@ -75,9 +74,7 @@ class _EnhancedAudioPlayerScreenState
     _focusNode.requestFocus();
   }
 
-  void _handleKeyEvent(RawKeyEvent event) {
-    if (event is! RawKeyDownEvent) return;
-
+  void _handleKeyEvent(KeyEvent event) {
     final key = event.logicalKey;
 
     // Spacebar: Play/Pause
@@ -102,9 +99,9 @@ class _EnhancedAudioPlayerScreenState
 
   @override
   Widget build(BuildContext context) {
-    return RawKeyboardListener(
+    return KeyboardListener(
       focusNode: _focusNode,
-      onKey: _handleKeyEvent,
+      onKeyEvent: _handleKeyEvent,
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.learningObject.title),
@@ -137,7 +134,7 @@ class _EnhancedAudioPlayerScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.learningObject.content,
+                              widget.learningObject.plainText ?? '',
                               style: TextStyle(
                                 fontSize: _progressService.currentFontSize,
                                 height: 1.5,
@@ -148,7 +145,7 @@ class _EnhancedAudioPlayerScreenState
                                 padding: const EdgeInsets.only(top: 16),
                                 child: Text(
                                   'Word: $currentWordIndex, Sentence: $currentSentenceIndex',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.grey,
                                     fontSize: 12,
                                   ),
@@ -275,7 +272,7 @@ class _EnhancedAudioPlayerScreenState
                               onPressed: _audioService.cycleSpeed,
                               style: TextButton.styleFrom(
                                 backgroundColor:
-                                    Theme.of(context).primaryColor.withOpacity(0.1),
+                                    Theme.of(context).primaryColor.withValues(alpha: 0.1),
                               ),
                             );
                           },
@@ -295,7 +292,7 @@ class _EnhancedAudioPlayerScreenState
                               },
                               style: TextButton.styleFrom(
                                 backgroundColor:
-                                    Theme.of(context).primaryColor.withOpacity(0.1),
+                                    Theme.of(context).primaryColor.withValues(alpha: 0.1),
                               ),
                             );
                           },

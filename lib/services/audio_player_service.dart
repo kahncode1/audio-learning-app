@@ -160,8 +160,8 @@ class AudioPlayerService {
 
       // Generate audio with timings
       final result = await _speechifyService.generateAudioWithTimings(
-        content: learningObject.content,
-        isSSML: learningObject.content.trim().startsWith('<speak>'),
+        content: learningObject.plainText ?? '',
+        isSSML: (learningObject.plainText ?? '').trim().startsWith('<speak>'),
       );
 
       // Store word timings
@@ -174,8 +174,8 @@ class AudioPlayerService {
       await _player.setAudioSource(audioSource);
 
       // Restore previous position if available
-      if (learningObject.lastPosition != null && learningObject.lastPosition! > 0) {
-        await seekToPosition(Duration(milliseconds: learningObject.lastPosition!));
+      if (learningObject.currentPositionMs > 0) {
+        await seekToPosition(Duration(milliseconds: learningObject.currentPositionMs));
       }
 
       debugPrint('Audio loaded successfully for: ${learningObject.title}');

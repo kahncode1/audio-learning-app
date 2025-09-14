@@ -180,7 +180,6 @@ class ProgressState {
 
 /// Validation function to verify ProgressState model implementation
 void validateProgressStateModel() {
-  print('Validating ProgressState model...');
 
   // Test JSON parsing
   final testJson = {
@@ -238,5 +237,4 @@ void validateProgressStateModel() {
   assert(json['id'] == 'progress-123');
   assert(json['font_size_index'] == 2);
 
-  print('✓ ProgressState model validation passed');
 }

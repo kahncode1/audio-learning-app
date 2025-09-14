@@ -115,7 +115,7 @@ void main() {
       await mockAuth.initialize();
       await mockAuth.signIn('test@example.com', 'password123');
       
-      final originalToken = await mockAuth.getJwtToken();
+      await mockAuth.getJwtToken();
       await mockAuth.refreshTokens();
       final newToken = await mockAuth.getJwtToken();
       

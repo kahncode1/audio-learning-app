@@ -162,10 +162,6 @@ void validateAppConfiguration() {
   config.validateConfiguration();
 
   if (!config.isConfigured) {
-    print('\n📋 Next Steps:');
-    print('1. Create AWS Cognito User Pool and Identity Pool');
-    print('2. Update the configuration values in this file');
-    print('3. Configure JWT validation in Supabase dashboard');
-    print('4. Test the authentication flow');
+    // Configuration not complete - check environment variables
   }
 }

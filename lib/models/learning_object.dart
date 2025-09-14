@@ -173,7 +173,6 @@ class LearningObject {
 
 /// Validation function to verify LearningObject model implementation
 void validateLearningObjectModel() {
-  print('Validating LearningObject model...');
 
   // Test JSON parsing without word timings
   final testJson = {
@@ -216,5 +215,4 @@ void validateLearningObjectModel() {
   assert(json['id'] == 'lo-123');
   assert(json['is_in_progress'] == true);
 
-  print('✓ LearningObject model validation passed');
 }

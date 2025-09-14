@@ -65,10 +65,6 @@ class EnvConfig {
     return dotenv.env[key] ?? fallback;
   }
 
-  /// Get optional environment variable
-  static String? _getOptional(String key) {
-    return dotenv.env[key];
-  }
 
   // ============================================================================
   // SPEECHIFY CONFIGURATION

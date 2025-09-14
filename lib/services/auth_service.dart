@@ -378,7 +378,6 @@ enum AuthState {
 
 /// Validation function to verify AuthService implementation
 void validateAuthService() {
-  print('Validating AuthService...');
 
   final authService = AuthService();
 
@@ -389,6 +388,4 @@ void validateAuthService() {
   // Test initial state
   assert(authService.isConfigured == false);
 
-  print('✓ AuthService validation passed');
-  print('Note: Full validation requires AWS Cognito configuration');
 }

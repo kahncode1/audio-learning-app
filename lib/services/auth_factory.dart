@@ -19,11 +19,8 @@ class AuthFactory {
     );
     
     if (useMockAuth) {
-      print('🎭 Using Mock Authentication Service');
-      print('🔄 To switch to real auth, set USE_MOCK_AUTH=false');
       _instance = MockAuthService();
     } else {
-      print('🔐 Using AWS Cognito Authentication Service');
       _instance = AuthService();
     }
     

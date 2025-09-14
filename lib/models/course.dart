@@ -131,7 +131,6 @@ class Course {
 
 /// Validation function to verify Course model implementation
 void validateCourseModel() {
-  print('Validating Course model...');
 
   // Test JSON parsing
   final testJson = {
@@ -166,5 +165,4 @@ void validateCourseModel() {
   assert(updated.title == 'Updated Title');
   assert(updated.id == course.id);
 
-  print('✓ Course model validation passed');
 }

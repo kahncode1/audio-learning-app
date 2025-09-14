@@ -162,7 +162,6 @@ class WordTimingCollection {
 
 /// Validation function to verify WordTiming model implementation
 void validateWordTimingModel() {
-  print('Validating WordTiming model...');
 
   // Test JSON parsing
   final testJson = {
@@ -212,7 +211,6 @@ void validateWordTimingModel() {
   final boundaries = collection.getSentenceBoundaries(1);
   assert(boundaries != null);
   assert(boundaries!.$1 == 1500);
-  assert(boundaries.$2 == 3000);
+  assert(boundaries?.$2 == 3000);
 
-  print('✓ WordTiming model validation passed');
 }

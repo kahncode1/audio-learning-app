@@ -137,7 +137,6 @@ class EnrolledCourse {
 
 /// Validation function to verify EnrolledCourse model implementation
 void validateEnrolledCourseModel() {
-  print('Validating EnrolledCourse model...');
 
   // Test JSON parsing without course
   final testJson = {
@@ -194,5 +193,4 @@ void validateEnrolledCourseModel() {
   final completed = enrollment.copyWith(completionPercentage: 100.0);
   assert(completed.completionStatus == 'Completed');
 
-  print('✓ EnrolledCourse model validation passed');
 }

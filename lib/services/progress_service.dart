@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:rxdart/rxdart.dart';
 import '../models/progress_state.dart';
-import '../models/learning_object.dart';
 
 /// ProgressService - Manages progress tracking with preferences
 ///
@@ -182,7 +181,7 @@ class ProgressService {
           // Update local with cloud data (server wins)
           await _saveProgressLocal(_ProgressUpdate(
             learningObjectId: learningObjectId,
-            positionMs: cloudProgress.positionMs,
+            positionMs: cloudProgress.currentPositionMs,
             isCompleted: cloudProgress.isCompleted,
             isInProgress: cloudProgress.isInProgress,
             userId: userId,
@@ -231,13 +230,15 @@ class ProgressService {
       }
 
       return ProgressState(
+        id: dataMap['id'] ?? '',
+        userId: dataMap['user_id'] ?? '',
         learningObjectId: learningObjectId,
-        positionMs: dataMap['position_ms'] ?? 0,
+        currentPositionMs: dataMap['position_ms'] ?? 0,
         isCompleted: dataMap['is_completed'] ?? false,
         isInProgress: dataMap['is_in_progress'] ?? false,
         fontSizeIndex: dataMap['font_size_index'] ?? defaultFontSizeIndex,
         playbackSpeed: dataMap['playback_speed'] ?? 1.0,
-        updatedAt: DateTime.tryParse(dataMap['updated_at'] ?? '') ?? DateTime.now(),
+        lastAccessedAt: DateTime.tryParse(dataMap['updated_at'] ?? '') ?? DateTime.now(),
       );
     } catch (e) {
       debugPrint('Error parsing local progress: $e');
@@ -258,13 +259,15 @@ class ProgressService {
       if (response == null) return null;
 
       return ProgressState(
+        id: response['id'] ?? '',
+        userId: userId,
         learningObjectId: learningObjectId,
-        positionMs: response['position_ms'] ?? 0,
+        currentPositionMs: response['position_ms'] ?? 0,
         isCompleted: response['is_completed'] ?? false,
         isInProgress: response['is_in_progress'] ?? false,
         fontSizeIndex: response['font_size_index'] ?? defaultFontSizeIndex,
         playbackSpeed: response['playback_speed'] ?? 1.0,
-        updatedAt: DateTime.tryParse(response['updated_at'] ?? '') ?? DateTime.now(),
+        lastAccessedAt: DateTime.tryParse(response['updated_at'] ?? '') ?? DateTime.now(),
       );
     } catch (e) {
       debugPrint('Error loading from Supabase: $e');

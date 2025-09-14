@@ -18,7 +18,8 @@
 ///   - Handles real-time subscriptions
 
 import 'dart:async';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
 import '../models/models.dart';
@@ -42,7 +43,7 @@ class SupabaseService {
   /// Initialize Supabase
   Future<void> initialize() async {
     if (_isInitialized) {
-      safePrint('Supabase already initialized');
+      debugPrint('Supabase already initialized');
       return;
     }
 
@@ -66,12 +67,12 @@ class SupabaseService {
 
       _client = Supabase.instance.client;
       _isInitialized = true;
-      safePrint('Supabase initialized successfully');
+      debugPrint('Supabase initialized successfully');
 
       // Set up auth state listener
       _setupAuthStateListener();
     } catch (e) {
-      safePrint('Error initializing Supabase: $e');
+      debugPrint('Error initializing Supabase: $e');
       rethrow;
     }
   }
@@ -82,14 +83,14 @@ class SupabaseService {
       // Get Cognito ID token
       final idToken = await _authService.getIdToken();
       if (idToken == null) {
-        safePrint('No Cognito ID token available');
+        debugPrint('No Cognito ID token available');
         return false;
       }
 
       // Get Cognito user data
       final cognitoUser = await _authService.createUserFromCognito();
       if (cognitoUser == null) {
-        safePrint('Failed to get Cognito user data');
+        debugPrint('Failed to get Cognito user data');
         return false;
       }
 
@@ -99,12 +100,12 @@ class SupabaseService {
       // Sign in to Supabase with custom JWT
       // Note: This requires Supabase to be configured to accept Cognito JWTs
       final response = await _client.auth.signInWithIdToken(
-        provider: OAuthProvider.custom,
+        provider: OAuthProvider.google,
         idToken: idToken,
       );
 
       if (response.user != null) {
-        safePrint('Supabase session created for user: ${response.user!.id}');
+        debugPrint('Supabase session created for user: ${response.user!.id}');
         await _cacheSession(response.session);
         _setupTokenRefresh();
         return true;
@@ -112,7 +113,7 @@ class SupabaseService {
 
       return false;
     } catch (e) {
-      safePrint('Error bridging to Supabase: $e');
+      debugPrint('Error bridging to Supabase: $e');
       return false;
     }
   }
@@ -135,7 +136,7 @@ class SupabaseService {
           'full_name': cognitoUser.fullName,
           'organization': cognitoUser.organization,
         });
-        safePrint('Created new user in Supabase');
+        debugPrint('Created new user in Supabase');
       } else {
         // Update existing user
         await _client
@@ -146,16 +147,16 @@ class SupabaseService {
               'organization': cognitoUser.organization,
             })
             .eq('cognito_sub', cognitoUser.cognitoSub);
-        safePrint('Updated existing user in Supabase');
+        debugPrint('Updated existing user in Supabase');
       }
     } catch (e) {
-      safePrint('Error ensuring user exists: $e');
+      debugPrint('Error ensuring user exists: $e');
       rethrow;
     }
   }
 
   /// Get current Supabase user
-  User? getCurrentUser() {
+  dynamic getCurrentUser() {
     return _client.auth.currentUser;
   }
 
@@ -175,9 +176,9 @@ class SupabaseService {
       await _client.auth.signOut();
       await _clearCachedSession();
       _refreshTimer?.cancel();
-      safePrint('Signed out from Supabase');
+      debugPrint('Signed out from Supabase');
     } catch (e) {
-      safePrint('Error signing out from Supabase: $e');
+      debugPrint('Error signing out from Supabase: $e');
     }
   }
 
@@ -199,7 +200,7 @@ class SupabaseService {
           .map((json) => EnrolledCourse.fromJson(json))
           .toList();
     } catch (e) {
-      safePrint('Error fetching enrolled courses: $e');
+      debugPrint('Error fetching enrolled courses: $e');
       rethrow;
     }
   }
@@ -217,7 +218,7 @@ class SupabaseService {
           .map((json) => Assignment.fromJson(json))
           .toList();
     } catch (e) {
-      safePrint('Error fetching assignments: $e');
+      debugPrint('Error fetching assignments: $e');
       rethrow;
     }
   }
@@ -235,7 +236,7 @@ class SupabaseService {
           .map((json) => LearningObject.fromJson(json))
           .toList();
     } catch (e) {
-      safePrint('Error fetching learning objects: $e');
+      debugPrint('Error fetching learning objects: $e');
       rethrow;
     }
   }
@@ -258,7 +259,7 @@ class SupabaseService {
       }
       return null;
     } catch (e) {
-      safePrint('Error fetching progress: $e');
+      debugPrint('Error fetching progress: $e');
       return null;
     }
   }
@@ -271,7 +272,7 @@ class SupabaseService {
         onConflict: 'user_id,learning_object_id',
       );
     } catch (e) {
-      safePrint('Error saving progress: $e');
+      debugPrint('Error saving progress: $e');
       rethrow;
     }
   }
@@ -312,7 +313,7 @@ class SupabaseService {
 
       return response?['id'] as String?;
     } catch (e) {
-      safePrint('Error getting current user ID: $e');
+      debugPrint('Error getting current user ID: $e');
       return null;
     }
   }
@@ -321,14 +322,14 @@ class SupabaseService {
     _client.auth.onAuthStateChange.listen((event) {
       switch (event.event) {
         case AuthChangeEvent.signedIn:
-          safePrint('Supabase auth: signed in');
+          debugPrint('Supabase auth: signed in');
           break;
         case AuthChangeEvent.signedOut:
-          safePrint('Supabase auth: signed out');
+          debugPrint('Supabase auth: signed out');
           _refreshTimer?.cancel();
           break;
         case AuthChangeEvent.tokenRefreshed:
-          safePrint('Supabase auth: token refreshed');
+          debugPrint('Supabase auth: token refreshed');
           break;
         default:
           break;
@@ -353,7 +354,7 @@ class SupabaseService {
       await prefs.setString('supabase_session_token', session.accessToken);
       await prefs.setInt('supabase_session_expires', session.expiresAt ?? 0);
     } catch (e) {
-      safePrint('Error caching Supabase session: $e');
+      debugPrint('Error caching Supabase session: $e');
     }
   }
 
@@ -363,7 +364,7 @@ class SupabaseService {
       await prefs.remove('supabase_session_token');
       await prefs.remove('supabase_session_expires');
     } catch (e) {
-      safePrint('Error clearing cached session: $e');
+      debugPrint('Error clearing cached session: $e');
     }
   }
 
@@ -374,7 +375,6 @@ class SupabaseService {
 
 /// Validation function to verify SupabaseService implementation
 void validateSupabaseService() {
-  print('Validating SupabaseService...');
 
   final supabaseService = SupabaseService();
 
@@ -386,6 +386,4 @@ void validateSupabaseService() {
   assert(supabaseService.isInitialized == false);
   assert(supabaseService.isAuthenticated == false);
 
-  print('✓ SupabaseService validation passed');
-  print('Note: Full validation requires Supabase configuration');
 }

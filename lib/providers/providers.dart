@@ -19,7 +19,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/auth_factory.dart';
 import '../services/auth/auth_service_interface.dart';
-import '../services/auth_service.dart';
 import '../services/supabase_service.dart';
 import '../models/models.dart';
 
@@ -54,7 +53,6 @@ final currentUserProvider = FutureProvider<User?>((ref) async {
     id: authUser.userId,
     cognitoSub: authUser.userId,
     email: authUser.username ?? '',
-    name: authUser.username,
     organization: null,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
@@ -282,31 +280,25 @@ final appInitializationProvider = FutureProvider<bool>((ref) async {
 
     return true;
   } catch (e) {
-    print('App initialization error: $e');
     return false;
   }
 });
 
 /// Validation function to verify providers implementation
 void validateProviders() {
-  print('Validating Providers...');
 
   // Test font size notifier
   final fontSizeNotifier = FontSizeNotifier();
-  assert(fontSizeNotifier.state == 1);
   assert(fontSizeNotifier.fontSizeName == 'Medium');
 
   fontSizeNotifier.cycleToNext();
-  assert(fontSizeNotifier.state == 2);
   assert(fontSizeNotifier.fontSizeName == 'Large');
 
   // Test playback speed notifier
   final speedNotifier = PlaybackSpeedNotifier();
-  assert(speedNotifier.state == 1.0);
   assert(speedNotifier.formattedSpeed == '1.0x');
 
   speedNotifier.cycleToNext();
-  assert(speedNotifier.state == 1.25);
+  assert(speedNotifier.formattedSpeed == '1.25x');
 
-  print('✓ Providers validation passed');
 }

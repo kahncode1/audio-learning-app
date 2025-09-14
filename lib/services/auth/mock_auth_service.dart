@@ -20,9 +20,7 @@ class MockAuthService implements AuthServiceInterface {
 
   @override
   Future<void> initialize() async {
-    print('🔐 Mock Auth Service initialized');
-    print('📧 Available test users:');
-    _testUsers.keys.forEach((email) => print('   - $email'));
+    // Test users initialized
   }
 
   @override
@@ -53,7 +51,6 @@ class MockAuthService implements AuthServiceInterface {
         _mockJwtToken = response.session?.accessToken ?? 'mock-jwt-token-${DateTime.now().millisecondsSinceEpoch}';
         _authStateController.add(true);
 
-        print('✅ Mock sign in successful for: $email');
         return const SignInResult(
           isSignedIn: true,
           nextStep: AuthNextSignInStep(
@@ -98,7 +95,6 @@ class MockAuthService implements AuthServiceInterface {
     _currentMockUser = null;
     _mockJwtToken = null;
     _authStateController.add(false);
-    print('👋 Mock sign out successful');
   }
 
   @override
@@ -170,7 +166,6 @@ class MockAuthService implements AuthServiceInterface {
       final response = await supabase.Supabase.instance.client.auth.refreshSession();
       if (response.session != null) {
         _mockJwtToken = response.session!.accessToken;
-        print('🔄 Mock tokens refreshed (using Supabase)');
         return;
       }
     } catch (e) {
@@ -179,7 +174,6 @@ class MockAuthService implements AuthServiceInterface {
 
     // Fall back to generating new mock token
     _mockJwtToken = 'mock-jwt-token-refreshed-${DateTime.now().millisecondsSinceEpoch}';
-    print('🔄 Mock tokens refreshed (pure mock)');
   }
 
   @override

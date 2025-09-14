@@ -98,7 +98,6 @@ class Assignment {
 
 /// Validation function to verify Assignment model implementation
 void validateAssignmentModel() {
-  print('Validating Assignment model...');
 
   // Test JSON parsing
   final testJson = {
@@ -128,5 +127,4 @@ void validateAssignmentModel() {
   assert(updated.title == 'Updated Title');
   assert(updated.id == assignment.id);
 
-  print('✓ Assignment model validation passed');
 }
