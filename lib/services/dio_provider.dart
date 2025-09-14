@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:flutter/foundation.dart';
 import '../config/app_config.dart';
+import '../utils/app_logger.dart';
 
 /// DioProvider - Singleton HTTP client for all network requests
 ///
@@ -83,7 +84,7 @@ class DioProvider {
         requestHeader: true,
         responseHeader: false,
         request: true,
-        logPrint: (log) => debugPrint('[DIO] $log'),
+        logPrint: (log) => AppLogger.debug('[DIO]', {'message': log}),
       ));
     }
 
@@ -134,7 +135,7 @@ class DioProvider {
         requestBody: false, // Don't log audio data
         responseBody: false,
         error: true,
-        logPrint: (log) => debugPrint('[SPEECHIFY] $log'),
+        logPrint: (log) => AppLogger.debug('[SPEECHIFY]', {'message': log}),
       ));
     }
 
@@ -171,7 +172,10 @@ class _AuthInterceptor extends Interceptor {
     if (err.response?.statusCode == 401) {
       // Token expired or invalid
       // TODO: Implement token refresh logic here
-      debugPrint('Authentication failed: ${err.message}');
+      AppLogger.warning('Authentication failed', {
+        'statusCode': err.response?.statusCode,
+        'message': err.message,
+      });
     }
     handler.next(err);
   }
@@ -201,8 +205,11 @@ class _RetryInterceptor extends Interceptor {
           ? retryDelays[retryCount]
           : retryDelays.last;
 
-      debugPrint(
-          'Retrying request (attempt ${retryCount + 1}/$maxRetries) after ${delay}ms...');
+      AppLogger.info('Retrying request', {
+        'attempt': retryCount + 1,
+        'maxRetries': maxRetries,
+        'delay': '${delay}ms',
+      });
 
       // Wait before retrying
       await Future.delayed(Duration(milliseconds: delay));
@@ -250,34 +257,34 @@ class _RetryInterceptor extends Interceptor {
 
 /// Validation function for DioProvider
 void validateDioProvider() {
-  debugPrint('=== DioProvider Validation ===');
+  AppLogger.info('Starting DioProvider validation');
 
   // Test 1: Singleton pattern
   final instance1 = DioProvider.instance;
   final instance2 = DioProvider.instance;
   assert(identical(instance1, instance2), 'DioProvider must be a singleton');
-  debugPrint('✓ Singleton pattern verified');
+  AppLogger.debug('✓ Singleton pattern verified');
 
   // Test 2: Dio instance configuration
   final dio = DioProvider.dio;
   assert(dio.options.connectTimeout == const Duration(seconds: 10),
       'Connect timeout not set correctly');
   assert(dio.interceptors.length >= 3, 'Missing interceptors');
-  debugPrint('✓ Dio configuration verified');
+  AppLogger.debug('✓ Dio configuration verified');
 
   // Test 3: Speechify client creation
   final speechifyDio = DioProvider.createSpeechifyClient();
   assert(speechifyDio.options.baseUrl == AppConfig.speechifyApiUrl,
       'Speechify base URL not set');
-  assert(speechifyDio.options.responseType == ResponseType.stream,
-      'Stream response type not set');
-  debugPrint('✓ Speechify client configuration verified');
+  assert(speechifyDio.options.responseType == ResponseType.json,
+      'JSON response type not set (API returns JSON with base64 audio)');
+  AppLogger.debug('✓ Speechify client configuration verified');
 
   // Test 4: Interceptor order (retry must be last)
   final lastInterceptor = dio.interceptors.last;
   assert(
       lastInterceptor is _RetryInterceptor, 'Retry interceptor must be last');
-  debugPrint('✓ Interceptor order verified');
+  AppLogger.debug('✓ Interceptor order verified');
 
-  debugPrint('=== All DioProvider validations passed ===');
+  AppLogger.info('All DioProvider validations passed');
 }

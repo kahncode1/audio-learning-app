@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../models/word_timing.dart';
 import '../config/app_config.dart';
+import '../utils/app_logger.dart';
+import '../exceptions/app_exceptions.dart';
 import 'dio_provider.dart';
 
 /// SpeechifyService - Text-to-speech API integration
@@ -26,7 +28,18 @@ import 'dio_provider.dart';
 /// - Audio streaming from memory (no permanent storage)
 /// - Connection pooling for performance
 class SpeechifyService {
+  static SpeechifyService? _instance;
   final Dio _dio;
+
+  /// Singleton instance for consistent API usage
+  static SpeechifyService get instance {
+    _instance ??= SpeechifyService._internal();
+    return _instance!;
+  }
+
+  factory SpeechifyService() => instance;
+
+  SpeechifyService._internal() : _dio = DioProvider.createSpeechifyClient();
 
   // Voice configuration
   static const String defaultVoice = 'henry';  // Valid Speechify voice ID
@@ -35,8 +48,6 @@ class SpeechifyService {
   // API endpoints
   static const String _synthesizeEndpoint = '/v1/audio/speech';
   static const String _timingsEndpoint = '/v1/audio/speech';  // Same endpoint returns timings
-
-  SpeechifyService() : _dio = DioProvider.createSpeechifyClient();
 
   /// Generate audio stream from text content
   /// Returns base64-encoded audio data
@@ -63,7 +74,7 @@ class SpeechifyService {
         final speechMarks = response.data['speech_marks'];
 
         if (audioData == null || audioData.isEmpty) {
-          throw Exception('No audio data returned from Speechify');
+          throw AudioException.generationTimeout();
         }
 
         // Parse word timings from speech marks
@@ -75,21 +86,34 @@ class SpeechifyService {
           wordTimings: wordTimings,
         );
       } else {
-        throw Exception(
-            'Failed to generate audio stream: ${response.statusMessage}');
+        throw NetworkException.fromStatusCode(
+          response.statusCode ?? 500,
+          details: response.statusMessage,
+        );
       }
     } on DioException catch (e) {
-      debugPrint('Speechify API error: ${e.message}');
-      if (e.response?.statusCode == 429) {
-        throw Exception('Rate limit exceeded. Please try again later.');
-      } else if (e.response?.statusCode == 401) {
-        throw Exception(
-            'Invalid API key. Please check your Speechify configuration.');
+      AppLogger.error(
+        'Speechify API error',
+        error: e.message,
+        data: {'statusCode': e.response?.statusCode},
+      );
+      if (e.response?.statusCode != null) {
+        throw NetworkException.fromStatusCode(
+          e.response!.statusCode!,
+          url: e.requestOptions.uri.toString(),
+          details: e.message,
+        );
       }
-      throw Exception('Failed to connect to Speechify: ${e.message}');
+      throw NetworkException(e.message ?? 'Failed to connect to Speechify');
     } catch (e) {
-      debugPrint('Unexpected error in generateAudioStream: $e');
-      throw Exception('Failed to generate audio: $e');
+      AppLogger.error(
+        'Unexpected error in generateAudioStream',
+        error: e,
+      );
+      throw AudioException.streamingFailed(
+        source: 'Speechify API',
+        cause: e is Exception ? e : Exception(e.toString()),
+      );
     }
   }
 
@@ -118,7 +142,7 @@ class SpeechifyService {
         }
       }
     } catch (e) {
-      debugPrint('Error parsing speech marks: $e');
+      AppLogger.warning('Error parsing speech marks', {'error': e.toString()});
     }
 
     return timings;
@@ -218,33 +242,37 @@ class AudioGenerationResult {
 
 /// Validation function for SpeechifyService
 void validateSpeechifyService() {
-  debugPrint('=== SpeechifyService Validation ===');
+  AppLogger.info('Starting SpeechifyService validation');
 
-  // Test 1: Service initialization
-  final service = SpeechifyService();
-  assert(service != null, 'Service must initialize');
-  debugPrint('✓ Service initialization verified');
+  // Test 1: Singleton pattern
+  final service1 = SpeechifyService();
+  final service2 = SpeechifyService.instance;
+  final service3 = SpeechifyService();
+
+  assert(identical(service1, service2), 'Should be same singleton instance');
+  assert(identical(service2, service3), 'Should be same singleton instance');
+  AppLogger.debug('✓ Singleton pattern verified');
 
   // Test 2: Configuration check
-  final isConfigured = service.isConfigured();
+  final isConfigured = service1.isConfigured();
   if (!isConfigured) {
-    debugPrint('⚠️ Speechify API key not configured');
+    AppLogger.warning('Speechify API key not configured');
   } else {
-    debugPrint('✓ API key configuration verified');
+    AppLogger.debug('✓ API key configuration verified');
   }
 
   // Test 3: SSML processing
   final plainText = 'Hello world. How are you?';
-  final ssml = service.processSSMLContent(plainText);
+  final ssml = service1.processSSMLContent(plainText);
   assert(ssml.contains('<speak>'), 'SSML must have speak tag');
   assert(ssml.contains('<s>'), 'SSML must have sentence tags');
-  debugPrint('✓ SSML processing verified');
+  AppLogger.debug('✓ SSML processing verified');
 
   // Test 4: Already SSML content
   final existingSSML = '<speak>Test content</speak>';
-  final processed = service.processSSMLContent(existingSSML);
+  final processed = service1.processSSMLContent(existingSSML);
   assert(processed == existingSSML, 'Existing SSML should not be modified');
-  debugPrint('✓ SSML preservation verified');
+  AppLogger.debug('✓ SSML preservation verified');
 
-  debugPrint('=== All SpeechifyService validations passed ===');
+  AppLogger.info('All SpeechifyService validations passed');
 }
