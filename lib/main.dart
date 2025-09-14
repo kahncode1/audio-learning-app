@@ -4,10 +4,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/env_config.dart';
 import 'screens/home_screen.dart';
 import 'screens/course_detail_screen.dart';
+import 'screens/assignments_screen.dart';
 import 'screens/enhanced_audio_player_screen.dart';
 import 'models/learning_object.dart';
 import 'screens/settings_screen.dart';
-import 'screens/test_speechify_screen.dart';
 
 void main() async {
   // Ensure Flutter binding is initialized
@@ -50,7 +50,6 @@ class AudioLearningApp extends StatelessWidget {
         '/main': (context) => const MainNavigationScreen(),
         '/home': (context) => const HomePage(),
         '/settings': (context) => const SettingsScreen(),
-        '/test-speechify': (context) => const TestSpeechifyScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/course-detail') {
@@ -58,6 +57,16 @@ class AudioLearningApp extends StatelessWidget {
           return MaterialPageRoute(
             builder: (context) => CourseDetailScreen(
               courseId: args['courseId']!,
+              courseTitle: args['courseTitle']!,
+            ),
+          );
+        }
+        if (settings.name == '/assignments') {
+          final args = settings.arguments as Map<String, String>;
+          return MaterialPageRoute(
+            builder: (context) => AssignmentsScreen(
+              courseId: args['courseId']!,
+              courseNumber: args['courseNumber']!,
               courseTitle: args['courseTitle']!,
             ),
           );

@@ -363,37 +363,37 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 **Note:** All screens implemented with responsive design and proper state management
 
 ### Main Screens with Production UI
-- [ ] 5.1 Create all main screens with complete implementations: 📁 `/implementations/home-page.dart`, `/implementations/audio-player-screen.dart`
-  - HomePage with gradient course cards
-  - LoginScreen with SSO integration
-  - CourseDetailScreen with assignment organization
-  - AudioPlayerScreen with advanced controls
-  - AssignmentListScreen with expandable tiles
-  - SettingsScreen with preference management
+- [x] 5.1 Create all main screens with complete implementations: 📁 `/implementations/home-page.dart`, `/implementations/audio-player-screen.dart` (2025-09-14)
+  - HomePage with gradient course cards ✅
+  - LoginScreen with SSO integration (deferred to Milestone 2)
+  - CourseDetailScreen with assignment organization ✅
+  - AudioPlayerScreen with advanced controls ✅
+  - AssignmentListScreen with expandable tiles ✅
+  - SettingsScreen with preference management ✅
   📚 Reference: `/references/common-pitfalls.md` - #17 Ignoring Gradient Design
-- [ ] 5.2 Implement loading, error, and empty states 📁 `/implementations/home-page.dart`
+- [x] 5.2 Implement loading, error, and empty states 📁 `/implementations/home-page.dart` (2025-09-14)
   📚 Reference: `/references/code-patterns.md` - Error Handling Patterns
 - [ ] 5.3 Write widget tests for all screens
 
 ### Course Components with Visual Polish
-- [ ] 5.4 Create polished course UI components: 📁 `/implementations/home-page.dart`
-  - CourseCard with gradient header bar
-  - Progress indicators (green for active, gray for not started)
-  - Course list with sorting
-  - Pull-to-refresh functionality
+- [x] 5.4 Create polished course UI components: 📁 `/implementations/home-page.dart` (2025-09-14)
+  - CourseCard with gradient header bar ✅
+  - Progress indicators (green for active, gray for not started) ✅
+  - Course list with sorting (basic implementation)
+  - Pull-to-refresh functionality (deferred)
 - [ ] 5.5 Write widget tests for course components
 
 ### Assignment Components with Expansion
-- [ ] 5.6 Create AssignmentTile with ExpansionTile 📁 `/implementations/assignments-page.dart`
-- [ ] 5.7 Implement CircleAvatar for assignment numbers 📁 `/implementations/assignments-page.dart`
-- [ ] 5.8 Auto-expand first assignment 📁 `/implementations/assignments-page.dart`
-- [ ] 5.9 Add smooth expansion animations 📁 `/implementations/assignments-page.dart`
+- [x] 5.6 Create AssignmentTile with ExpansionTile 📁 `/implementations/assignments-page.dart` (2025-09-14)
+- [x] 5.7 Implement CircleAvatar for assignment numbers 📁 `/implementations/assignments-page.dart` (2025-09-14)
+- [x] 5.8 Auto-expand first assignment 📁 `/implementations/assignments-page.dart` (2025-09-14)
+- [x] 5.9 Add smooth expansion animations 📁 `/implementations/assignments-page.dart` (2025-09-14)
 - [ ] 5.10 Write widget tests for assignment components
 
 ### Learning Object Components
-- [ ] 5.11 Create LearningObjectTile with play icon 📁 `/implementations/assignments-page.dart`
-- [ ] 5.12 Implement completion checkmarks 📁 `/implementations/assignments-page.dart`
-- [ ] 5.13 Add "In Progress" status labels 📁 `/implementations/assignments-page.dart`
+- [x] 5.11 Create LearningObjectTile with play icon 📁 `/implementations/assignments-page.dart` (2025-09-14)
+- [x] 5.12 Implement completion checkmarks 📁 `/implementations/assignments-page.dart` (2025-09-14)
+- [x] 5.13 Add "In Progress" status labels 📁 `/implementations/assignments-page.dart` (2025-09-14)
   📚 Reference: `/references/common-pitfalls.md` - #18 Not Tracking isInProgress State
 - [ ] 5.14 Write widget tests for learning object components
 
@@ -768,3 +768,23 @@ When working on tasks, consult these files:
 - **State Management:** `/implementations/providers.dart`
 - **HTTP Configuration:** `/implementations/dio-config.dart`
 - **Data Models:** `/implementations/models.dart`
+
+## Discovered Issues & Performance Improvements
+
+### Audio Loading Performance (Found 2025-09-14)
+- [ ] Optimize Speechify API response time (currently takes >5 seconds to load)
+- [ ] Implement audio pre-buffering when assignment tiles are expanded
+- [ ] Add audio caching to avoid re-generating TTS for same content
+- [ ] Show proper loading indicator with progress percentage
+
+### Console Errors & Warnings (Found 2025-09-14)
+- [ ] Fix `nw_protocol_socket_set_no_wake_from_sleep` network socket errors
+- [ ] Address HALC_ProxyIOContext audio buffer underrun warnings
+- [ ] Resolve FlutterSemanticsScrollView focus movement warnings
+- [ ] Clean up debug print statements in production code
+
+### UI/UX Improvements (Found 2025-09-14)
+- [x] Replace test course button with proper mock data service (2025-09-14)
+- [x] Implement complete UI flow: Courses → Assignments → Learning Objects → Player (2025-09-14)
+- [ ] Add proper loading states while audio streams are initializing
+- [ ] Implement error recovery for failed audio loads

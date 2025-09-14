@@ -23,7 +23,22 @@
       "Bash(curl:*)",
       "Bash(cat:*)",
       "Bash(python3:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(flutter pub:*)",
+      "Bash(grep:*)",
+      "Bash(sed:*)",
+      "Bash(git reset:*)",
+      "Bash(flutter doctor:*)",
+      "Bash(xcrun simctl list:*)",
+      "Bash(cd:*)",
+      "Bash(pod deintegrate:*)",
+      "Bash(pod install:*)",
+      "Bash(flutter build:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(find:*)",
+      "mcp__supabase__list_projects",
+      "mcp__supabase__execute_sql",
+      "Bash(timeout 30 flutter test --reporter compact)"
     ],
     "deny": [],
     "ask": []
