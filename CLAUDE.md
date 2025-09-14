@@ -135,7 +135,6 @@ This project has access to specialized MCP (Model Context Protocol) servers that
 ## Development Standards
 
 ### File Organization
-- **Maximum 500 lines** per Dart file
 - **One class/service** per file
 - **Mirror test structure** to lib structure
 - **Separate widgets** >100 lines into own files

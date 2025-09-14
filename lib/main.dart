@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'config/env_config.dart';
 import 'screens/home_screen.dart';
 import 'screens/course_detail_screen.dart';
 import 'screens/audio_player_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/test_speechify_screen.dart';
 
-void main() {
+void main() async {
+  // Ensure Flutter binding is initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  await EnvConfig.load();
+
+  // Print configuration status for debugging
+  EnvConfig.printConfigurationStatus();
+
   runApp(
     const ProviderScope(
       child: AudioLearningApp(),
@@ -31,6 +42,7 @@ class AudioLearningApp extends StatelessWidget {
         '/main': (context) => const MainNavigationScreen(),
         '/home': (context) => const HomePage(),
         '/settings': (context) => const SettingsScreen(),
+        '/test-speechify': (context) => const TestSpeechifyScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/course-detail') {

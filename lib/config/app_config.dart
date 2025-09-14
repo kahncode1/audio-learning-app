@@ -1,14 +1,16 @@
+import 'env_config.dart';
+
 /// Application Configuration
 ///
 /// Purpose: Centralized configuration for AWS Cognito and Supabase
-/// Dependencies: None
+/// Dependencies: EnvConfig for environment variables
 ///
 /// Usage:
 ///   final config = AppConfig();
 ///   final userPoolId = config.cognitoUserPoolId;
 ///
-/// IMPORTANT: Update these values with your actual AWS Cognito credentials
-/// after creating the resources in AWS Console
+/// This class now uses environment variables loaded from .env file
+/// Falls back to hardcoded values if environment variables are not set
 
 class AppConfig {
   // Singleton pattern
@@ -21,23 +23,23 @@ class AppConfig {
   // ============================================================================
   // After creating your Cognito User Pool, update these values:
 
-  /// Your Cognito User Pool ID
+  /// Your Cognito User Pool ID (from environment or fallback)
   /// Format: {region}_{randomString}
   /// Example: 'us-east-1_AbCdEfGhI'
-  static const String cognitoUserPoolId = 'YOUR_USER_POOL_ID_HERE';
+  static String get cognitoUserPoolId => EnvConfig.cognitoUserPoolId;
 
-  /// Your Cognito App Client ID
+  /// Your Cognito App Client ID (from environment or fallback)
   /// Found in: User Pool → App Integration → App clients
   /// Example: '1234567890abcdefghijklmnop'
-  static const String cognitoClientId = 'YOUR_CLIENT_ID_HERE';
+  static String get cognitoClientId => EnvConfig.cognitoClientId;
 
-  /// Your Cognito Identity Pool ID
+  /// Your Cognito Identity Pool ID (from environment or fallback)
   /// Format: {region}:{uuid}
   /// Example: 'us-east-1:12345678-1234-1234-1234-123456789012'
-  static const String cognitoIdentityPoolId = 'YOUR_IDENTITY_POOL_ID_HERE';
+  static String get cognitoIdentityPoolId => EnvConfig.cognitoIdentityPoolId;
 
-  /// AWS Region for Cognito services
-  static const String cognitoRegion = 'us-east-1';
+  /// AWS Region for Cognito services (from environment or fallback)
+  static String get cognitoRegion => EnvConfig.cognitoRegion;
 
   /// OAuth redirect URI for mobile app
   static const String cognitoRedirectUri = 'myapp://callback';
@@ -50,23 +52,28 @@ class AppConfig {
   // ============================================================================
   // These are already configured in your .env file
 
-  /// Supabase project URL
-  static const String supabaseUrl = 'https://cmjdciktvfxiyapdseqn.supabase.co';
+  /// Supabase project URL (from environment or fallback)
+  static String get supabaseUrl => EnvConfig.supabaseUrl;
 
-  /// Supabase anonymous key (public key)
-  static const String supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtamRjaWt0dmZ4aXlhcGRzZXFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3ODAwODAsImV4cCI6MjA3MzM1NjA4MH0.qIhF8LgDnm6OrlnhNWNJziNc6OopUu0qCYtgJhXouB8';
+  /// Supabase anonymous key (from environment or fallback)
+  static String get supabaseAnonKey => EnvConfig.supabaseAnonKey;
 
   // ============================================================================
   // SPEECHIFY API CONFIGURATION
   // ============================================================================
 
-  /// Speechify API key
+  /// Speechify API key (from environment or fallback)
   /// Get from: https://speechify.com/api
-  static const String speechifyApiKey = 'YOUR_SPEECHIFY_API_KEY_HERE';
+  static String get speechifyApiKey => EnvConfig.speechifyApiKey;
 
-  /// Speechify base URL
-  static const String speechifyBaseUrl = 'https://api.speechify.com/v1';
+  /// Speechify base URL (from environment or fallback)
+  static String get speechifyBaseUrl => EnvConfig.speechifyBaseUrl;
+
+  /// Speechify API URL (alias for base URL)
+  static String get speechifyApiUrl => speechifyBaseUrl;
+
+  /// Current auth token (to be set by auth service)
+  static String? currentAuthToken;
 
   // ============================================================================
   // AMPLIFY CONFIGURATION
@@ -139,37 +146,13 @@ class AppConfig {
 
   /// Check if configuration is complete
   bool get isConfigured {
-    return cognitoUserPoolId != 'YOUR_USER_POOL_ID_HERE' &&
-           cognitoClientId != 'YOUR_CLIENT_ID_HERE' &&
-           cognitoIdentityPoolId != 'YOUR_IDENTITY_POOL_ID_HERE';
+    return EnvConfig.isCognitoConfigured;
   }
 
   /// Validate configuration
   void validateConfiguration() {
-    final missingConfigs = <String>[];
-
-    if (cognitoUserPoolId == 'YOUR_USER_POOL_ID_HERE') {
-      missingConfigs.add('Cognito User Pool ID');
-    }
-    if (cognitoClientId == 'YOUR_CLIENT_ID_HERE') {
-      missingConfigs.add('Cognito Client ID');
-    }
-    if (cognitoIdentityPoolId == 'YOUR_IDENTITY_POOL_ID_HERE') {
-      missingConfigs.add('Cognito Identity Pool ID');
-    }
-    if (speechifyApiKey == 'YOUR_SPEECHIFY_API_KEY_HERE') {
-      missingConfigs.add('Speechify API Key');
-    }
-
-    if (missingConfigs.isNotEmpty) {
-      print('⚠️ Missing configuration:');
-      for (final config in missingConfigs) {
-        print('  - $config');
-      }
-      print('\nPlease update lib/config/app_config.dart with your actual credentials.');
-    } else {
-      print('✅ All configurations are set!');
-    }
+    // Use EnvConfig's validation
+    EnvConfig.printConfigurationStatus();
   }
 }
 

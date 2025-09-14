@@ -38,6 +38,17 @@ class HomePage extends ConsumerWidget {
                 color: Colors.grey,
               ),
             ),
+            const SizedBox(height: 40),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, '/test-speechify');
+              },
+              icon: const Icon(Icons.science),
+              label: const Text('Test Speechify API'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+              ),
+            ),
           ],
         ),
       ),

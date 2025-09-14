@@ -195,33 +195,37 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 ## Milestone 3: Core Audio Features
 
 ### Dio Configuration
-- [ ] 3.1 Create DioProvider with configured interceptors: 📁 `/implementations/dio-config.dart`
+- [x] 3.1 Create DioProvider with configured interceptors: 📁 `/implementations/dio-config.dart` (2025-09-13)
   - Authentication, cache, custom retry, logging (debug only)
   📚 Reference: `/references/technical-requirements.md` - Dio Configuration (MANDATORY SINGLE INSTANCE)
   📚 Reference: `/references/common-pitfalls.md` - #1 Creating Multiple Dio Instances
   📚 Reference: `/references/common-pitfalls.md` - #6 Placing Retry Interceptor Before Other Interceptors
-- [ ] 3.2 Implement exponential backoff logic (1s, 2s, 4s) 📁 `/implementations/dio-config.dart`
+- [x] 3.2 Implement exponential backoff logic (1s, 2s, 4s) 📁 `/implementations/dio-config.dart` (2025-09-13)
   📚 Reference: `/references/technical-requirements.md` - Retry Interceptor Implementation
 - [ ] 3.3 Write unit tests for retry mechanism and interceptors 📁 `/implementations/dio-config.dart`
+  📚 **Testing Plan:** `/MILESTONE_3_TEST_PLAN.md` - Phase 3
 
 ### SpeechifyService
-- [ ] 3.4 Create SpeechifyService with API integration 🔗 `/documentation/apis/speechify-api.md` 📁 `/implementations/audio-service.dart`
+- [x] 3.4 Create SpeechifyService with API integration 🔗 `/documentation/apis/speechify-api.md` 📁 `/implementations/audio-service.dart` (2025-09-13)
   📚 Reference: `/references/technical-requirements.md` - Connection Pooling for Speechify
-- [ ] 3.5 Configure connection pooling and error handling 🔗 `/documentation/integrations/audio-streaming.md` 📁 `/implementations/audio-service.dart`
+- [x] 3.5 Configure connection pooling and error handling 🔗 `/documentation/integrations/audio-streaming.md` 📁 `/implementations/audio-service.dart` (2025-09-13)
   📚 Reference: `/references/common-pitfalls.md` - #8 Skipping Connection Pooling
 - [ ] 3.6 Write unit tests for SpeechifyService 📁 `/implementations/audio-service.dart`
+  📚 **Testing Plan:** `/MILESTONE_3_TEST_PLAN.md` - Phase 3
 - [ ] 3.7 Write integration tests with actual API calls
+  📚 **Testing Plan:** `/MILESTONE_3_TEST_PLAN.md` - Phase 2
 
 ### StreamAudioSource Implementation
-- [ ] 3.8 Create SpeechifyAudioSource extending StreamAudioSource 🔗 `/documentation/integrations/audio-streaming.md` 📁 `/implementations/audio-service.dart`
-- [ ] 3.9 Implement request() method with Range header support 🔗 `/documentation/integrations/audio-streaming.md` 📁 `/implementations/audio-service.dart`
-- [ ] 3.10 Handle stream errors and connection issues 📁 `/implementations/audio-service.dart`
+- [x] 3.8 Create SpeechifyAudioSource extending StreamAudioSource 🔗 `/documentation/integrations/audio-streaming.md` 📁 `/implementations/audio-service.dart` (2025-09-13)
+- [x] 3.9 Implement request() method with Range header support 🔗 `/documentation/integrations/audio-streaming.md` 📁 `/implementations/audio-service.dart` (2025-09-13)
+- [x] 3.10 Handle stream errors and connection issues 📁 `/implementations/audio-service.dart` (2025-09-13)
   📚 Reference: `/references/code-patterns.md` - Error Handling Patterns
 - [ ] 3.11 Write unit tests for audio streaming
+  📚 **Testing Plan:** `/MILESTONE_3_TEST_PLAN.md` - Phase 3
 - [ ] 3.12 Write integration tests with various network conditions
 
 ### Audio Player Setup with Advanced Controls
-- [ ] 3.13 Create AudioPlayerService with enhanced playback functionality: 📁 `/implementations/audio-service.dart`
+- [x] 3.13 Create AudioPlayerService with enhanced playback functionality: 📁 `/implementations/audio-service.dart` (2025-09-13)
   - Play/pause with FAB control support
   - Skip controls (30-second forward/backward)
   - Speed adjustment (0.8x to 2.0x in 0.25x increments)
@@ -230,30 +234,33 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
   📚 Reference: `/references/implementation-standards.md` - Service Implementation Pattern
   📚 Reference: `/references/common-pitfalls.md` - #16 Not Using FloatingActionButton for Play
 - [ ] 3.14 Write unit tests for AudioPlayerService 📁 `/implementations/audio-service.dart`
+  📚 **Testing Plan:** `/MILESTONE_3_TEST_PLAN.md` - Phase 3
 - [ ] 3.15 Write integration tests for playback scenarios
 
 ### Progress Tracking with Preferences
-- [ ] 3.16 Implement debounced progress saving (5 second intervals) 📁 `/implementations/progress-service.dart`
+- [x] 3.16 Implement debounced progress saving (5 second intervals) 📁 `/implementations/progress-service.dart` (2025-09-13)
   📚 Reference: `/references/code-patterns.md` - Debounced Saves
-- [ ] 3.17 Save font size index and playback speed with progress 📁 `/implementations/progress-service.dart`
+- [x] 3.17 Save font size index and playback speed with progress 📁 `/implementations/progress-service.dart` (2025-09-13)
   📚 Reference: `/references/technical-requirements.md` - Storage Implementation
   📚 Reference: `/references/common-pitfalls.md` - #4 Missing Font Size Persistence
-- [ ] 3.18 Handle progress sync conflicts and resume logic 📁 `/implementations/progress-service.dart`
+- [x] 3.18 Handle progress sync conflicts and resume logic 📁 `/implementations/progress-service.dart` (2025-09-13)
 - [ ] 3.19 Write unit tests for preference persistence 📁 `/implementations/progress-service.dart`
+  📚 **Testing Plan:** `/MILESTONE_3_TEST_PLAN.md` - Phase 3
 - [ ] 3.20 Write integration tests for save/resume functionality
 
 ### Background Playback
-- [ ] 3.21 Configure iOS and Android for background audio
+- [x] 3.21 Configure iOS for background audio (2025-09-13)
   📚 Reference: `/references/technical-requirements.md` - Platform Configuration
 - [ ] 3.22 Implement MediaItem and lock screen controls
 - [ ] 3.23 Write platform-specific integration tests
 
 ### Keyboard Shortcuts Implementation
-- [ ] 3.24 Implement keyboard listener on player screen 📁 `/implementations/audio-player-screen.dart`
+- [x] 3.24 Implement keyboard listener on player screen 📁 `/implementations/audio-player-screen.dart` (2025-09-13)
   📚 Reference: `/references/common-pitfalls.md` - #19 Missing Keyboard Shortcuts
-- [ ] 3.25 Add spacebar for play/pause toggle 📁 `/implementations/audio-player-screen.dart`
-- [ ] 3.26 Add arrow keys for 30-second skip 📁 `/implementations/audio-player-screen.dart`
+- [x] 3.25 Add spacebar for play/pause toggle 📁 `/implementations/audio-player-screen.dart` (2025-09-13)
+- [x] 3.26 Add arrow keys for 30-second skip 📁 `/implementations/audio-player-screen.dart` (2025-09-13)
 - [ ] 3.27 Test keyboard response time (<50ms)
+  📚 **Testing Plan:** `/MILESTONE_3_TEST_PLAN.md` - Phase 3
 
 **Milestone 3 Definition of Done:**
 - Audio streams from Speechify API successfully
@@ -262,6 +269,14 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 - Background playback works on both platforms
 - Keyboard shortcuts respond within 50ms
 - Audio features have test coverage >80%
+
+**📋 COMPREHENSIVE TESTING PLAN:** See `/MILESTONE_3_TEST_PLAN.md` for detailed testing strategy including:
+- Phase 1: Fix compilation errors and enable web support
+- Phase 2: Test Speechify API on web platform
+- Phase 3: Write all missing unit tests
+- Phase 4: Validate features on web
+- Phase 5: Fix iOS Simulator environment
+- Phase 6: Complete iOS testing and cross-platform validation
 
 ## Milestone 4: Dual-Level Word Highlighting System
 
