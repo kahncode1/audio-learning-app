@@ -125,7 +125,18 @@ class AuthFactory {
 }
 ```
 
-### Step 5: Update Supabase Service
+### Step 5: Remove Temporary Test Access Policies
+
+Remove the temporary RLS policy created for testing:
+
+```sql
+-- Remove the temporary public access policy for test data
+DROP POLICY IF EXISTS "Public read access for test data" ON learning_objects;
+```
+
+This policy was created to allow unauthenticated access to the test learning object (ID: `94096d75-7125-49be-b11c-49a9d5b5660d`) during development.
+
+### Step 6: Update Supabase Service
 
 Remove or comment out development-specific code in `lib/services/supabase_service.dart`:
 
@@ -140,7 +151,7 @@ Future<void> _createDevUser() async {
 }
 ```
 
-### Step 6: Test the Migration
+### Step 7: Test the Migration
 
 1. **Run verification script:**
    ```bash
@@ -157,7 +168,7 @@ Future<void> _createDevUser() async {
    - Verify JWT bridging to Supabase
    - Check that data operations work with RLS
 
-### Step 7: Update Documentation
+### Step 8: Update Documentation
 
 Remove or update references to mock authentication in:
 - [ ] README.md
@@ -235,8 +246,10 @@ The mock system generates simplified tokens that mimic JWT structure:
 }
 ```
 
-### Database Test User
-Mock system creates this user in Supabase:
+### Database Test Data
+Mock system and testing setup created this data in Supabase:
+
+#### Test User:
 ```sql
 INSERT INTO users (id, cognito_sub, email, full_name, organization)
 VALUES (
@@ -247,6 +260,19 @@ VALUES (
   'Test Corp'
 );
 ```
+
+#### Test Course and Learning Object:
+- **Course**: "Insurance Case Management" (ID: INS-101)
+- **Assignment**: "Establishing a Case Reserve"
+- **Learning Object**: ID `94096d75-7125-49be-b11c-49a9d5b5660d`
+  - Contains SSML content for audio narration testing
+  - Has temporary public access policy for unauthenticated testing
+
+#### Test Button in HomePage:
+- **"Test with Database"** button in `lib/screens/home_screen.dart`
+  - Directly fetches the test learning object using Supabase anon key
+  - Bypasses authentication for testing purposes
+  - Should be removed in production
 
 ---
 

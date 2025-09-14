@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/env_config.dart';
 import 'screens/home_screen.dart';
 import 'screens/course_detail_screen.dart';
-import 'screens/audio_player_screen.dart';
+import 'screens/enhanced_audio_player_screen.dart';
+import 'models/learning_object.dart';
 import 'screens/settings_screen.dart';
 import 'screens/test_speechify_screen.dart';
 
@@ -13,6 +15,12 @@ void main() async {
 
   // Load environment variables
   await EnvConfig.load();
+
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: EnvConfig.supabaseUrl,
+    anonKey: EnvConfig.supabaseAnonKey,
+  );
 
   // Print configuration status for debugging
   EnvConfig.printConfigurationStatus();
@@ -55,11 +63,10 @@ class AudioLearningApp extends StatelessWidget {
           );
         }
         if (settings.name == '/player') {
-          final args = settings.arguments as Map<String, String>;
+          final learningObject = settings.arguments as LearningObject;
           return MaterialPageRoute(
-            builder: (context) => AudioPlayerScreen(
-              learningObjectId: args['learningObjectId']!,
-              title: args['title']!,
+            builder: (context) => EnhancedAudioPlayerScreen(
+              learningObject: learningObject,
             ),
           );
         }

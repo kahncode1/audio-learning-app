@@ -2,11 +2,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:rxdart/rxdart.dart';
 import '../models/word_timing.dart';
 import '../models/learning_object.dart';
 import 'speechify_service.dart';
 import 'audio/speechify_audio_source.dart';
+import 'audio_handler.dart';
 
 /// AudioPlayerService - Main audio playback service with advanced controls
 ///
@@ -28,6 +30,7 @@ class AudioPlayerService {
 
   final AudioPlayer _player;
   final SpeechifyService _speechifyService;
+  AudioLearningHandler? _audioHandler;
 
   // State streams
   final BehaviorSubject<bool> _isPlayingSubject = BehaviorSubject.seeded(false);
@@ -70,6 +73,8 @@ class AudioPlayerService {
   void _initializePlayer() {
     // Configure audio session
     _configureAudioSession();
+    // Initialize audio handler for lock screen controls
+    _initializeAudioHandler();
 
     // Listen to player state changes
     _subscriptions.add(
@@ -157,15 +162,34 @@ class AudioPlayerService {
     });
   }
 
+  /// Initialize audio handler for lock screen controls
+  Future<void> _initializeAudioHandler() async {
+    try {
+      _audioHandler = await initAudioService(_player);
+    } catch (e) {
+      debugPrint('Failed to initialize audio handler: $e');
+    }
+  }
+
   /// Load audio for a learning object
   Future<void> loadLearningObject(LearningObject learningObject) async {
     try {
       _currentLearningObject = learningObject;
 
+      // Determine content and format
+      // Prefer SSML content if available, otherwise use plain text
+      final content = learningObject.ssmlContent ?? learningObject.plainText ?? '';
+      final isSSML = learningObject.ssmlContent != null ||
+                     content.trim().startsWith('<speak>');
+
+      debugPrint('Loading audio for: ${learningObject.title}');
+      debugPrint('Content type: ${isSSML ? "SSML" : "Plain text"}');
+      debugPrint('Content length: ${content.length} characters');
+
       // Generate audio with timings
       final result = await _speechifyService.generateAudioWithTimings(
-        content: learningObject.plainText ?? '',
-        isSSML: (learningObject.plainText ?? '').trim().startsWith('<speak>'),
+        content: content,
+        isSSML: isSSML,
       );
 
       // Store word timings
@@ -178,6 +202,10 @@ class AudioPlayerService {
 
       // Set the audio source
       await _player.setAudioSource(audioSource);
+
+      // Update media item for lock screen with actual duration if available
+      final duration = _player.duration;
+      _audioHandler?.updateMediaItemForLearning(learningObject, audioDuration: duration);
 
       // Restore previous position if available
       if (learningObject.currentPositionMs > 0) {
@@ -351,6 +379,9 @@ class AudioPlayerService {
     _durationSubject.close();
     _speedSubject.close();
     _processingStateSubject.close();
+
+    // Dispose audio handler
+    _audioHandler?.dispose();
 
     // Dispose player
     _player.dispose();

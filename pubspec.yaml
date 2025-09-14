@@ -18,6 +18,7 @@ dependencies:
   just_audio: ^0.9.36
   just_audio_background: ^0.0.1-beta.11
   audio_session: ^0.1.18
+  audio_service: ^0.18.12
   
   # Authentication
   amplify_flutter: ^2.0.0

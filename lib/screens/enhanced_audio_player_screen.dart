@@ -33,8 +33,10 @@ class EnhancedAudioPlayerScreen extends ConsumerStatefulWidget {
 class _EnhancedAudioPlayerScreenState
     extends ConsumerState<EnhancedAudioPlayerScreen> {
   late final AudioPlayerService _audioService;
-  late final ProgressService _progressService;
+  ProgressService? _progressService;
   final FocusNode _focusNode = FocusNode();
+  bool _isInitialized = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -45,16 +47,38 @@ class _EnhancedAudioPlayerScreenState
   }
 
   Future<void> _initializePlayer() async {
-    // Get progress service
-    _progressService = await ProgressService.getInstance();
+    try {
+      debugPrint('Initializing audio player...');
 
-    // Load the learning object audio
-    await _audioService.loadLearningObject(widget.learningObject);
+      // Get progress service
+      debugPrint('Getting progress service...');
+      _progressService = await ProgressService.getInstance();
+      debugPrint('Progress service initialized');
+
+      // Load the learning object audio
+      debugPrint('Loading learning object audio...');
+      await _audioService.loadLearningObject(widget.learningObject);
+      debugPrint('Audio loaded successfully');
+
+      // Mark as initialized and refresh UI
+      setState(() {
+        _isInitialized = true;
+        _errorMessage = null;
+      });
+    } catch (e, stackTrace) {
+      debugPrint('Error initializing player: $e');
+      debugPrint('Stack trace: $stackTrace');
+
+      setState(() {
+        _isInitialized = false;
+        _errorMessage = 'Failed to load audio: $e';
+      });
+    }
 
     // Start progress tracking
     _audioService.positionStream.listen((position) {
       // Save progress every 5 seconds (debounced in service)
-      _progressService.saveProgress(
+      _progressService?.saveProgress(
         learningObjectId: widget.learningObject.id,
         positionMs: position.inMilliseconds,
         isCompleted: false,
@@ -99,6 +123,76 @@ class _EnhancedAudioPlayerScreenState
 
   @override
   Widget build(BuildContext context) {
+    // Show error if initialization failed
+    if (_errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.learningObject.title),
+          backgroundColor: Theme.of(context).primaryColor,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.red,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Failed to Load Audio',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _errorMessage = null;
+                    });
+                    _initializePlayer();
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Show loading while initializing
+    if (!_isInitialized || _progressService == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.learningObject.title),
+          backgroundColor: Theme.of(context).primaryColor,
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Loading audio...'),
+            ],
+          ),
+        ),
+      );
+    }
+
     return KeyboardListener(
       focusNode: _focusNode,
       onKeyEvent: _handleKeyEvent,
@@ -136,7 +230,7 @@ class _EnhancedAudioPlayerScreenState
                             Text(
                               widget.learningObject.plainText ?? '',
                               style: TextStyle(
-                                fontSize: _progressService.currentFontSize,
+                                fontSize: _progressService?.currentFontSize ?? 16.0,
                                 height: 1.5,
                               ),
                             ),
@@ -280,15 +374,15 @@ class _EnhancedAudioPlayerScreenState
                         ),
                         // Font size control
                         StreamBuilder<int>(
-                          stream: _progressService.fontSizeIndexStream,
+                          stream: _progressService?.fontSizeIndexStream ?? Stream.value(1),
                           builder: (context, snapshot) {
                             final fontSizeName =
-                                _progressService.currentFontSizeName;
+                                _progressService?.currentFontSizeName ?? 'Medium';
                             return TextButton.icon(
                               icon: const Icon(Icons.text_fields),
                               label: Text(fontSizeName),
                               onPressed: () async {
-                                await _progressService.cycleFontSize();
+                                await _progressService?.cycleFontSize();
                                 setState(() {}); // Refresh UI
                               },
                               style: TextButton.styleFrom(

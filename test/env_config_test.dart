@@ -45,7 +45,7 @@ void main() {
 
     test('Fallback values work correctly', () {
       // Even if .env is missing, we should have fallback values
-      expect(EnvConfig.speechifyBaseUrl, equals('https://api.speechify.com'));
+      expect(EnvConfig.speechifyBaseUrl, equals('https://api.sws.speechify.com'));
       expect(EnvConfig.cognitoRegion, equals('us-east-1'));
     });
   });

@@ -182,6 +182,9 @@ Complete, tested implementations available in `/implementations/`:
 
 ## Development Workflow
 
+### Important Platform-Specific Instructions
+**⚠️ XCODE EXECUTION:** Do not attempt to run Xcode or xcodebuild commands directly. The user must execute these manually. When iOS builds or simulator runs are needed, ask the user to run the appropriate commands.
+
 ### Before Starting Any Task:
 1. Read PLANNING.md for architectural context
 2. Check TASKS.md for requirements and dependencies
@@ -205,6 +208,30 @@ Complete, tested implementations available in `/implementations/`:
 3. Test on both platforms
 4. Update TASKS.md with completion date
 5. Document any discovered tasks
+
+## Test Data and Development Setup
+
+### Test Database Content
+For development and testing, the following test data is available in Supabase:
+
+- **Course**: "Insurance Case Management" (Course Number: INS-101)
+- **Assignment**: "Establishing a Case Reserve"
+- **Learning Object**: ID `94096d75-7125-49be-b11c-49a9d5b5660d`
+  - Contains SSML content for Speechify API testing
+  - Includes case reserve lesson with word timing markers
+
+### Test Access
+- **"Test with Database" button** in HomePage
+  - Fetches test learning object directly from Supabase
+  - Bypasses authentication using temporary RLS policy
+  - **⚠️ Remove before production** (see MOCK_AUTH_REMOVAL_GUIDE.md)
+
+### Temporary RLS Policy
+```sql
+-- Public access for test learning object (REMOVE IN PRODUCTION)
+CREATE POLICY "Public read access for test data" ON learning_objects
+FOR SELECT USING (id = '94096d75-7125-49be-b11c-49a9d5b5660d');
+```
 
 ## Common Pitfalls
 
