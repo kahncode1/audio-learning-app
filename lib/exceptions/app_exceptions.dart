@@ -243,6 +243,12 @@ class AudioException extends AppException {
         details: 'The text-to-speech service took too long to respond',
       );
 
+  /// Invalid or missing response data
+  factory AudioException.invalidResponse(String message) => AudioException(
+        'Invalid API response',
+        details: message,
+      );
+
   @override
   String get userMessage {
     if (audioFormat != null) {

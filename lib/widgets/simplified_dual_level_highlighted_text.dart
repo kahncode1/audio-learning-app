@@ -37,6 +37,10 @@ class SimplifiedDualLevelHighlightedText extends ConsumerStatefulWidget {
   final Function(int wordIndex)? onWordTap;
   final ScrollController? scrollController;
 
+  /// Average number of characters per line for scroll estimation
+  /// This can be overridden based on actual font metrics
+  static const double defaultCharsPerLine = 40.0;
+
   const SimplifiedDualLevelHighlightedText({
     super.key,
     required this.text,
@@ -86,14 +90,14 @@ class _SimplifiedDualLevelHighlightedTextState
   void _setupListeners() {
     // Direct stream subscription - WordTimingService handles throttling
     _wordSubscription = _timingService.currentWordStream.listen((wordIndex) {
-      if (mounted && wordIndex != _currentWordIndex) {
+      if (mounted && wordIndex != null && wordIndex != _currentWordIndex) {
         setState(() => _currentWordIndex = wordIndex);
         _autoScroll();
       }
     });
 
     _sentenceSubscription = _timingService.currentSentenceStream.listen((sentenceIndex) {
-      if (mounted && sentenceIndex != _currentSentenceIndex) {
+      if (mounted && sentenceIndex != null && sentenceIndex != _currentSentenceIndex) {
         setState(() => _currentSentenceIndex = sentenceIndex);
       }
     });
@@ -144,7 +148,9 @@ class _SimplifiedDualLevelHighlightedTextState
 
     // Estimate line height and position
     final lineHeight = widget.baseStyle.fontSize! * (widget.baseStyle.height ?? 1.5);
-    final approximateY = (_currentWordIndex / 10) * lineHeight; // Rough estimate
+    // Use configurable chars per line for better estimation
+    final wordsPerLine = SimplifiedDualLevelHighlightedText.defaultCharsPerLine / 5; // Avg 5 chars per word
+    final approximateY = (_currentWordIndex / wordsPerLine) * lineHeight;
 
     // Center word in viewport
     final targetScroll = approximateY - (viewportHeight / 2);
@@ -160,9 +166,47 @@ class _SimplifiedDualLevelHighlightedTextState
 
   @override
   Widget build(BuildContext context) {
-    if (_timingCollection == null) {
-      // Show loading or plain text while timings load
-      return Text(widget.text, style: widget.baseStyle);
+    // Check if we have valid character position data
+    final hasValidCharPositions = _hasValidCharacterPositions();
+
+    if (_timingCollection == null || !hasValidCharPositions) {
+      // Show plain text with status bar when highlighting not available
+      return Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              controller: widget.scrollController,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(widget.text, style: widget.baseStyle),
+              ),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              border: Border(
+                top: BorderSide(color: Colors.grey.shade400, width: 1),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 16, color: Colors.grey.shade600),
+                const SizedBox(width: 8),
+                Text(
+                  'Highlighting not available for this content',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
     }
 
     return LayoutBuilder(
@@ -198,6 +242,17 @@ class _SimplifiedDualLevelHighlightedTextState
     // This will never be modified during paint cycles
     _textPainter.text = TextSpan(text: widget.text, style: widget.baseStyle);
     _textPainter.layout(maxWidth: maxWidth);
+  }
+
+  bool _hasValidCharacterPositions() {
+    if (_timingCollection == null || _timingCollection!.timings.isEmpty) {
+      return false;
+    }
+
+    // Check if all word timings have character positions
+    return _timingCollection!.timings.every((timing) =>
+      timing.charStart != null && timing.charEnd != null
+    );
   }
 
   void _handleTapDown(TapDownDetails details) {
@@ -311,14 +366,21 @@ class OptimizedHighlightPainter extends CustomPainter {
     if (wordIndex < 0 || wordIndex >= timingCollection.timings.length) return null;
 
     final word = timingCollection.timings[wordIndex];
-    final wordStart = text.indexOf(word.word);
-    if (wordStart < 0) return null;
 
-    // Use TextPainter's efficient box calculation
+    // Only use API-provided character positions, no fallback
+    if (word.charStart == null || word.charEnd == null) {
+      // No character positions from API - return null (no highlighting)
+      return null;
+    }
+
+    final wordStart = word.charStart!;
+    final wordEnd = word.charEnd!;
+
+    // Use TextPainter's efficient box calculation with API positions
     final boxes = textPainter.getBoxesForSelection(
       TextSelection(
         baseOffset: wordStart,
-        extentOffset: wordStart + word.word.length,
+        extentOffset: wordEnd,
       ),
     );
 

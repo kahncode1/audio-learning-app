@@ -323,6 +323,15 @@ class WordTimingCollection {
     _lastSearchIndex = 0;
   }
 
+  /// Dispose of the collection and clear all caches
+  void dispose() {
+    _sentenceCache?.clear();
+    _sentenceBoundariesCache?.clear();
+    _sentenceCache = null;
+    _sentenceBoundariesCache = null;
+    _lastSearchIndex = 0;
+  }
+
   /// Validate collection integrity (useful for testing)
   bool validateIntegrity() {
     if (timings.isEmpty) return true;

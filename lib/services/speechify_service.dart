@@ -100,7 +100,7 @@ class SpeechifyService {
         });
 
         if (audioData == null || audioData.isEmpty) {
-          throw AudioException.generationTimeout();
+          throw AudioException.invalidResponse('No audio data in API response');
         }
 
         // Parse word timings from speech marks
