@@ -58,13 +58,27 @@ class SpeechifyService {
     bool isSSML = false,
   }) async {
     try {
+      // Convert SSML to plain text if needed
+      String processedContent = content;
+      if (isSSML) {
+        processedContent = _convertSSMLToPlainText(content);
+        AppLogger.info('Converted SSML to plain text', {
+          'originalLength': content.length,
+          'processedLength': processedContent.length,
+        });
+      }
+
+      // Note: For production, consider implementing pagination or chunking for very long content
+      // to avoid excessive API costs and memory usage
+
       final response = await _dio.post(
         _synthesizeEndpoint,
         data: {
-          'input': content,
+          'input': processedContent,
           'voice_id': voice,
           'model': 'simba-turbo',
           'speed': speed,
+          'include_speech_marks': true,  // Request word-level timing data
         },
       );
 
@@ -73,12 +87,24 @@ class SpeechifyService {
         final audioData = response.data['audio_data'] as String?;
         final speechMarks = response.data['speech_marks'];
 
+        // Debug logging to understand API response
+        AppLogger.info('Speechify API response structure', {
+          'hasAudioData': audioData != null,
+          'audioDataLength': audioData?.length ?? 0,
+          'hasSpeechMarks': speechMarks != null,
+          'speechMarksType': speechMarks?.runtimeType.toString() ?? 'null',
+          'responseKeys': response.data.keys.toList(),
+        });
+
         if (audioData == null || audioData.isEmpty) {
           throw AudioException.generationTimeout();
         }
 
         // Parse word timings from speech marks
-        final wordTimings = _parseSpeechMarks(speechMarks);
+        // Pass the processed content for mock timing generation if needed
+        final wordTimings = speechMarks != null
+            ? _parseSpeechMarks(speechMarks)
+            : _generateMockTimings(processedContent);
 
         return AudioGenerationResult(
           audioData: audioData,
@@ -117,30 +143,134 @@ class SpeechifyService {
     }
   }
 
+  /// Convert SSML content to plain text
+  String _convertSSMLToPlainText(String ssml) {
+    // Remove all XML/SSML tags
+    String plainText = ssml;
+
+    // Remove <speak> tags
+    plainText = plainText.replaceAll(RegExp(r'</?speak>'), '');
+
+    // Remove <p> tags but keep the content
+    plainText = plainText.replaceAll(RegExp(r'</?p>'), ' ');
+
+    // Remove <mark> tags but keep the content
+    plainText = plainText.replaceAll(RegExp(r'</?mark>'), '');
+
+    // Remove any other XML tags
+    plainText = plainText.replaceAll(RegExp(r'<[^>]+>'), ' ');
+
+    // Clean up multiple spaces
+    plainText = plainText.replaceAll(RegExp(r'\s+'), ' ');
+
+    // Trim whitespace
+    plainText = plainText.trim();
+
+    return plainText;
+  }
+
+  /// Generate mock word timings based on text
+  List<WordTiming> _generateMockTimings(String text) {
+    final words = text.split(RegExp(r'\s+'));
+    final timings = <WordTiming>[];
+
+    // Assume average reading speed of 150 words per minute
+    const msPerWord = 400; // 60000ms / 150 words
+    int currentMs = 0;
+    int sentenceIndex = 0;
+
+    for (final word in words) {
+      if (word.isEmpty) continue;
+
+      timings.add(WordTiming(
+        word: word,
+        startMs: currentMs,
+        endMs: currentMs + msPerWord - 50, // Small gap between words
+        sentenceIndex: sentenceIndex,
+      ));
+
+      // Track sentence boundaries
+      if (word.endsWith('.') || word.endsWith('!') || word.endsWith('?')) {
+        sentenceIndex++;
+      }
+
+      currentMs += msPerWord;
+    }
+
+    AppLogger.info('Generated mock timings', {
+      'wordCount': timings.length,
+      'sentences': sentenceIndex + 1,
+      'durationMs': currentMs,
+    });
+
+    return timings;
+  }
+
   /// Parse speech marks from Speechify API response
   List<WordTiming> _parseSpeechMarks(dynamic speechMarks) {
     final timings = <WordTiming>[];
 
-    if (speechMarks == null) return timings;
+    if (speechMarks == null) {
+      AppLogger.warning('No speech marks in response');
+      return timings;
+    }
 
     try {
-      // Speech marks can be a sentence with word chunks
-      if (speechMarks is Map) {
+      // Speech marks should be a List according to the API
+      if (speechMarks is List) {
+        int sentenceIndex = 0;
+        for (int i = 0; i < speechMarks.length; i++) {
+          final mark = speechMarks[i] as Map;
+          final type = mark['type'] as String?;
+
+          if (type == 'word') {
+            final word = mark['value'] as String? ?? '';
+
+            timings.add(WordTiming(
+              word: word,
+              startMs: (mark['start'] as num?)?.toInt() ?? 0,
+              endMs: (mark['end'] as num?)?.toInt() ?? 0,
+              sentenceIndex: sentenceIndex,
+            ));
+
+            // Track sentence boundaries based on punctuation
+            // Increment AFTER adding the word so first sentence is 0
+            if (word.endsWith('.') || word.endsWith('!') || word.endsWith('?')) {
+              sentenceIndex++;
+            }
+          }
+        }
+      } else if (speechMarks is Map) {
+        // Fallback for Map format if API changes
         final chunks = speechMarks['chunks'] as List?;
         if (chunks != null) {
+          int sentenceIndex = 0;
           for (int i = 0; i < chunks.length; i++) {
             final chunk = chunks[i] as Map;
             if (chunk['type'] == 'word') {
+              final word = chunk['value'] as String? ?? '';
+
               timings.add(WordTiming(
-                word: chunk['value'] as String? ?? '',
+                word: word,
                 startMs: (chunk['start_time'] as num?)?.toInt() ?? 0,
                 endMs: (chunk['end_time'] as num?)?.toInt() ?? 0,
-                sentenceIndex: 0,  // Single sentence
+                sentenceIndex: sentenceIndex,
               ));
+
+              // Track sentence boundaries
+              // Increment AFTER adding the word so first sentence is 0
+              if (word.endsWith('.') || word.endsWith('!') || word.endsWith('?')) {
+                sentenceIndex++;
+              }
             }
           }
         }
       }
+
+      AppLogger.info('Parsed speech marks', {
+        'count': timings.length,
+        'format': speechMarks is List ? 'List' : 'Map'
+      });
     } catch (e) {
       AppLogger.warning('Error parsing speech marks', {'error': e.toString()});
     }

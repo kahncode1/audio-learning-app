@@ -70,49 +70,13 @@ audio_learning_app/
 
 ## Development Environment Setup Strategy
 
-### Phased Installation Approach
-This project uses a **hybrid approach** to development environment setup to maximize productivity while minimizing initial overhead:
+This project uses a **phased installation approach** aligned with development milestones:
+- **Phase 1 (Milestone 1):** Core Flutter tools (~30 min, ~2GB)
+- **Phase 2 (Milestone 7):** Platform-specific tools (2-3 hours, ~15GB)
+- **Phase 3 (Milestone 9):** Testing infrastructure (~15 min, ~100MB)
+- **Phase 4 (Milestone 2):** External services configuration
 
-#### Phase 1: Core Essentials (Install Immediately)
-**Required for any Flutter development work:**
-- Homebrew (macOS package manager)
-- Flutter SDK (includes Dart SDK)
-- Project dependencies via `flutter pub get`
-- Basic project verification
-
-**Time:** ~30 minutes | **Storage:** ~2GB
-
-#### Phase 2: Platform-Specific Tools (Milestone 7)
-**Install when reaching Platform Configuration tasks:**
-- **iOS Development:** Full Xcode, CocoaPods, iOS Simulator
-- **Android Development:** Java 11, Android Studio, Android SDK
-
-**Time:** 2-3 hours | **Storage:** ~15GB
-
-#### Phase 3: Testing Infrastructure (Milestone 9)
-**Install when reaching Comprehensive Testing tasks:**
-- Patrol CLI for integration testing
-- Device testing setup
-
-#### Phase 4: External Services (Milestone 2)
-**Configure when implementing Authentication & Data Layer:**
-- Supabase project creation
-- AWS Cognito configuration
-- Speechify API key setup
-
-### Environment Validation Checklist
-After each installation phase:
-- [ ] `flutter doctor` reports no critical issues
-- [ ] All required commands are in PATH
-- [ ] Project builds successfully for target platforms
-- [ ] Development workflow validates correctly
-
-### Benefits of This Approach
-- ✅ **Immediate productivity** - Start coding Flutter within 30 minutes
-- ✅ **Reduced storage impact** - Save ~15GB until platform development
-- ✅ **Aligned with milestones** - Tools installed when actually needed
-- ✅ **Prevents tool drift** - Install closer to usage time
-- ✅ **Faster onboarding** - Core setup completes quickly
+**See:** `ARCHIVE/installation-history.md` for detailed setup guides and commands
 
 ## MCP Server Tools
 
@@ -161,24 +125,11 @@ See: `/references/code-patterns.md` for examples
 
 ## Reference Implementations
 
-### Primary Documentation (Comprehensive Guides)
-Start with the new comprehensive documentation in `/documentation/`:
-- **APIs:** `/documentation/apis/` - aws-cognito-sso.md, speechify-api.md, supabase-backend.md, flutter-packages.md
-- **Integrations:** `/documentation/integrations/` - cognito-supabase-bridge.md, audio-streaming.md, dual-level-highlighting.md
-- **Deployment:** `/documentation/deployment/` - ios-configuration.md, android-configuration.md
-
-### Implementation Files (Production Code)
-Complete, tested implementations available in `/implementations/`:
-- `audio-player-screen.dart` - Player UI with advanced controls
-- `audio-service.dart` - Speechify streaming and playbook
-- `word-highlighting.dart` - Dual-level highlighting system
-- `home-page.dart` - Home screen with gradient cards
-- `assignments-page.dart` - Expandable assignment tiles
-- `auth-service.dart` - AWS Cognito SSO bridge
-- `progress-service.dart` - Progress tracking with preferences
-- `providers.dart` - Riverpod state management
-- `dio-config.dart` - HTTP client configuration
-- `models.dart` - Data model definitions
+### Primary Documentation
+- **`/documentation/`** - Comprehensive API and integration guides
+- **`/implementations/`** - Production-ready reference code
+- **`/references/`** - Detailed implementation patterns and standards
+- **`ARCHIVE/`** - Historical decisions and detailed setup guides
 
 ## Development Workflow
 
@@ -248,40 +199,20 @@ Top 5 Critical Mistakes:
 
 ### Essential Commands
 
-#### Phase 1 - Core Development (Available Immediately)
 ```bash
-flutter doctor                 # Verify Flutter installation
-flutter pub get                # Install project dependencies
-flutter analyze                # Static code analysis
+# Core Development
+flutter doctor                 # Verify installation
+flutter pub get                # Install dependencies
+flutter analyze                # Static analysis
 flutter test                   # Run unit tests
-flutter run                    # Run app (requires platform setup)
+flutter run                    # Run app
+
+# Quality Checks
+./check-local.sh              # Run all automated checks
+./check-local.sh --fix        # Auto-fix formatting issues
 ```
 
-#### Phase 2 - Platform Development (Milestone 7+)
-```bash
-flutter build ios --release    # Build for iOS (requires Xcode)
-flutter build apk --release    # Build for Android (requires Android Studio)
-```
-
-#### Phase 3 - Integration Testing (Milestone 9+)
-```bash
-patrol test                    # Run integration tests (requires Patrol CLI)
-flutter test --coverage        # Generate code coverage reports
-```
-
-#### Environment Setup Commands
-```bash
-# Phase 1 Setup
-brew install flutter           # Install Flutter SDK
-flutter precache               # Download development binaries
-
-# Phase 2 Setup (when needed)
-brew install --cask xcode      # Install Xcode for iOS
-brew install openjdk@11        # Install Java for Android
-
-# Phase 3 Setup (when needed)
-dart pub global activate patrol_cli  # Install Patrol for testing
-```
+**See:** `ARCHIVE/installation-history.md` for complete setup commands by phase
 
 ### Critical Package Versions
 ```yaml
@@ -293,15 +224,16 @@ dio: ^5.4.0
 shared_preferences: ^2.2.2
 ```
 
-For complete package information and configuration: `/documentation/apis/flutter-packages.md`
+**See:** `/documentation/apis/flutter-packages.md` for complete configuration details
 
 ### Key Configuration Files
 - `.env` - Environment variables and API keys
 - `TASKS.md` - Task tracking and completion status
 - `PLANNING.md` - Architecture and technical decisions
-- `/documentation/` - **Comprehensive API and integration guides (PRIMARY)**
+- `/documentation/` - API and integration guides
 - `/implementations/` - Production-ready reference code
-- `/references/` - Detailed implementation guides
+- `/references/` - Implementation patterns and standards
+- `ARCHIVE/` - Historical documentation and setup guides
 
 ## Automated Quality Checks
 
@@ -323,17 +255,17 @@ For complete package information and configuration: `/documentation/apis/flutter
 
 ## Detailed References
 
-### Primary Documentation (Start Here)
-- **`/documentation/README.md`** - Overview of comprehensive documentation
-- **`/documentation/apis/`** - Complete API integration guides
-- **`/documentation/integrations/`** - Complex system integration patterns
-- **`/documentation/deployment/`** - Platform-specific configuration
+### Documentation Structure
+- **`/documentation/`** - API integration guides and deployment configs
+- **`/references/`** - Code patterns, standards, and technical requirements
+- **`/implementations/`** - Production-ready reference implementations
+- **`ARCHIVE/`** - Technology decisions and historical documentation
 
-### Supporting Implementation Guides
-- **`/references/code-patterns.md`** - Async/await, state management, lifecycle patterns
-- **`/references/implementation-standards.md`** - Service patterns, headers, validation functions
-- **`/references/technical-requirements.md`** - Dio config, network resilience, platform setup
-- **`/references/common-pitfalls.md`** - Complete list of pitfalls with solutions
+**Key Files:**
+- `code-patterns.md` - Async/await, state management patterns
+- `implementation-standards.md` - Service patterns and validation
+- `common-pitfalls.md` - Critical mistakes and solutions
+- `ARCHIVE/technology-decisions.md` - Framework selection rationale
 
 ## Compliance Verification
 

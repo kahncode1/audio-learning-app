@@ -7,6 +7,7 @@ import 'package:rxdart/rxdart.dart';
 import '../models/word_timing.dart';
 import '../models/learning_object.dart';
 import 'speechify_service.dart';
+import 'word_timing_service.dart';
 import 'audio/speechify_audio_source.dart';
 import 'audio_handler.dart';
 
@@ -192,8 +193,14 @@ class AudioPlayerService {
         isSSML: isSSML,
       );
 
-      // Store word timings
+      // Store word timings and share with WordTimingService
       _currentWordTimings = result.wordTimings;
+
+      // Share timings with WordTimingService for highlighting
+      final wordTimingService = WordTimingService.instance;
+      wordTimingService.setCachedTimings(learningObject.id, result.wordTimings);
+
+      debugPrint('Shared ${result.wordTimings.length} word timings with WordTimingService');
 
       // Create audio source from base64 data
       // For now, we need to handle the base64 audio data

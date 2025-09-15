@@ -1,3 +1,29 @@
+/// Mock Data Service for Audio Learning App
+///
+/// Purpose: Provides realistic test data for development and testing of the
+/// audio learning application. This service simulates the data structure that
+/// will be provided by Supabase in production.
+///
+/// External Dependencies:
+/// - Models: Course, Assignment, LearningObject from models/
+/// - No external API dependencies (pure mock data)
+///
+/// Usage Example:
+/// ```dart
+/// final course = MockDataService.getTestCourse();
+/// final assignments = MockDataService.getTestAssignments();
+/// final learningObjects = MockDataService.getTestLearningObjects(assignmentId);
+/// ```
+///
+/// Expected Behavior:
+/// - Returns consistent test data for UI development
+/// - Provides SSML content for TTS testing
+/// - Uses real database ID (63ad7b78-0970-4265-a4fe-51f3fee39d5f) for seamless integration
+/// - Provides only one test learning object for the first assignment
+///
+/// Note: This service will be replaced with DataService when Supabase integration
+/// is complete in Milestone 2.
+
 import '../models/course.dart';
 import '../models/assignment.dart';
 import '../models/learning_object.dart';
@@ -5,9 +31,9 @@ import '../models/learning_object.dart';
 class MockDataService {
   static Course getTestCourse() {
     return Course(
-      id: 'test-course-001',
+      id: '14350bfb-5e84-4479-b7a2-09ce7a2fdd48', // Real database course ID
       courseNumber: 'INS-101',
-      title: 'Insurance Case Management (Test)',
+      title: 'Insurance Case Management',
       description: 'Test course for development purposes',
       gradientStartColor: '#FF6B6B',
       gradientEndColor: '#C44569',
@@ -20,8 +46,8 @@ class MockDataService {
   static List<Assignment> getTestAssignments() {
     return [
       Assignment(
-        id: 'test-assignment-001',
-        courseId: 'test-course-001',
+        id: 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', // Real database assignment ID
+        courseId: '14350bfb-5e84-4479-b7a2-09ce7a2fdd48', // Real database course ID
         assignmentNumber: 1,
         title: 'Establishing a Case Reserve',
         description: 'Learn how to establish and manage case reserves',
@@ -30,7 +56,7 @@ class MockDataService {
       ),
       Assignment(
         id: 'test-assignment-002',
-        courseId: 'test-course-001',
+        courseId: '14350bfb-5e84-4479-b7a2-09ce7a2fdd48', // Real database course ID
         assignmentNumber: 2,
         title: 'Risk Assessment Fundamentals',
         description: 'Understanding basic risk assessment principles',
@@ -39,7 +65,7 @@ class MockDataService {
       ),
       Assignment(
         id: 'test-assignment-003',
-        courseId: 'test-course-001',
+        courseId: '14350bfb-5e84-4479-b7a2-09ce7a2fdd48', // Real database course ID
         assignmentNumber: 3,
         title: 'Claims Documentation',
         description: 'Proper documentation techniques for insurance claims',
@@ -50,39 +76,23 @@ class MockDataService {
   }
 
   static List<LearningObject> getTestLearningObjects(String assignmentId) {
-    if (assignmentId == 'test-assignment-001') {
+    if (assignmentId == 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11') { // Real database assignment ID
+      // Return test learning object for development
       return [
         LearningObject(
-          id: '94096d75-7125-49be-b11c-49a9d5b5660d', // Real DB ID for testing
+          id: '63ad7b78-0970-4265-a4fe-51f3fee39d5f', // Real database learning object ID
           assignmentId: assignmentId,
-          title: 'Introduction to Case Reserves',
+          title: 'Establishing a Case Reserve - Full Lesson',
           contentType: 'text',
-          ssmlContent: '''
-<speak>
+          // Short test content for development (30 seconds of audio)
+          ssmlContent: '''<speak>
 <p>Welcome to the lesson on establishing case reserves.</p>
 <p>A case reserve is an estimate of the amount of money that will be needed to settle a claim.</p>
-<p>Setting accurate reserves is critical for managing insurance company finances and ensuring adequate funds are available when claims need to be paid.</p>
-<p>In this lesson, we'll cover the key factors to consider when establishing a reserve, common methods used in the industry, and best practices for maintaining reserve accuracy over time.</p>
+<p>Setting accurate reserves is critical for managing insurance company finances.</p>
+<p>Thank you for completing this lesson.</p>
 </speak>''',
-          plainText: 'Welcome to the lesson on establishing case reserves...',
+          plainText: '''Welcome to the lesson on establishing case reserves. A case reserve is an estimate of the amount of money that will be needed to settle a claim. Setting accurate reserves is critical for managing insurance company finances. Thank you for completing this lesson.''',
           orderIndex: 1,
-          createdAt: DateTime.now().subtract(const Duration(days: 30)),
-          updatedAt: DateTime.now(),
-          isCompleted: false,
-          currentPositionMs: 0,
-        ),
-        LearningObject(
-          id: 'test-lo-002',
-          assignmentId: assignmentId,
-          title: 'Factors in Reserve Calculation',
-          contentType: 'text',
-          ssmlContent: '''
-<speak>
-<p>When calculating case reserves, several factors must be considered.</p>
-<p>These include the severity of the injury, expected medical costs, potential legal fees, and historical claim data.</p>
-</speak>''',
-          plainText: 'When calculating case reserves, several factors must be considered...',
-          orderIndex: 2,
           createdAt: DateTime.now().subtract(const Duration(days: 30)),
           updatedAt: DateTime.now(),
           isCompleted: false,
@@ -90,52 +100,40 @@ class MockDataService {
         ),
       ];
     } else if (assignmentId == 'test-assignment-002') {
-      return [
-        LearningObject(
-          id: 'test-lo-003',
-          assignmentId: assignmentId,
-          title: 'Understanding Risk Categories',
-          contentType: 'text',
-          ssmlContent: '''
-<speak>
-<p>Risk assessment begins with understanding different risk categories.</p>
-<p>We'll explore physical risks, financial risks, and operational risks in detail.</p>
-</speak>''',
-          plainText: 'Risk assessment begins with understanding different risk categories...',
-          orderIndex: 1,
-          createdAt: DateTime.now().subtract(const Duration(days: 25)),
-          updatedAt: DateTime.now(),
-          isCompleted: false,
-          currentPositionMs: 0,
-        ),
-      ];
+      // Return empty list - no test data for other assignments
+      return [];
     } else if (assignmentId == 'test-assignment-003') {
-      return [
-        LearningObject(
-          id: 'test-lo-004',
-          assignmentId: assignmentId,
-          title: 'Documentation Best Practices',
-          contentType: 'text',
-          ssmlContent: '''
-<speak>
-<p>Proper documentation is essential for successful claims processing.</p>
-<p>Learn the key elements that must be included in every claim file.</p>
-</speak>''',
-          plainText: 'Proper documentation is essential for successful claims processing...',
-          orderIndex: 1,
-          createdAt: DateTime.now().subtract(const Duration(days: 20)),
-          updatedAt: DateTime.now(),
-          isCompleted: false,
-          currentPositionMs: 0,
-        ),
-      ];
+      // Return empty list - no test data for other assignments
+      return [];
     }
     return [];
   }
 
   static int getAssignmentCount() => 3;
+  static int getLearningObjectCount() => 1; // Only one test learning object now
+  static double getCourseCompletionPercentage() => 0.0;
 
-  static int getLearningObjectCount() => 4;
+  // Validation function for mock data service
+  static void validate() {
+    final course = getTestCourse();
+    assert(course.courseNumber == 'INS-101');
+    assert(course.title == 'Insurance Case Management');
 
-  static double getCourseCompletionPercentage() => 25.0; // Simulating 25% completion
+    final assignments = getTestAssignments();
+    assert(assignments.length == 3);
+    assert(assignments[0].title == 'Establishing a Case Reserve');
+
+    final learningObjects = getTestLearningObjects('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
+    assert(learningObjects.length == 1);
+    assert(learningObjects[0].title == 'Establishing a Case Reserve - Full Lesson');
+
+    // Verify no learning objects for other assignments
+    final lo2 = getTestLearningObjects('test-assignment-002');
+    assert(lo2.isEmpty);
+
+    final lo3 = getTestLearningObjects('test-assignment-003');
+    assert(lo3.isEmpty);
+
+    print('✓ MockDataService validation passed');
+  }
 }

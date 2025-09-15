@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assignment.dart';
 import '../models/learning_object.dart';
-import '../services/mock_data_service.dart';
+import '../providers/mock_data_provider.dart';
+import '../providers/providers.dart';
+import '../services/supabase_service.dart';
 
 /// AssignmentsScreen displays assignments with expandable tiles
 class AssignmentsScreen extends ConsumerWidget {
@@ -19,10 +21,16 @@ class AssignmentsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Get test assignments from mock data
-    final assignments = MockDataService.getTestAssignments();
+    // Try to get real assignments from Supabase, fallback to mock
+    final assignmentsFuture = ref.watch(assignmentsProvider(courseId));
 
-    return Scaffold(
+    return assignmentsFuture.when(
+      data: (realAssignments) {
+        final assignments = realAssignments.isNotEmpty
+            ? realAssignments
+            : ref.watch(mockAssignmentsProvider);
+
+        return Scaffold(
       appBar: AppBar(
         title: Text(courseNumber),
         backgroundColor: const Color(0xFF2196F3),
@@ -39,6 +47,33 @@ class AssignmentsScreen extends ConsumerWidget {
           );
         },
       ),
+    );
+      },
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stack) {
+        // Fallback to mock data on error
+        final assignments = ref.watch(mockAssignmentsProvider);
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(courseNumber),
+            backgroundColor: const Color(0xFF2196F3),
+            foregroundColor: Colors.white,
+          ),
+          backgroundColor: const Color(0xFFF5F5F5),
+          body: ListView.builder(
+            itemCount: assignments.length,
+            itemBuilder: (context, index) {
+              final assignment = assignments[index];
+              return AssignmentTile(
+                assignment: assignment,
+                initiallyExpanded: index == 0,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -59,19 +94,27 @@ class AssignmentTile extends ConsumerStatefulWidget {
 
 class _AssignmentTileState extends ConsumerState<AssignmentTile> {
   late bool isExpanded;
-  List<LearningObject> learningObjects = [];
 
   @override
   void initState() {
     super.initState();
     isExpanded = widget.initiallyExpanded;
-    // Load learning objects for this assignment
-    learningObjects = MockDataService.getTestLearningObjects(widget.assignment.id);
   }
 
   @override
   Widget build(BuildContext context) {
     final assignment = widget.assignment;
+    // Try to load real learning objects from Supabase, fallback to mock
+    final learningObjectsFuture = ref.watch(learningObjectsProvider(assignment.id));
+
+    final learningObjects = learningObjectsFuture.when(
+      data: (realObjects) => realObjects.isNotEmpty
+          ? realObjects
+          : ref.watch(mockLearningObjectsProvider(assignment.id)),
+      loading: () => <LearningObject>[],
+      error: (_, __) => ref.watch(mockLearningObjectsProvider(assignment.id)),
+    );
+
     const completionPercentage = 0.0; // For now, showing 0% completion
     final String completionText = completionPercentage == 0
         ? 'Not started'

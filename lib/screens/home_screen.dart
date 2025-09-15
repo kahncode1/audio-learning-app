@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/course.dart';
-import '../services/mock_data_service.dart';
-import 'assignments_screen.dart';
+import '../providers/mock_data_provider.dart';
 
 /// HomePage displays the list of available courses with gradient cards
 class HomePage extends ConsumerWidget {
@@ -10,8 +9,8 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Get the test course from mock data
-    final testCourse = MockDataService.getTestCourse();
+    // Get the test course from mock data provider
+    final testCourse = ref.watch(mockCourseProvider);
     final courses = [testCourse]; // List with our test course
 
     return Scaffold(
@@ -40,15 +39,14 @@ class HomePage extends ConsumerWidget {
                   padding: const EdgeInsets.only(bottom: 16),
                   child: CourseCard(
                     course: course,
-                    onTap: () => Navigator.push(
+                    onTap: () => Navigator.pushNamed(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => AssignmentsScreen(
-                          courseNumber: course.courseNumber,
-                          courseId: course.id,
-                          courseTitle: course.title,
-                        ),
-                      ),
+                      '/assignments',
+                      arguments: {
+                        'courseNumber': course.courseNumber,
+                        'courseId': course.id,
+                        'courseTitle': course.title,
+                      },
                     ),
                   ),
                 );
@@ -58,7 +56,7 @@ class HomePage extends ConsumerWidget {
   }
 }
 
-class CourseCard extends StatelessWidget {
+class CourseCard extends ConsumerWidget {
   final Course course;
   final VoidCallback onTap;
 
@@ -69,8 +67,8 @@ class CourseCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final completionPercentage = MockDataService.getCourseCompletionPercentage();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final completionPercentage = ref.watch(mockCourseCompletionProvider);
     final String progressLabel = completionPercentage == 0
         ? 'Not Started'
         : '${completionPercentage.round()}% Complete';
@@ -114,7 +112,7 @@ class CourseCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${MockDataService.getAssignmentCount()} Assignments • ${MockDataService.getLearningObjectCount()} Learning Objects',
+                    '${ref.watch(mockAssignmentCountProvider)} Assignments • ${ref.watch(mockLearningObjectCountProvider)} Learning Objects',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey.shade600,

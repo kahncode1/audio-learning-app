@@ -231,161 +231,22 @@ The system implements a clean separation of concerns across four primary layers:
 ### Critical Package Versions
 All packages must use the exact versions specified in the Technology Stack section to ensure compatibility and prevent version conflicts. These versions have been tested together and are known to work reliably.
 
-## Phased Installation Strategy
+## Development Environment Setup
 
-### Development Environment Setup Philosophy
+This project uses a **phased installation approach** aligned with development milestones to maximize productivity while minimizing initial overhead.
 
-This project implements a **hybrid approach** to development environment setup, balancing immediate productivity with resource efficiency. Rather than requiring a complete toolchain installation upfront, tools are installed in phases aligned with development milestones.
+**See:** `ARCHIVE/installation-history.md` for complete setup guides, commands, and validation checklists.
 
-### Phase-Based Installation Rationale
+## Technology Stack Rationale
 
-**Traditional Approach Problems:**
-- 4+ hour initial setup time discourages rapid iteration
-- 25GB+ storage requirement before writing any code
-- Tool version drift when installed far before use
-- Wasted resources for developers focusing on specific areas
+Key technology selections with current implementations:
+- **Amplify Flutter:** AWS Cognito integration (`/implementations/auth-service.dart`)
+- **just_audio:** Custom streaming for Speechify (`/implementations/audio-service.dart`)
+- **Dio:** HTTP client with interceptors (`/implementations/dio-config.dart`)
+- **Riverpod:** State management (`/implementations/providers.dart`)
+- **Custom Highlighting:** Dual-level word/sentence sync (`/implementations/word-highlighting.dart`)
 
-**Hybrid Approach Benefits:**
-- **Immediate Start:** Begin Flutter development within 30 minutes
-- **Resource Efficient:** Install only what's currently needed
-- **Milestone Aligned:** Tools available exactly when required by TASKS.md
-- **Version Fresh:** Install tools closer to usage time
-- **Reduced Complexity:** Smaller initial cognitive load
-
-### Installation Phases
-
-#### Phase 1: Core Essentials (Milestone 1)
-**Install immediately for any Flutter development:**
-- Homebrew (macOS package manager)
-- Flutter SDK + Dart SDK
-- Basic project dependencies (`flutter pub get`)
-- Development verification (`flutter doctor`)
-
-**Timing:** Start of project | **Duration:** ~30 minutes | **Storage:** ~2GB
-**Enables:** Core Flutter development, unit testing, code analysis
-
-#### Phase 2: Platform-Specific Tools (Milestone 7 - Platform Configuration)
-**Install when implementing platform-specific features:**
-
-**iOS Development Stack:**
-- Xcode (full installation)
-- CocoaPods dependency manager
-- iOS Simulator setup
-- Platform build verification
-
-**Android Development Stack:**
-- Java 11 runtime
-- Android Studio with SDK tools
-- Android emulators
-- Platform build verification
-
-**Timing:** Milestone 7 tasks 7.1-7.6 | **Duration:** 2-3 hours | **Storage:** ~15GB
-**Enables:** Platform-specific builds, device testing, platform optimization
-
-#### Phase 3: Testing Infrastructure (Milestone 9 - Comprehensive Testing)
-**Install when implementing comprehensive testing:**
-- Patrol CLI for integration testing
-- Device testing configuration
-- Performance testing tools
-
-**Timing:** Milestone 9 task 9.1+ | **Duration:** ~15 minutes | **Storage:** ~100MB
-**Enables:** End-to-end testing, device matrix testing, performance validation
-
-#### Phase 4: External Services Configuration (Milestone 2 - Authentication & Data Layer)
-**Configure when implementing backend integration:**
-- Supabase project creation and database setup
-- AWS Cognito user pool and identity pool configuration
-- Speechify API key acquisition and quota setup
-- Environment variable configuration
-
-**Timing:** Milestone 2 tasks 2.1+ | **Duration:** 1-2 hours | **Storage:** Configuration only
-**Enables:** Backend integration, authentication flow, audio streaming
-
-### Installation Validation Framework
-
-Each installation phase includes validation checkpoints:
-
-**Phase 1 Validation:**
-```bash
-flutter doctor                 # Verify core installation
-flutter pub get                # Install project dependencies
-flutter analyze                # Validate code structure
-flutter test                   # Run unit tests
-```
-
-**Phase 2 Validation:**
-```bash
-flutter build ios --debug      # Verify iOS toolchain
-flutter build apk --debug      # Verify Android toolchain
-```
-
-**Phase 3 Validation:**
-```bash
-patrol --version               # Verify testing tools
-patrol test                    # Run integration tests
-```
-
-**Phase 4 Validation:**
-- Backend connectivity tests
-- Authentication flow verification
-- API integration confirmation
-
-This phased approach ensures each development stage has the appropriate tools available without front-loading unnecessary complexity or resource usage.
-
-## Framework Selections and Rationale
-
-### Why Amplify Flutter for Authentication
-- **Official AWS Support:** Regular updates and long-term maintenance guaranteed
-- **federateToIdentityPool API:** Direct identity pool federation without custom implementation
-- **Automatic Token Refresh:** Built-in token lifecycle management reduces authentication errors
-- **JWT Bridge Support:** Seamless integration with Supabase custom authentication
-- **Enterprise Ready:** Production-tested with extensive documentation and community support
-- **Working Example:** See `/implementations/auth-service.dart` for complete implementation
-
-### Why just_audio for Audio Playback
-- **Mature and Stable:** Most widely-used Flutter audio package with proven reliability
-- **StreamAudioSource:** Enables custom streaming implementations required for Speechify
-- **Background Playback:** Native support for iOS and Android background audio
-- **Platform Integration:** Handles audio focus, interruptions, and system controls
-- **Active Development:** Regular updates and responsive maintenance team
-- **Working Example:** See `/implementations/audio-service.dart` for StreamAudioSource implementation
-
-### Why Dio for HTTP Client
-- **Superior Streaming:** Better streaming support than standard http package
-- **Interceptor Architecture:** Clean separation of concerns for auth, caching, and retry
-- **Connection Pooling:** Improved performance for multiple concurrent requests
-- **Progress Monitoring:** Built-in download/upload progress tracking
-- **Error Handling:** Comprehensive error types and recovery mechanisms
-- **Singleton Pattern:** See `/implementations/dio-config.dart` for proper configuration
-- **Critical:** See `/references/common-pitfalls.md` #1 - Never create multiple instances
-
-### Why Riverpod for State Management
-- **Type Safety:** Compile-time checking prevents runtime errors
-- **Testing Support:** Easy to mock and test providers
-- **Resource Management:** Automatic disposal prevents memory leaks
-- **Provider Composition:** Complex state management through provider combination
-- **Modern Architecture:** Successor to Provider with improved API
-- **Working Example:** See `/implementations/providers.dart` for complete setup
-- **Patterns:** See `/references/code-patterns.md` for state management patterns
-
-### Why SharedPreferences for Local Storage
-- **Lightweight:** Minimal overhead for simple key-value storage
-- **Native Integration:** Uses platform-specific storage mechanisms
-- **Synchronous Reads:** Fast access to cached data and preferences
-- **No Dependencies:** Core Flutter package with stable API
-- **Supabase Alignment:** Matches Supabase's recommended local storage approach
-- **Working Example:** See `/implementations/progress-service.dart` for preference persistence
-
-### Custom Implementation for Dual-Level Word Highlighting
-**No existing Flutter packages provide the required functionality:**
-- **Unique Requirement:** Dual-level synchronization with sentence background and word foreground
-- **Performance Critical:** Must maintain 60fps while updating both highlight levels
-- **Complex Coordination:** Requires custom integration of audio position, text rendering, and user interaction
-- **Optimization Needed:** Binary search and position caching for efficiency
-- **Platform Specific:** Requires custom text measurement and rendering logic
-- **Tap Interaction:** Word-level tap-to-seek functionality
-- **Complete Solution:** See `/implementations/word-highlighting.dart` for full implementation
-- **Performance Patterns:** See `/references/code-patterns.md` for optimization techniques
+**See:** `ARCHIVE/technology-decisions.md` for detailed selection rationale and alternatives considered.
 
 ## Data Model Architecture
 

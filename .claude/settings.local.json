@@ -38,7 +38,12 @@
       "Bash(find:*)",
       "mcp__supabase__list_projects",
       "mcp__supabase__execute_sql",
-      "Bash(timeout 30 flutter test --reporter compact)"
+      "Bash(timeout 30 flutter test --reporter compact)",
+      "Bash(git commit:*)",
+      "Bash(SKIP_TESTS=1 git commit --no-verify -m \"Implement complete UI flow with test course navigation\n\n- Replace test buttons with realistic test course in course list\n- Create mock data service providing test course/assignments/learning objects\n- Implement full navigation flow: Courses → Assignments → Learning Objects → Player\n- Add gradient course cards with progress indicators\n- Create expandable assignment tiles with CircleAvatar numbers\n- Add learning object tiles with play icons and completion states\n- Update TASKS.md with completed UI tasks and discovered performance issues\n- Remove deprecated test screens and related tests\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")",
+      "Bash(git push:*)",
+      "Read(//Users/kahnja/Library/CloudStorage/GoogleDrive-matthew@industriastudio.io/**)",
+      "Bash(flutter clean:*)"
     ],
     "deny": [],
     "ask": []

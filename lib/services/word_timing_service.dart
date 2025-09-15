@@ -62,10 +62,15 @@ class WordTimingService {
     _initializeStreams();
   }
 
-  // Caches for performance optimization
+  // Caches for performance optimization with LRU eviction
   final Map<String, List<WordTiming>> _wordTimingCache = {};
   final Map<String, WordTimingCollection> _collectionCache = {};
   final Map<String, List<TextPosition>> _positionCache = {};
+
+  // LRU tracking for cache eviction
+  final List<String> _cacheAccessOrder = [];
+  static const int _maxCacheEntries = 10; // Limit cache to 10 documents
+  static const int _maxPositionCacheEntries = 1000; // Limit position cache
 
   // Stream controllers for dual-level highlighting
   late final StreamController<int> _currentWordController;
@@ -95,6 +100,43 @@ class WordTimingService {
         .distinct();
   }
 
+  /// Manages LRU cache eviction when cache size exceeds limits
+  void _evictLRUCacheIfNeeded() {
+    // Evict word timing cache entries
+    while (_cacheAccessOrder.length > _maxCacheEntries) {
+      final oldestKey = _cacheAccessOrder.removeAt(0);
+      _wordTimingCache.remove(oldestKey);
+      _collectionCache.remove(oldestKey);
+      _positionCache.remove(oldestKey);
+      AppLogger.debug('Evicted cache entry', {'contentId': oldestKey});
+    }
+
+    // Evict position cache if it's getting too large
+    int totalPositions = 0;
+    for (final positions in _positionCache.values) {
+      totalPositions += positions.length;
+    }
+
+    if (totalPositions > _maxPositionCacheEntries) {
+      // Clear position cache for the oldest entry
+      if (_cacheAccessOrder.isNotEmpty) {
+        final oldestKey = _cacheAccessOrder.first;
+        _positionCache.remove(oldestKey);
+        AppLogger.debug('Evicted position cache', {
+          'contentId': oldestKey,
+          'totalPositions': totalPositions
+        });
+      }
+    }
+  }
+
+  /// Updates LRU access order for cache management
+  void _updateCacheAccessOrder(String contentId) {
+    _cacheAccessOrder.remove(contentId);
+    _cacheAccessOrder.add(contentId);
+    _evictLRUCacheIfNeeded();
+  }
+
   /// Fetches word timings with sentence indexing support
   /// Implements three-tier caching: Memory → SharedPreferences → Speechify API
   Future<List<WordTiming>> fetchTimings(String contentId, String text) async {
@@ -102,6 +144,7 @@ class WordTimingService {
       // Check memory cache first
       if (_wordTimingCache.containsKey(contentId)) {
         AppLogger.debug('Found timings in memory cache', {'contentId': contentId});
+        _updateCacheAccessOrder(contentId);
         return _wordTimingCache[contentId]!;
       }
 
@@ -111,6 +154,7 @@ class WordTimingService {
         AppLogger.debug('Found timings in local cache', {'contentId': contentId});
         _wordTimingCache[contentId] = cachedTimings;
         _collectionCache[contentId] = WordTimingCollection(cachedTimings);
+        _updateCacheAccessOrder(contentId);
         return cachedTimings;
       }
 
@@ -127,6 +171,7 @@ class WordTimingService {
       // Cache in memory and locally
       _wordTimingCache[contentId] = processedTimings;
       _collectionCache[contentId] = WordTimingCollection(processedTimings);
+      _updateCacheAccessOrder(contentId);
       await _saveToLocalCache(contentId, processedTimings);
 
       AppLogger.info('Processed word timings', {
@@ -215,6 +260,7 @@ class WordTimingService {
   ) async {
     if (_positionCache.containsKey(contentId)) {
       AppLogger.debug('Positions already computed', {'contentId': contentId});
+      _updateCacheAccessOrder(contentId);
       return;
     }
 
@@ -233,7 +279,7 @@ class WordTimingService {
         'maxWidth': maxWidth,
       });
 
-      _positionCache[contentId] = positions
+      final textPositions = positions
           .map((p) => TextPosition(
                 offset: p['offset'] as int,
                 rect: Rect.fromLTWH(
@@ -244,6 +290,10 @@ class WordTimingService {
                 ),
               ))
           .toList();
+
+      _positionCache[contentId] = textPositions;
+      _updateCacheAccessOrder(contentId);
+      _evictLRUCacheIfNeeded(); // Check after adding new positions
 
       AppLogger.info('Pre-computed text positions', {
         'contentId': contentId,
@@ -261,10 +311,45 @@ class WordTimingService {
   /// Updates current position and triggers dual-level highlighting streams
   void updatePosition(int positionMs, String contentId) {
     final collection = _collectionCache[contentId];
-    if (collection == null) return;
+
+    // Debug logging
+    if (positionMs % 1000 < 100) { // Log roughly every second
+      AppLogger.debug('WordTimingService.updatePosition called', {
+        'positionMs': positionMs,
+        'contentId': contentId,
+        'hasCollection': collection != null,
+        'timingCount': collection?.timings.length ?? 0,
+      });
+    }
+
+    if (collection == null) {
+      if (positionMs % 1000 < 100) {
+        AppLogger.warning('No timing collection found for content', {
+          'contentId': contentId,
+          'cacheKeys': _collectionCache.keys.toList(),
+        });
+      }
+      return;
+    }
 
     final wordIndex = collection.findActiveWordIndex(positionMs);
     final sentenceIndex = collection.findActiveSentenceIndex(positionMs);
+
+    // Log word/sentence changes
+    if (wordIndex >= 0 && wordIndex < collection.timings.length) {
+      final currentWord = collection.timings[wordIndex];
+      if (positionMs % 500 < 100 || wordIndex != _lastLoggedWordIndex) {
+        AppLogger.debug('Current word position', {
+          'wordIndex': wordIndex,
+          'word': currentWord.word,
+          'sentenceIndex': sentenceIndex,
+          'positionMs': positionMs,
+          'wordStartMs': currentWord.startMs,
+          'wordEndMs': currentWord.endMs,
+        });
+        _lastLoggedWordIndex = wordIndex;
+      }
+    }
 
     if (!_currentWordController.isClosed) {
       _currentWordController.add(wordIndex);
@@ -275,9 +360,30 @@ class WordTimingService {
     }
   }
 
+  // Add field for tracking logged word index
+  int _lastLoggedWordIndex = -1;
+
   /// Gets cached word timings for a content ID
   List<WordTiming>? getCachedTimings(String contentId) {
     return _wordTimingCache[contentId];
+  }
+
+  /// Sets pre-fetched word timings directly into cache
+  /// Used when timings are already available from audio generation
+  void setCachedTimings(String contentId, List<WordTiming> timings) {
+    // Store in memory cache
+    _wordTimingCache[contentId] = timings;
+    _collectionCache[contentId] = WordTimingCollection(timings);
+    _updateCacheAccessOrder(contentId);
+
+    // Save to local cache asynchronously
+    _saveToLocalCache(contentId, timings);
+
+    AppLogger.info('Set cached timings', {
+      'contentId': contentId,
+      'count': timings.length,
+      'sentences': timings.isNotEmpty ? timings.last.sentenceIndex + 1 : 0,
+    });
   }
 
   /// Gets cached text positions for a content ID
@@ -344,6 +450,7 @@ class WordTimingService {
     _wordTimingCache.clear();
     _collectionCache.clear();
     _positionCache.clear();
+    _cacheAccessOrder.clear();
     AppLogger.debug('Cache cleared');
   }
 

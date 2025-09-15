@@ -3,8 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/audio_player_service.dart';
 import '../services/progress_service.dart';
+import '../services/word_timing_service.dart';
 import '../models/learning_object.dart';
 import '../providers/providers.dart';
+import '../widgets/dual_level_highlighted_text.dart';
+import '../utils/app_logger.dart';
 
 /// EnhancedAudioPlayerScreen - Full-featured audio player with keyboard shortcuts
 ///
@@ -33,27 +36,46 @@ class EnhancedAudioPlayerScreen extends ConsumerStatefulWidget {
 class _EnhancedAudioPlayerScreenState
     extends ConsumerState<EnhancedAudioPlayerScreen> {
   late final AudioPlayerService _audioService;
+  late final WordTimingService _wordTimingService;
   ProgressService? _progressService;
   final FocusNode _focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   bool _isInitialized = false;
   String? _errorMessage;
+  String? _displayText;
 
   @override
   void initState() {
     super.initState();
     _audioService = AudioPlayerService.instance;
+    _wordTimingService = WordTimingService.instance;
     _initializePlayer();
     _setupKeyboardShortcuts();
   }
 
   Future<void> _initializePlayer() async {
     try {
-      debugPrint('Initializing audio player...');
+      AppLogger.info('🟢 ENHANCED AUDIO PLAYER SCREEN - Initializing');
+      debugPrint('🟢🟢🟢 ENHANCED AUDIO PLAYER SCREEN INIT 🟢🟢🟢');
 
       // Get progress service
       debugPrint('Getting progress service...');
       _progressService = await ProgressService.getInstance();
       debugPrint('Progress service initialized');
+
+      // Extract display text from learning object
+      _displayText = widget.learningObject.plainText;
+
+      // If plainText is null, try to extract from SSML content
+      if (_displayText == null || _displayText!.isEmpty) {
+        final ssmlContent = widget.learningObject.ssmlContent ?? '';
+        _displayText = _convertSsmlToPlainText(ssmlContent);
+      }
+
+      AppLogger.info('Display text extracted', {
+        'textLength': _displayText?.length ?? 0,
+        'learningObjectId': widget.learningObject.id,
+      });
 
       // Load the learning object audio
       debugPrint('Loading learning object audio...');
@@ -75,12 +97,25 @@ class _EnhancedAudioPlayerScreenState
       });
     }
 
-    // Start progress tracking
+    // Start progress tracking and word timing updates
     _audioService.positionStream.listen((position) {
+      final positionMs = position.inMilliseconds;
+
+      // Update word timing service with current position
+      _wordTimingService.updatePosition(positionMs, widget.learningObject.id);
+
+      // Log position updates for debugging
+      if (positionMs % 1000 < 100) {
+        AppLogger.debug('Audio position update', {
+          'positionMs': positionMs,
+          'learningObjectId': widget.learningObject.id,
+        });
+      }
+
       // Save progress every 5 seconds (debounced in service)
       _progressService?.saveProgress(
         learningObjectId: widget.learningObject.id,
-        positionMs: position.inMilliseconds,
+        positionMs: positionMs,
         isCompleted: false,
         isInProgress: true,
         userId: ref.read(currentUserProvider).valueOrNull?.id,
@@ -112,6 +147,62 @@ class _EnhancedAudioPlayerScreenState
     // Left arrow: Skip backward 30s
     else if (key == LogicalKeyboardKey.arrowLeft) {
       _audioService.skipBackward();
+    }
+  }
+
+  String _convertSsmlToPlainText(String ssmlContent) {
+    // Remove SSML tags but preserve text content
+    String text = ssmlContent;
+
+    // Remove opening and closing speak tags
+    text = text.replaceAll(RegExp(r'<speak[^>]*>'), '');
+    text = text.replaceAll('</speak>', '');
+
+    // Remove paragraph tags but keep spacing
+    text = text.replaceAll(RegExp(r'<p[^>]*>'), '');
+    text = text.replaceAll('</p>', ' ');
+
+    // Remove break tags
+    text = text.replaceAll(RegExp(r'<break[^>]*/>'), ' ');
+
+    // Remove phoneme tags
+    text = text.replaceAll(RegExp(r'<phoneme[^>]*>'), '');
+    text = text.replaceAll('</phoneme>', '');
+
+    // Remove prosody tags
+    text = text.replaceAll(RegExp(r'<prosody[^>]*>'), '');
+    text = text.replaceAll('</prosody>', '');
+
+    // Remove say-as tags
+    text = text.replaceAll(RegExp(r'<say-as[^>]*>'), '');
+    text = text.replaceAll('</say-as>', '');
+
+    // Remove any remaining XML tags
+    text = text.replaceAll(RegExp(r'<[^>]+>'), '');
+
+    // Clean up extra whitespace
+    text = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+    AppLogger.info('Converted SSML to plain text', {
+      'originalLength': ssmlContent.length,
+      'plainTextLength': text.length,
+    });
+
+    return text;
+  }
+
+  void _handleWordTap(int wordIndex) {
+    // Get the word timing and seek to that position
+    final timings = _wordTimingService.getCachedTimings(widget.learningObject.id);
+    if (timings != null && wordIndex >= 0 && wordIndex < timings.length) {
+      final timing = timings[wordIndex];
+      final position = Duration(milliseconds: timing.startMs);
+      _audioService.seekToPosition(position);
+      AppLogger.info('Seeking to word', {
+        'wordIndex': wordIndex,
+        'word': timing.word,
+        'positionMs': timing.startMs,
+      });
     }
   }
 
@@ -214,41 +305,31 @@ class _EnhancedAudioPlayerScreenState
                   ),
                   padding: const EdgeInsets.all(16),
                   child: SingleChildScrollView(
-                    child: StreamBuilder<int?>(
-                      stream: Stream.periodic(const Duration(milliseconds: 100))
-                          .map((_) => _audioService.getCurrentWordIndex()),
-                      builder: (context, snapshot) {
-                        final currentWordIndex = snapshot.data;
-                        final currentSentenceIndex =
-                            _audioService.getCurrentSentenceIndex();
-
-                        // For now, show placeholder text
-                        // This will be replaced with DualLevelHighlightedText widget
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.learningObject.plainText ?? '',
+                    controller: _scrollController,
+                    child: _displayText != null && _displayText!.isNotEmpty
+                        ? DualLevelHighlightedText(
+                            text: _displayText!,
+                            contentId: widget.learningObject.id,
+                            baseStyle: TextStyle(
+                              fontSize: _progressService?.currentFontSize ?? 16.0,
+                              height: 1.5,
+                              color: Colors.black87,
+                            ),
+                            sentenceHighlightColor: const Color(0xFFE3F2FD), // Light blue
+                            wordHighlightColor: const Color(0xFFFFF59D), // Yellow
+                            activeWordTextColor: const Color(0xFF1976D2), // Darker blue
+                            onWordTap: _handleWordTap,
+                            scrollController: _scrollController,
+                          )
+                        : Center(
+                            child: Text(
+                              'No content available',
                               style: TextStyle(
                                 fontSize: _progressService?.currentFontSize ?? 16.0,
-                                height: 1.5,
+                                color: Colors.grey,
                               ),
                             ),
-                            if (currentWordIndex != null)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 16),
-                                child: Text(
-                                  'Word: $currentWordIndex, Sentence: $currentSentenceIndex',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        );
-                      },
-                    ),
+                          ),
                   ),
                 ),
               ),
@@ -417,7 +498,8 @@ class _EnhancedAudioPlayerScreenState
   @override
   void dispose() {
     _focusNode.dispose();
-    // Don't dispose the audio service - it's a singleton
+    _scrollController.dispose();
+    // Don't dispose the audio service or word timing service - they're singletons
     super.dispose();
   }
 }
