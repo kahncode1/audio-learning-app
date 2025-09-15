@@ -84,14 +84,13 @@ class MockDataService {
           assignmentId: assignmentId,
           title: 'Establishing a Case Reserve - Full Lesson',
           contentType: 'text',
-          // Short test content for development (30 seconds of audio)
+          // Extended test content to verify >500 character highlighting works
+          // Using valid SSML tags that Speechify supports (no <p> tags)
+          // UPDATED: Removed <break> tags to test natural sentence detection
           ssmlContent: '''<speak>
-<p>Welcome to the lesson on establishing case reserves.</p>
-<p>A case reserve is an estimate of the amount of money that will be needed to settle a claim.</p>
-<p>Setting accurate reserves is critical for managing insurance company finances.</p>
-<p>Thank you for completing this lesson.</p>
+<emphasis level="strong">Welcome to the lesson on establishing case reserves.</emphasis> A case reserve is an estimate of the amount of money that will be needed to settle a claim. Setting accurate reserves is critical for managing insurance company finances. Reserves must be reviewed regularly to ensure they remain appropriate as claims develop. The initial reserve is often set based on limited information and must be adjusted as more facts become available. Factors to consider include medical costs, lost wages, property damage, and potential legal expenses. Experienced adjusters use historical data and industry benchmarks to guide their reserve decisions. Documentation is essential - every reserve change must be justified and recorded in the claim file. Regular reserve adequacy reviews help identify trends and improve future reserving accuracy. <emphasis level="moderate">Thank you for completing this comprehensive lesson on case reserve management.</emphasis>
 </speak>''',
-          plainText: '''Welcome to the lesson on establishing case reserves. A case reserve is an estimate of the amount of money that will be needed to settle a claim. Setting accurate reserves is critical for managing insurance company finances. Thank you for completing this lesson.''',
+          plainText: '''Welcome to the lesson on establishing case reserves. A case reserve is an estimate of the amount of money that will be needed to settle a claim. Setting accurate reserves is critical for managing insurance company finances. Reserves must be reviewed regularly to ensure they remain appropriate as claims develop. The initial reserve is often set based on limited information and must be adjusted as more facts become available. Factors to consider include medical costs, lost wages, property damage, and potential legal expenses. Experienced adjusters use historical data and industry benchmarks to guide their reserve decisions. Documentation is essential - every reserve change must be justified and recorded in the claim file. Regular reserve adequacy reviews help identify trends and improve future reserving accuracy. Thank you for completing this comprehensive lesson on case reserve management.''',
           orderIndex: 1,
           createdAt: DateTime.now().subtract(const Duration(days: 30)),
           updatedAt: DateTime.now(),

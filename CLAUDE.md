@@ -167,9 +167,10 @@ For development and testing, the following test data is available in Supabase:
 
 - **Course**: "Insurance Case Management" (Course Number: INS-101)
 - **Assignment**: "Establishing a Case Reserve"
-- **Learning Object**: ID `94096d75-7125-49be-b11c-49a9d5b5660d`
-  - Contains SSML content for Speechify API testing
-  - Includes case reserve lesson with word timing markers
+- **Learning Object**: ID `63ad7b78-0970-4265-a4fe-51f3fee39d5f`
+  - Contains valid SSML content for Speechify API testing
+  - Uses proper SSML tags: `<emphasis>`, `<break>`, `<prosody>`, `<sub>`
+  - Includes full case reserve lesson with word timing markers
 
 ### Test Access
 - **"Test with Database" button** in HomePage
@@ -181,7 +182,7 @@ For development and testing, the following test data is available in Supabase:
 ```sql
 -- Public access for test learning object (REMOVE IN PRODUCTION)
 CREATE POLICY "Public read access for test data" ON learning_objects
-FOR SELECT USING (id = '94096d75-7125-49be-b11c-49a9d5b5660d');
+FOR SELECT USING (id = '63ad7b78-0970-4265-a4fe-51f3fee39d5f');
 ```
 
 ## Common Pitfalls

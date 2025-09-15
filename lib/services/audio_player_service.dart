@@ -6,6 +6,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:rxdart/rxdart.dart';
 import '../models/word_timing.dart';
 import '../models/learning_object.dart';
+import '../utils/app_logger.dart';
 import 'speechify_service.dart';
 import 'word_timing_service.dart';
 import 'audio/speechify_audio_source.dart';
@@ -186,6 +187,16 @@ class AudioPlayerService {
       debugPrint('Loading audio for: ${learningObject.title}');
       debugPrint('Content type: ${isSSML ? "SSML" : "Plain text"}');
       debugPrint('Content length: ${content.length} characters');
+
+      // Log the data flow for debugging text duplication issues
+      AppLogger.info('AudioPlayerService loading content', {
+        'learningObjectId': learningObject.id,
+        'hasSSMLContent': learningObject.ssmlContent != null,
+        'hasPlainText': learningObject.plainText != null,
+        'plainTextLength': learningObject.plainText?.length ?? 0,
+        'ssmlContentLength': learningObject.ssmlContent?.length ?? 0,
+        'usingContent': isSSML ? 'SSML' : 'plainText',
+      });
 
       // Generate audio with timings
       final result = await _speechifyService.generateAudioWithTimings(

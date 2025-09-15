@@ -58,13 +58,16 @@ class SpeechifyService {
     bool isSSML = false,
   }) async {
     try {
-      // Convert SSML to plain text if needed
+      // Pass SSML directly to API - Speechify supports SSML tags
       String processedContent = content;
       if (isSSML) {
-        processedContent = _convertSSMLToPlainText(content);
-        AppLogger.info('Converted SSML to plain text', {
-          'originalLength': content.length,
-          'processedLength': processedContent.length,
+        // Don't convert SSML - send it directly to preserve chunk structure
+        processedContent = content;
+        AppLogger.info('Sending SSML content to API', {
+          'length': content.length,
+          'hasSpeak': content.contains('<speak>'),
+          'hasEmphasis': content.contains('<emphasis'),
+          'hasBreak': content.contains('<break'),
         });
       }
 
@@ -101,9 +104,9 @@ class SpeechifyService {
         }
 
         // Parse word timings from speech marks
-        // Pass the processed content for mock timing generation if needed
+        // Pass the processed content for sentence boundary detection
         final wordTimings = speechMarks != null
-            ? _parseSpeechMarks(speechMarks)
+            ? _parseSpeechMarks(speechMarks, processedContent)
             : _generateMockTimings(processedContent);
 
         return AudioGenerationResult(
@@ -182,14 +185,22 @@ class SpeechifyService {
     for (final word in words) {
       if (word.isEmpty) continue;
 
-      timings.add(WordTiming(
-        word: word,
-        startMs: currentMs,
-        endMs: currentMs + msPerWord - 50, // Small gap between words
-        sentenceIndex: sentenceIndex,
-      ));
+      // CRITICAL FIX: Separate punctuation from words for accurate matching
+      // Store the clean word without punctuation for timing matching
+      // Remove trailing punctuation only (not punctuation in the middle of words)
+      final cleanWord = word.replaceAll(RegExp(r'''[.,;:!?'"()]+$'''), '');
 
-      // Track sentence boundaries
+      // Only add timing if we have a real word after cleaning
+      if (cleanWord.isNotEmpty) {
+        timings.add(WordTiming(
+          word: cleanWord,  // Use clean word without trailing punctuation
+          startMs: currentMs,
+          endMs: currentMs + msPerWord - 50, // Small gap between words
+          sentenceIndex: sentenceIndex,
+        ));
+      }
+
+      // Track sentence boundaries based on original word with punctuation
       if (word.endsWith('.') || word.endsWith('!') || word.endsWith('?')) {
         sentenceIndex++;
       }
@@ -207,7 +218,12 @@ class SpeechifyService {
   }
 
   /// Parse speech marks from Speechify API response
-  List<WordTiming> _parseSpeechMarks(dynamic speechMarks) {
+  ///
+  /// Speechify API returns hierarchical NestedChunk structure:
+  /// - Top level: NestedChunk(s) representing sentences/paragraphs
+  /// - Each NestedChunk contains: chunks array with word-level timing
+  /// Format: {value: "sentence", start_time, end_time, start, end, chunks: [words]}
+  List<WordTiming> _parseSpeechMarks(dynamic speechMarks, [String? originalText]) {
     final timings = <WordTiming>[];
 
     if (speechMarks == null) {
@@ -216,63 +232,208 @@ class SpeechifyService {
     }
 
     try {
-      // Speech marks should be a List according to the API
-      if (speechMarks is List) {
-        int sentenceIndex = 0;
-        for (int i = 0; i < speechMarks.length; i++) {
-          final mark = speechMarks[i] as Map;
-          final type = mark['type'] as String?;
+      // Handle Map wrapper structure (actual API response)
+      if (speechMarks is Map) {
+        AppLogger.info('Speech marks is a Map', {
+          'keys': (speechMarks as Map).keys.toList(),
+        });
 
-          if (type == 'word') {
-            final word = mark['value'] as String? ?? '';
+        // Check if this is a single NestedChunk (has both 'chunks' and 'value')
+        if (speechMarks.containsKey('chunks') && speechMarks.containsKey('value')) {
+          AppLogger.info('Found single NestedChunk structure');
+          return _parseNestedChunk(speechMarks, 0);
+        }
+        // Or it's a wrapper containing chunks
+        else if (speechMarks.containsKey('chunks')) {
+          final chunks = speechMarks['chunks'];
 
-            timings.add(WordTiming(
-              word: word,
-              startMs: (mark['start'] as num?)?.toInt() ?? 0,
-              endMs: (mark['end'] as num?)?.toInt() ?? 0,
-              sentenceIndex: sentenceIndex,
-            ));
-
-            // Track sentence boundaries based on punctuation
-            // Increment AFTER adding the word so first sentence is 0
-            if (word.endsWith('.') || word.endsWith('!') || word.endsWith('?')) {
-              sentenceIndex++;
+          if (chunks is List && chunks.isNotEmpty) {
+            // Check if it's a list of NestedChunks or words
+            final firstChunk = chunks[0];
+            if (firstChunk is Map && firstChunk.containsKey('chunks')) {
+              // List of NestedChunks (multiple sentences)
+              AppLogger.info('Found list of NestedChunks', {'count': chunks.length});
+              return _parseMultipleSentences(chunks);
+            } else {
+              // Flat list of words (single sentence)
+              AppLogger.info('Found flat word list in wrapper', {'count': chunks.length});
+              return _parseFlatWordList(chunks, 0, originalText);
             }
           }
+        } else {
+          AppLogger.warning('Could not find chunks in Map structure');
         }
-      } else if (speechMarks is Map) {
-        // Fallback for Map format if API changes
-        final chunks = speechMarks['chunks'] as List?;
-        if (chunks != null) {
-          int sentenceIndex = 0;
-          for (int i = 0; i < chunks.length; i++) {
-            final chunk = chunks[i] as Map;
-            if (chunk['type'] == 'word') {
-              final word = chunk['value'] as String? ?? '';
+      } else if (speechMarks is List && speechMarks.isNotEmpty) {
+        AppLogger.info('Speech marks is a List', {
+          'count': speechMarks.length,
+          'firstItem': speechMarks[0].runtimeType.toString(),
+        });
 
-              timings.add(WordTiming(
-                word: word,
-                startMs: (chunk['start_time'] as num?)?.toInt() ?? 0,
-                endMs: (chunk['end_time'] as num?)?.toInt() ?? 0,
-                sentenceIndex: sentenceIndex,
-              ));
-
-              // Track sentence boundaries
-              // Increment AFTER adding the word so first sentence is 0
-              if (word.endsWith('.') || word.endsWith('!') || word.endsWith('?')) {
-                sentenceIndex++;
-              }
-            }
-          }
+        // Check if it's NestedChunks or flat words
+        final firstItem = speechMarks[0];
+        if (firstItem is Map && firstItem.containsKey('chunks')) {
+          // List of NestedChunks (multiple sentences)
+          AppLogger.info('Found list of NestedChunks', {'count': speechMarks.length});
+          return _parseMultipleSentences(speechMarks);
+        } else {
+          // Flat word list (single sentence, fallback for old format)
+          AppLogger.info('Found flat word list', {'count': speechMarks.length});
+          return _parseFlatWordList(speechMarks, 0, originalText);
         }
+      } else {
+        AppLogger.warning('Unexpected speech marks format', {
+          'type': speechMarks.runtimeType.toString(),
+        });
+      }
+    } catch (e, stackTrace) {
+      AppLogger.warning('Error parsing speech marks', {
+        'error': e.toString(),
+        'stackTrace': stackTrace.toString(),
+      });
+    }
+
+    return timings;
+  }
+
+  /// Parse a single NestedChunk (sentence/paragraph)
+  List<WordTiming> _parseNestedChunk(Map chunk, int sentenceIndex) {
+    final timings = <WordTiming>[];
+    final words = chunk['chunks'] as List?;
+
+    AppLogger.info('Parsing NestedChunk', {
+      'sentenceIndex': sentenceIndex,
+      'sentenceText': chunk['value'],
+      'wordCount': words?.length ?? 0,
+    });
+
+    if (words != null) {
+      for (int i = 0; i < words.length; i++) {
+        final wordChunk = words[i] as Map;
+
+        // Extract word text
+        final word = (wordChunk['value'] as String? ?? '').trim();
+        if (word.isEmpty) continue;
+
+        // Extract timing
+        final startMs = (wordChunk['start_time'] as num?)?.toInt() ?? 0;
+        final endMs = (wordChunk['end_time'] as num?)?.toInt() ?? 0;
+
+        // Extract character positions
+        final charStart = (wordChunk['start'] as num?)?.toInt();
+        final charEnd = (wordChunk['end'] as num?)?.toInt();
+
+        timings.add(WordTiming(
+          word: word,
+          startMs: startMs,
+          endMs: endMs,
+          sentenceIndex: sentenceIndex,  // All words in this chunk have same sentence index
+          charStart: charStart,
+          charEnd: charEnd,
+        ));
+      }
+    }
+
+    return timings;
+  }
+
+  /// Parse multiple NestedChunks (sentences)
+  List<WordTiming> _parseMultipleSentences(List sentences) {
+    final timings = <WordTiming>[];
+
+    AppLogger.info('Parsing multiple sentences', {'count': sentences.length});
+
+    for (int i = 0; i < sentences.length; i++) {
+      final sentenceChunk = sentences[i] as Map;
+      timings.addAll(_parseNestedChunk(sentenceChunk, i));
+    }
+
+    AppLogger.info('Parsed all sentences', {
+      'totalWords': timings.length,
+      'totalSentences': sentences.length,
+    });
+
+    return timings;
+  }
+
+  /// Parse flat word list (fallback for old format or single sentence)
+  List<WordTiming> _parseFlatWordList(List words, int baseSentenceIndex, [String? originalText]) {
+    final timings = <WordTiming>[];
+    int sentenceIndex = baseSentenceIndex;
+
+    AppLogger.info('Parsing flat word list', {
+      'wordCount': words.length,
+      'baseSentenceIndex': baseSentenceIndex,
+    });
+
+    for (int i = 0; i < words.length; i++) {
+      final mark = words[i] as Map;
+
+      // Log the structure of the first few marks for debugging
+      if (i < 3) {
+        AppLogger.debug('Word mark structure at index $i', {
+          'keys': mark.keys.toList(),
+        });
       }
 
-      AppLogger.info('Parsed speech marks', {
-        'count': timings.length,
-        'format': speechMarks is List ? 'List' : 'Map'
-      });
-    } catch (e) {
-      AppLogger.warning('Error parsing speech marks', {'error': e.toString()});
+      // Check if this is a word entry (skip if type exists and is not "word")
+      final type = mark['type'] as String?;
+      if (type != null && type != 'word') {
+        AppLogger.debug('Skipping non-word mark', {'type': type});
+        continue;
+      }
+
+      // Extract word text with defensive fallbacks
+      String word = '';
+      if (mark.containsKey('value')) {
+        word = (mark['value'] as String? ?? '').trim();
+      } else if (mark.containsKey('word')) {
+        word = (mark['word'] as String? ?? '').trim();
+      }
+
+      // Skip entries with empty words
+      if (word.isEmpty) {
+        AppLogger.debug('Skipping empty word at index $i');
+        continue;
+      }
+
+      // Extract timing with multiple fallbacks
+      int startMs = 0;
+      int endMs = 0;
+
+      // Try start_time/end_time (actual API format)
+      if (mark.containsKey('start_time') && mark.containsKey('end_time')) {
+        startMs = (mark['start_time'] as num?)?.toInt() ?? 0;
+        endMs = (mark['end_time'] as num?)?.toInt() ?? 0;
+      }
+      // Try start_ms/end_ms (documented format)
+      else if (mark.containsKey('start_ms') && mark.containsKey('end_ms')) {
+        startMs = (mark['start_ms'] as num?)?.toInt() ?? 0;
+        endMs = (mark['end_ms'] as num?)?.toInt() ?? 0;
+      }
+
+      // Extract character positions if available
+      int? charStart;
+      int? charEnd;
+      if (mark.containsKey('start') && mark.containsKey('end')) {
+        charStart = (mark['start'] as num?)?.toInt();
+        charEnd = (mark['end'] as num?)?.toInt();
+      }
+
+      // Use API-provided sentence_index if available, otherwise use base index
+      final apiSentenceIndex = (mark['sentence_index'] as num?)?.toInt();
+      if (apiSentenceIndex != null) {
+        sentenceIndex = apiSentenceIndex;
+      }
+      // Note: We no longer do manual sentence detection since the API provides this
+
+      timings.add(WordTiming(
+        word: word,
+        startMs: startMs,
+        endMs: endMs,
+        sentenceIndex: sentenceIndex,
+        charStart: charStart,
+        charEnd: charEnd,
+      ));
     }
 
     return timings;

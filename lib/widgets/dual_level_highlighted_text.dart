@@ -130,20 +130,18 @@ class _DualLevelHighlightedTextState
         'fullTextLength': widget.text.length,
       });
 
-      // The timings are ONLY for the first 500 chars of text
-      // This is a limitation of the Speechify API truncation
+      // Fetch timings for the full text
       var timings = _timingService.getCachedTimings(widget.contentId);
 
       if (timings == null || timings.isEmpty) {
-        // Fetch timings for truncated text only
-        final truncatedText = widget.text.substring(0, widget.text.length.clamp(0, 500));
+        // Fetch timings for the complete text
         timings = await _timingService.fetchTimings(
           widget.contentId,
-          truncatedText,
+          widget.text,
         );
 
-        AppLogger.info('Fetched timings for truncated text', {
-          'truncatedLength': truncatedText.length,
+        AppLogger.info('Fetched timings for full text', {
+          'textLength': widget.text.length,
           'timingCount': timings?.length ?? 0,
         });
       }
@@ -442,10 +440,15 @@ class DualLevelHighlightPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // CRITICAL: Clear the canvas to prevent "left behind" highlights
+    // This ensures old highlights are completely removed
+    canvas.saveLayer(Rect.fromLTWH(0, 0, size.width, size.height), Paint());
+
     // ALWAYS paint the full text first
     // This ensures text is visible even if highlighting fails
     if (timings.isEmpty) {
       _paintPlainText(canvas, size);
+      canvas.restore();
       return;
     }
 
@@ -463,6 +466,8 @@ class DualLevelHighlightPainter extends CustomPainter {
 
     // Layer 3: Text with appropriate colors
     _paintText(canvas, size, textPainter);
+
+    canvas.restore();
   }
 
   void _paintPlainText(Canvas canvas, Size size) {
@@ -487,6 +492,14 @@ class DualLevelHighlightPainter extends CustomPainter {
       return;
     }
 
+    // DEBUG: Log what words we're trying to highlight in this sentence
+    AppLogger.info('🔍 SENTENCE HIGHLIGHTING DEBUG', {
+      'currentSentenceIndex': currentSentenceIndex,
+      'sentenceWordsCount': sentenceWords.length,
+      'sentenceWords': sentenceWords.map((t) => t.word).toList(),
+      'hasCharPositions': sentenceWords.first.charStart != null,
+    });
+
     final sentencePaint = Paint()
       ..color = sentenceHighlightColor
       ..style = PaintingStyle.fill;
@@ -495,45 +508,84 @@ class DualLevelHighlightPainter extends CustomPainter {
     textPainter.text = TextSpan(text: text, style: baseStyle);
     textPainter.layout(maxWidth: size.width);
 
-    // Track word occurrences for accurate positioning
-    final Map<String, int> wordOccurrences = {};
+    int sentenceStartPos = text.length;
+    int sentenceEndPos = 0;
 
-    // Only search within the truncated portion (first 500 chars)
-    final searchLimit = text.length.clamp(0, 500);
+    // Use character positions EXACTLY as provided by the API
+    // No modifications, no extensions - just the raw positions
+    // TextSelection will naturally include all characters in the range (including spaces)
 
-    // Paint background for each word in the sentence
-    for (final timing in sentenceWords) {
-      final word = timing.word;
-      final occurrenceIndex = wordOccurrences[word] ?? 0;
-      wordOccurrences[word] = occurrenceIndex + 1;
+    // If we have character positions from API, use them directly
+    if (sentenceWords.first.charStart != null && sentenceWords.last.charEnd != null) {
+      // Use exact positions from API - no modifications
+      sentenceStartPos = sentenceWords.first.charStart!;
+      sentenceEndPos = sentenceWords.last.charEnd!;
 
-      // Find the nth occurrence of this word (only in truncated portion)
-      int searchPos = 0;
-      int foundCount = 0;
-      int wordPosition = -1;
+      AppLogger.info('📍 Using exact API positions', {
+        'sentenceStart': sentenceStartPos,
+        'sentenceEnd': sentenceEndPos,
+        'sentenceLength': sentenceEndPos - sentenceStartPos,
+        'firstWord': sentenceWords.first.word,
+        'lastWord': sentenceWords.last.word,
+        'totalWords': sentenceWords.length,
+      });
+    } else {
+      // Fallback: Simple search without modifications
+      // Just find the first and last word positions
+      for (final word in sentenceWords) {
+        final wordPos = text.indexOf(word.word,
+            sentenceStartPos == text.length ? 0 : sentenceStartPos);
 
-      while (searchPos < searchLimit) {
-        final pos = text.indexOf(word, searchPos);
-        if (pos == -1 || pos >= searchLimit) break;
-
-        if (foundCount == occurrenceIndex) {
-          wordPosition = pos;
-          break;
+        if (wordPos != -1) {
+          sentenceStartPos = wordPos < sentenceStartPos ? wordPos : sentenceStartPos;
+          sentenceEndPos = (wordPos + word.word.length) > sentenceEndPos ?
+                          (wordPos + word.word.length) : sentenceEndPos;
         }
-
-        foundCount++;
-        searchPos = pos + word.length;
       }
 
-      final wordRect = _getWordRect(timing, textPainter, wordPosition);
-      if (wordRect != null) {
-        // Add some padding to the highlight
-        final paddedRect = wordRect.inflate(2);
+      AppLogger.info('📍 Using fallback position search', {
+        'sentenceStart': sentenceStartPos,
+        'sentenceEnd': sentenceEndPos,
+        'firstWord': sentenceWords.first.word,
+        'lastWord': sentenceWords.last.word,
+      });
+    }
+
+    // Paint continuous rectangles for the entire sentence range
+    if (sentenceStartPos < text.length && sentenceEndPos > 0) {
+      // Get all boxes for the entire sentence selection
+      final sentenceSelection = TextSelection(
+        baseOffset: sentenceStartPos,
+        extentOffset: sentenceEndPos,
+      );
+
+      final boxes = textPainter.getBoxesForSelection(sentenceSelection);
+
+      // Paint each line box (handles multi-line sentences)
+      for (final box in boxes) {
+        // Use exact box dimensions without padding
+        final highlightRect = Rect.fromLTRB(
+          box.left,
+          box.top,
+          box.right,
+          box.bottom
+        );
+
+        // Draw the continuous highlight rectangle
         canvas.drawRRect(
-          RRect.fromRectAndRadius(paddedRect, const Radius.circular(2)),
+          RRect.fromRectAndRadius(highlightRect, const Radius.circular(2)),
           sentencePaint,
         );
       }
+
+      AppLogger.info('✅ SENTENCE HIGHLIGHT COMPLETE', {
+        'boxCount': boxes.length,
+        'continuous': true,
+        'startPos': sentenceStartPos,
+        'endPos': sentenceEndPos,
+      });
+    } else {
+      AppLogger.warning('Could not determine sentence boundaries');
     }
   }
 
@@ -546,40 +598,48 @@ class DualLevelHighlightPainter extends CustomPainter {
     textPainter.text = TextSpan(text: text, style: baseStyle);
     textPainter.layout(maxWidth: size.width);
 
-    // Only search within the truncated portion (first 500 chars)
-    final searchLimit = text.length.clamp(0, 500);
-
-    // Find the correct occurrence of this word
-    final Map<String, int> wordOccurrences = {};
     int wordPosition = -1;
 
-    for (int i = 0; i <= currentWordIndex && i < timings.length; i++) {
-      final timing = timings[i];
-      final word = timing.word;
+    // If we have character positions from API, use them directly
+    if (currentTiming.charStart != null && currentTiming.charEnd != null) {
+      wordPosition = currentTiming.charStart!;
 
-      if (i == currentWordIndex) {
-        // This is the word we want to highlight
+      AppLogger.debug('Using API char position for word highlight', {
+        'word': currentTiming.word,
+        'charStart': currentTiming.charStart,
+        'charEnd': currentTiming.charEnd,
+      });
+    } else {
+      // Fallback: Simple sequential search
+      // Count occurrences up to current word index
+      final Map<String, int> wordOccurrences = {};
+
+      for (int i = 0; i <= currentWordIndex && i < timings.length; i++) {
+        final timing = timings[i];
+        final word = timing.word;
+
         final occurrenceIndex = wordOccurrences[word] ?? 0;
+        wordOccurrences[word] = occurrenceIndex + 1;
 
-        // Find the nth occurrence (only in truncated portion)
-        int searchPos = 0;
-        int foundCount = 0;
+        if (i == currentWordIndex) {
+          // Find the nth occurrence of this word
+          int searchPos = 0;
+          int foundCount = 0;
 
-        while (searchPos < searchLimit) {
-          final pos = text.indexOf(word, searchPos);
-          if (pos == -1 || pos >= searchLimit) break;
+          while (searchPos < text.length) {
+            final pos = text.indexOf(word, searchPos);
+            if (pos == -1) break;
 
-          if (foundCount == occurrenceIndex) {
-            wordPosition = pos;
-            break;
+            if (foundCount == occurrenceIndex) {
+              wordPosition = pos;
+              break;
+            }
+
+            foundCount++;
+            searchPos = pos + word.length;
           }
-
-          foundCount++;
-          searchPos = pos + word.length;
+          break;
         }
-      } else if (timing.word == currentTiming.word) {
-        // Track occurrences of the same word before current
-        wordOccurrences[word] = (wordOccurrences[word] ?? 0) + 1;
       }
     }
 
@@ -590,18 +650,16 @@ class DualLevelHighlightPainter extends CustomPainter {
         ..color = wordHighlightColor
         ..style = PaintingStyle.fill;
 
-      // Add slight padding and rounded corners for polish
-      final paddedRect = wordRect.inflate(1);
+      // Use exact rect without padding
       canvas.drawRRect(
-        RRect.fromRectAndRadius(paddedRect, const Radius.circular(2)),
+        RRect.fromRectAndRadius(wordRect, const Radius.circular(2)),
         wordPaint,
       );
     }
   }
 
   void _paintText(Canvas canvas, Size size, TextPainter textPainter) {
-    // IMPORTANT: Handle the case where timings only cover part of the text
-    // (e.g., first 500 chars due to API truncation)
+    // Handle the case where timings might not cover all text
 
     // If timings are empty, paint plain text
     if (timings.isEmpty) {
@@ -622,8 +680,7 @@ class DualLevelHighlightPainter extends CustomPainter {
     final Map<int, int> timingToPosition = {};
 
     // First pass: map timings to their text positions
-    // Only look within the first 500 chars (where timings exist)
-    final searchLimit = text.length.clamp(0, 500);
+    final searchLimit = text.length;
 
     for (int i = 0; i < sortedTimings.length; i++) {
       final timing = sortedTimings[i];
@@ -633,7 +690,7 @@ class DualLevelHighlightPainter extends CustomPainter {
       final occurrenceIndex = wordOccurrences[word] ?? 0;
       wordOccurrences[word] = occurrenceIndex + 1;
 
-      // Find the nth occurrence of this word (only in truncated portion)
+      // Find the nth occurrence of this word
       int searchPos = 0;
       int foundCount = 0;
       int wordStart = -1;
@@ -680,10 +737,10 @@ class DualLevelHighlightPainter extends CustomPainter {
 
       // Add the word from the actual text position, not from timing
       // This ensures we don't duplicate words
+      // Note: Don't change text color here - background highlighting is handled in paint layers
       spans.add(TextSpan(
         text: text.substring(wordStart, wordEnd),
         style: baseStyle.copyWith(
-          color: isCurrentWord ? activeWordTextColor : baseStyle.color,
           fontWeight: isCurrentWord ? FontWeight.bold : baseStyle.fontWeight,
         ),
       ));
@@ -691,7 +748,7 @@ class DualLevelHighlightPainter extends CustomPainter {
       lastEnd = wordEnd;
     }
 
-    // CRITICAL: Add any remaining text (including text beyond 500 chars)
+    // Add any remaining text
     // This ensures the full text is always displayed
     if (lastEnd < text.length) {
       spans.add(TextSpan(
@@ -717,11 +774,14 @@ class DualLevelHighlightPainter extends CustomPainter {
       // Use the provided word position for accurate rect calculation
       if (wordPosition == -1) return null;
 
+      // Use character end position if available, otherwise use word length
+      final endPosition = timing.charEnd ?? (wordPosition + timing.word.length);
+
       // Get bounding boxes for the word using TextSelection directly
       final boxes = textPainter.getBoxesForSelection(
         TextSelection(
           baseOffset: wordPosition,
-          extentOffset: wordPosition + timing.word.length,
+          extentOffset: endPosition,
         ),
       );
 
@@ -751,10 +811,19 @@ class DualLevelHighlightPainter extends CustomPainter {
   @override
   bool shouldRepaint(DualLevelHighlightPainter oldDelegate) {
     // Only repaint when highlighting changes, not on every frame
-    return currentWordIndex != oldDelegate.currentWordIndex ||
+    final bool shouldRepaintValue = currentWordIndex != oldDelegate.currentWordIndex ||
            currentSentenceIndex != oldDelegate.currentSentenceIndex ||
            timings != oldDelegate.timings ||
            text != oldDelegate.text;
+
+    if (shouldRepaintValue && currentSentenceIndex != oldDelegate.currentSentenceIndex) {
+      AppLogger.debug('🎨 Repainting due to sentence change', {
+        'oldSentence': oldDelegate.currentSentenceIndex,
+        'newSentence': currentSentenceIndex,
+      });
+    }
+
+    return shouldRepaintValue;
   }
 }
 

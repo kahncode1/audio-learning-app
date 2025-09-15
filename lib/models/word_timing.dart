@@ -17,12 +17,16 @@ class WordTiming {
   final int startMs;
   final int endMs;
   final int sentenceIndex;
+  final int? charStart;  // Character position in original text
+  final int? charEnd;    // Character position in original text
 
   WordTiming({
     required this.word,
     required this.startMs,
     required this.endMs,
     required this.sentenceIndex,
+    this.charStart,
+    this.charEnd,
   })  : assert(word.isNotEmpty, 'Word cannot be empty'),
         assert(startMs >= 0, 'Start time must be non-negative'),
         assert(endMs >= 0, 'End time must be non-negative'),
@@ -60,6 +64,8 @@ class WordTiming {
       startMs: json['start_ms'] as int,
       endMs: json['end_ms'] as int,
       sentenceIndex: json['sentence_index'] as int? ?? 0,
+      charStart: json['char_start'] as int?,
+      charEnd: json['char_end'] as int?,
     );
   }
 
@@ -70,6 +76,8 @@ class WordTiming {
       'start_ms': startMs,
       'end_ms': endMs,
       'sentence_index': sentenceIndex,
+      if (charStart != null) 'char_start': charStart,
+      if (charEnd != null) 'char_end': charEnd,
     };
   }
 
@@ -79,12 +87,16 @@ class WordTiming {
     int? startMs,
     int? endMs,
     int? sentenceIndex,
+    int? charStart,
+    int? charEnd,
   }) {
     return WordTiming(
       word: word ?? this.word,
       startMs: startMs ?? this.startMs,
       endMs: endMs ?? this.endMs,
       sentenceIndex: sentenceIndex ?? this.sentenceIndex,
+      charStart: charStart ?? this.charStart,
+      charEnd: charEnd ?? this.charEnd,
     );
   }
 

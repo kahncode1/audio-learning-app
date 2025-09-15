@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Test Learning Object SSML Content (No Breaks Version)
+  ID: 63ad7b78-0970-4265-a4fe-51f3fee39d5f
+  Title: Establishing a Case Reserve - Full Lesson
+
+  HYPOTHESIS:
+  Removing <break> tags might allow the API to naturally detect sentence
+  boundaries based on punctuation, potentially creating multiple NestedChunks.
+
+  CHANGES:
+  - Removed all <break> tags
+  - Content flows naturally with punctuation
+  - Kept <emphasis> tags for important sections
+
+  Let's see if this produces different chunking behavior from the API.
+-->
+<speak>
+<emphasis level="strong">Welcome to the lesson on establishing case reserves.</emphasis> A case reserve is an estimate of the amount of money that will be needed to settle a claim. Setting accurate reserves is critical for managing insurance company finances. Reserves must be reviewed regularly to ensure they remain appropriate as claims develop. The initial reserve is often set based on limited information and must be adjusted as more facts become available. Factors to consider include medical costs, lost wages, property damage, and potential legal expenses. Experienced adjusters use historical data and industry benchmarks to guide their reserve decisions. Documentation is essential - every reserve change must be justified and recorded in the claim file. Regular reserve adequacy reviews help identify trends and improve future reserving accuracy. <emphasis level="moderate">Thank you for completing this comprehensive lesson on case reserve management.</emphasis>
+</speak>

@@ -134,7 +134,7 @@ Remove the temporary RLS policy created for testing:
 DROP POLICY IF EXISTS "Public read access for test data" ON learning_objects;
 ```
 
-This policy was created to allow unauthenticated access to the test learning object (ID: `94096d75-7125-49be-b11c-49a9d5b5660d`) during development.
+This policy was created to allow unauthenticated access to the test learning object (ID: `63ad7b78-0970-4265-a4fe-51f3fee39d5f`) during development.
 
 ### Step 6: Update Supabase Service
 
@@ -264,7 +264,7 @@ VALUES (
 #### Test Course and Learning Object:
 - **Course**: "Insurance Case Management" (ID: INS-101)
 - **Assignment**: "Establishing a Case Reserve"
-- **Learning Object**: ID `94096d75-7125-49be-b11c-49a9d5b5660d`
+- **Learning Object**: ID `63ad7b78-0970-4265-a4fe-51f3fee39d5f`
   - Contains SSML content for audio narration testing
   - Has temporary public access policy for unauthenticated testing
 

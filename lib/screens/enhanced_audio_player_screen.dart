@@ -6,7 +6,7 @@ import '../services/progress_service.dart';
 import '../services/word_timing_service.dart';
 import '../models/learning_object.dart';
 import '../providers/providers.dart';
-import '../widgets/dual_level_highlighted_text.dart';
+import '../widgets/simplified_dual_level_highlighted_text.dart';
 import '../utils/app_logger.dart';
 
 /// EnhancedAudioPlayerScreen - Full-featured audio player with keyboard shortcuts
@@ -22,10 +22,12 @@ import '../utils/app_logger.dart';
 /// - Interactive seek bar
 class EnhancedAudioPlayerScreen extends ConsumerStatefulWidget {
   final LearningObject learningObject;
+  final bool autoPlay;
 
   const EnhancedAudioPlayerScreen({
     super.key,
     required this.learningObject,
+    this.autoPlay = true,
   });
 
   @override
@@ -63,18 +65,24 @@ class _EnhancedAudioPlayerScreenState
       _progressService = await ProgressService.getInstance();
       debugPrint('Progress service initialized');
 
-      // Extract display text from learning object
+      // Use plainText as single source of truth for display
+      // The text processing should have already happened in SpeechifyService
       _displayText = widget.learningObject.plainText;
 
-      // If plainText is null, try to extract from SSML content
+      // Only log if we don't have display text (this would be an error condition)
       if (_displayText == null || _displayText!.isEmpty) {
-        final ssmlContent = widget.learningObject.ssmlContent ?? '';
-        _displayText = _convertSsmlToPlainText(ssmlContent);
+        AppLogger.warning('Learning object has no plainText', {
+          'learningObjectId': widget.learningObject.id,
+          'hasSSMLContent': widget.learningObject.ssmlContent != null,
+        });
+        // Set a fallback message instead of processing SSML here
+        _displayText = 'No content available for display';
       }
 
-      AppLogger.info('Display text extracted', {
+      AppLogger.info('Display text loaded from plainText field', {
         'textLength': _displayText?.length ?? 0,
         'learningObjectId': widget.learningObject.id,
+        'source': 'plainText field (single source of truth)',
       });
 
       // Load the learning object audio
@@ -87,6 +95,40 @@ class _EnhancedAudioPlayerScreenState
         _isInitialized = true;
         _errorMessage = null;
       });
+
+      // Set up position stream listener BEFORE auto-play
+      // This ensures word timing updates are ready
+      _audioService.positionStream.listen((position) {
+        final positionMs = position.inMilliseconds;
+
+        // Update word timing service with current position
+        _wordTimingService.updatePosition(positionMs, widget.learningObject.id);
+
+        // Log position updates for debugging
+        if (positionMs % 1000 < 100) {
+          AppLogger.debug('Audio position update', {
+            'positionMs': positionMs,
+            'learningObjectId': widget.learningObject.id,
+          });
+        }
+
+        // Save progress every 5 seconds (debounced in service)
+        _progressService?.saveProgress(
+          learningObjectId: widget.learningObject.id,
+          positionMs: positionMs,
+          isCompleted: false,
+          isInProgress: true,
+          userId: ref.read(currentUserProvider).valueOrNull?.id,
+        );
+      });
+
+      // Auto-play if requested (with small delay to ensure UI is ready)
+      if (widget.autoPlay && _isInitialized && _errorMessage == null) {
+        debugPrint('Auto-playing audio for: ${widget.learningObject.title}');
+        // Add a small delay to ensure all listeners and UI are ready
+        await Future.delayed(const Duration(milliseconds: 500));
+        await _audioService.play();
+      }
     } catch (e, stackTrace) {
       debugPrint('Error initializing player: $e');
       debugPrint('Stack trace: $stackTrace');
@@ -97,30 +139,7 @@ class _EnhancedAudioPlayerScreenState
       });
     }
 
-    // Start progress tracking and word timing updates
-    _audioService.positionStream.listen((position) {
-      final positionMs = position.inMilliseconds;
-
-      // Update word timing service with current position
-      _wordTimingService.updatePosition(positionMs, widget.learningObject.id);
-
-      // Log position updates for debugging
-      if (positionMs % 1000 < 100) {
-        AppLogger.debug('Audio position update', {
-          'positionMs': positionMs,
-          'learningObjectId': widget.learningObject.id,
-        });
-      }
-
-      // Save progress every 5 seconds (debounced in service)
-      _progressService?.saveProgress(
-        learningObjectId: widget.learningObject.id,
-        positionMs: positionMs,
-        isCompleted: false,
-        isInProgress: true,
-        userId: ref.read(currentUserProvider).valueOrNull?.id,
-      );
-    });
+    // Position stream listener moved above to ensure it's ready before auto-play
 
     // Auto-request focus for keyboard shortcuts
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -150,46 +169,6 @@ class _EnhancedAudioPlayerScreenState
     }
   }
 
-  String _convertSsmlToPlainText(String ssmlContent) {
-    // Remove SSML tags but preserve text content
-    String text = ssmlContent;
-
-    // Remove opening and closing speak tags
-    text = text.replaceAll(RegExp(r'<speak[^>]*>'), '');
-    text = text.replaceAll('</speak>', '');
-
-    // Remove paragraph tags but keep spacing
-    text = text.replaceAll(RegExp(r'<p[^>]*>'), '');
-    text = text.replaceAll('</p>', ' ');
-
-    // Remove break tags
-    text = text.replaceAll(RegExp(r'<break[^>]*/>'), ' ');
-
-    // Remove phoneme tags
-    text = text.replaceAll(RegExp(r'<phoneme[^>]*>'), '');
-    text = text.replaceAll('</phoneme>', '');
-
-    // Remove prosody tags
-    text = text.replaceAll(RegExp(r'<prosody[^>]*>'), '');
-    text = text.replaceAll('</prosody>', '');
-
-    // Remove say-as tags
-    text = text.replaceAll(RegExp(r'<say-as[^>]*>'), '');
-    text = text.replaceAll('</say-as>', '');
-
-    // Remove any remaining XML tags
-    text = text.replaceAll(RegExp(r'<[^>]+>'), '');
-
-    // Clean up extra whitespace
-    text = text.replaceAll(RegExp(r'\s+'), ' ').trim();
-
-    AppLogger.info('Converted SSML to plain text', {
-      'originalLength': ssmlContent.length,
-      'plainTextLength': text.length,
-    });
-
-    return text;
-  }
 
   void _handleWordTap(int wordIndex) {
     // Get the word timing and seek to that position
@@ -307,7 +286,7 @@ class _EnhancedAudioPlayerScreenState
                   child: SingleChildScrollView(
                     controller: _scrollController,
                     child: _displayText != null && _displayText!.isNotEmpty
-                        ? DualLevelHighlightedText(
+                        ? SimplifiedDualLevelHighlightedText(
                             text: _displayText!,
                             contentId: widget.learningObject.id,
                             baseStyle: TextStyle(
@@ -317,7 +296,6 @@ class _EnhancedAudioPlayerScreenState
                             ),
                             sentenceHighlightColor: const Color(0xFFE3F2FD), // Light blue
                             wordHighlightColor: const Color(0xFFFFF59D), // Yellow
-                            activeWordTextColor: const Color(0xFF1976D2), // Darker blue
                             onWordTap: _handleWordTap,
                             scrollController: _scrollController,
                           )
