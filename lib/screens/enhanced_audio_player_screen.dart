@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,6 +43,7 @@ class _EnhancedAudioPlayerScreenState
   ProgressService? _progressService;
   final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
+  StreamSubscription<Duration>? _positionSub;
   bool _isInitialized = false;
   String? _errorMessage;
   String? _displayText;
@@ -91,15 +93,21 @@ class _EnhancedAudioPlayerScreenState
       debugPrint('Audio loaded successfully');
 
       // Mark as initialized and refresh UI
+      final resolvedDisplayText = _audioService.currentDisplayText;
       setState(() {
         _isInitialized = true;
         _errorMessage = null;
+        if (resolvedDisplayText != null && resolvedDisplayText.isNotEmpty) {
+          _displayText = resolvedDisplayText;
+        }
       });
 
       // Set up position stream listener BEFORE auto-play
       // This ensures word timing updates are ready
-      _audioService.positionStream.listen((position) {
+      _positionSub = _audioService.positionStream.listen((position) {
         final positionMs = position.inMilliseconds;
+
+        if (!mounted) return; // Avoid using ref after dispose
 
         // Update word timing service with current position
         _wordTimingService.updatePosition(positionMs, widget.learningObject.id);
@@ -169,10 +177,10 @@ class _EnhancedAudioPlayerScreenState
     }
   }
 
-
   void _handleWordTap(int wordIndex) {
     // Get the word timing and seek to that position
-    final timings = _wordTimingService.getCachedTimings(widget.learningObject.id);
+    final timings =
+        _wordTimingService.getCachedTimings(widget.learningObject.id);
     if (timings != null && wordIndex >= 0 && wordIndex < timings.length) {
       final timing = timings[wordIndex];
       final position = Duration(milliseconds: timing.startMs);
@@ -290,12 +298,15 @@ class _EnhancedAudioPlayerScreenState
                             text: _displayText!,
                             contentId: widget.learningObject.id,
                             baseStyle: TextStyle(
-                              fontSize: _progressService?.currentFontSize ?? 16.0,
+                              fontSize:
+                                  _progressService?.currentFontSize ?? 16.0,
                               height: 1.5,
                               color: Colors.black87,
                             ),
-                            sentenceHighlightColor: const Color(0xFFE3F2FD), // Light blue
-                            wordHighlightColor: const Color(0xFFFFF59D), // Yellow
+                            sentenceHighlightColor:
+                                const Color(0xFFE3F2FD), // Light blue
+                            wordHighlightColor:
+                                const Color(0xFFFFF59D), // Yellow
                             onWordTap: _handleWordTap,
                             scrollController: _scrollController,
                           )
@@ -303,7 +314,8 @@ class _EnhancedAudioPlayerScreenState
                             child: Text(
                               'No content available',
                               style: TextStyle(
-                                fontSize: _progressService?.currentFontSize ?? 16.0,
+                                fontSize:
+                                    _progressService?.currentFontSize ?? 16.0,
                                 color: Colors.grey,
                               ),
                             ),
@@ -433,10 +445,12 @@ class _EnhancedAudioPlayerScreenState
                         ),
                         // Font size control
                         StreamBuilder<int>(
-                          stream: _progressService?.fontSizeIndexStream ?? Stream.value(1),
+                          stream: _progressService?.fontSizeIndexStream ??
+                              Stream.value(1),
                           builder: (context, snapshot) {
                             final fontSizeName =
-                                _progressService?.currentFontSizeName ?? 'Medium';
+                                _progressService?.currentFontSizeName ??
+                                    'Medium';
                             return TextButton.icon(
                               icon: const Icon(Icons.text_fields),
                               label: Text(fontSizeName),
@@ -475,6 +489,9 @@ class _EnhancedAudioPlayerScreenState
 
   @override
   void dispose() {
+    // Cancel stream subscription to prevent callbacks after dispose
+    _positionSub?.cancel();
+    _positionSub = null;
     _focusNode.dispose();
     _scrollController.dispose();
     // Don't dispose the audio service or word timing service - they're singletons

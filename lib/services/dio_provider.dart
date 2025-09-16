@@ -95,14 +95,29 @@ class DioProvider {
   /// Get or create a singleton Dio instance for Speechify streaming
   /// This instance has special configuration for audio streaming
   static Dio createSpeechifyClient() {
-    // Return existing instance if available
+    final desiredBaseUrl = AppConfig.speechifyApiUrl;
+
+    // Reuse the existing client when the host hasn't changed.
+    // If the base URL changes (for example after editing the .env file while
+    // the app is still running), rebuild the client so new DNS lookups use the
+    // updated host. Without this guard the simulator can stay stuck on the old
+    // api.speechify.com endpoint and keep throwing "Failed host lookup".
     if (_speechifyDio != null) {
-      return _speechifyDio!;
+      if (_speechifyDio!.options.baseUrl == desiredBaseUrl) {
+        return _speechifyDio!;
+      }
+
+      AppLogger.info('Recreating Speechify Dio client for new base URL', {
+        'oldBaseUrl': _speechifyDio!.options.baseUrl,
+        'newBaseUrl': desiredBaseUrl,
+      });
+      _speechifyDio!.close(force: true);
+      _speechifyDio = null;
     }
 
     // Create new instance
     _speechifyDio = Dio(BaseOptions(
-      baseUrl: AppConfig.speechifyApiUrl,
+      baseUrl: desiredBaseUrl,
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(minutes: 5), // Longer for streaming
       sendTimeout: const Duration(seconds: 30),
@@ -132,8 +147,11 @@ class DioProvider {
 
     if (kDebugMode) {
       _speechifyDio!.interceptors.add(LogInterceptor(
-        requestBody: false, // Don't log audio data
-        responseBody: false,
+        request: true,            // Log method + URL
+        requestHeader: true,      // Show headers (API key is Bearer; redact happens upstream if needed)
+        requestBody: false,       // Avoid logging large audio payloads
+        responseHeader: true,     // Show status + headers
+        responseBody: false,      // Skip large base64 body
         error: true,
         logPrint: (log) => AppLogger.debug('[SPEECHIFY]', {'message': log}),
       ));

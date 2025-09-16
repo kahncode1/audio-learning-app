@@ -22,6 +22,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -122,10 +123,8 @@ class WordTimingService {
       if (_cacheAccessOrder.isNotEmpty) {
         final oldestKey = _cacheAccessOrder.first;
         _positionCache.remove(oldestKey);
-        AppLogger.debug('Evicted position cache', {
-          'contentId': oldestKey,
-          'totalPositions': totalPositions
-        });
+        AppLogger.debug('Evicted position cache',
+            {'contentId': oldestKey, 'totalPositions': totalPositions});
       }
     }
   }
@@ -143,7 +142,8 @@ class WordTimingService {
     try {
       // Check memory cache first
       if (_wordTimingCache.containsKey(contentId)) {
-        AppLogger.debug('Found timings in memory cache', {'contentId': contentId});
+        AppLogger.debug(
+            'Found timings in memory cache', {'contentId': contentId});
         _updateCacheAccessOrder(contentId);
         return _wordTimingCache[contentId]!;
       }
@@ -151,14 +151,16 @@ class WordTimingService {
       // Try SharedPreferences cache
       final cachedTimings = await _loadFromLocalCache(contentId);
       if (cachedTimings != null) {
-        AppLogger.debug('Found timings in local cache', {'contentId': contentId});
+        AppLogger.debug(
+            'Found timings in local cache', {'contentId': contentId});
         _wordTimingCache[contentId] = cachedTimings;
         _collectionCache[contentId] = WordTimingCollection(cachedTimings);
         _updateCacheAccessOrder(contentId);
         return cachedTimings;
       }
 
-      AppLogger.info('Fetching timings from Speechify API', {'contentId': contentId});
+      AppLogger.info(
+          'Fetching timings from Speechify API', {'contentId': contentId});
 
       // Fetch from Speechify API using singleton instance
       final speechifyService = SpeechifyService.instance;
@@ -166,20 +168,26 @@ class WordTimingService {
       final rawTimings = result.wordTimings;
 
       // Process and enhance with sentence indexing
-      final processedTimings = await _processTimingsWithSentenceIndex(rawTimings, text);
+      final processedTimings =
+          await _processTimingsWithSentenceIndex(rawTimings, text);
+      // Ensure sentence indices exist (handles APIs that omit sentence_index)
+      final normalized = ensureSentenceIndexing(
+        processedTimings,
+        displayText: text,
+        sourceText: text,
+      );
 
       // Cache in memory and locally
-      _wordTimingCache[contentId] = processedTimings;
-      _collectionCache[contentId] = WordTimingCollection(processedTimings);
+      _wordTimingCache[contentId] = normalized;
+      _collectionCache[contentId] = WordTimingCollection(normalized);
       _updateCacheAccessOrder(contentId);
-      await _saveToLocalCache(contentId, processedTimings);
+      await _saveToLocalCache(contentId, normalized);
 
       AppLogger.info('Processed word timings', {
         'contentId': contentId,
-        'timingCount': processedTimings.length,
+        'timingCount': normalized.length,
       });
-      return processedTimings;
-
+      return normalized;
     } catch (e, stackTrace) {
       AppLogger.error(
         'Failed to fetch word timings',
@@ -192,6 +200,24 @@ class WordTimingService {
         cause: e is Exception ? e : Exception(e.toString()),
       );
     }
+  }
+
+  /// Aligns raw Speechify timings to the provided display text. This adjusts
+  /// character offsets and sentence indices so that highlighting matches the
+  /// text shown to the learner (plain text without SSML tags).
+  Future<List<WordTiming>> alignTimingsToText(
+    List<WordTiming> rawTimings,
+    String text, {
+    String? sourceText,
+  }) async {
+    if (rawTimings.isEmpty) return [];
+
+    final processed = await _processTimingsWithSentenceIndex(rawTimings, text);
+    return ensureSentenceIndexing(
+      processed,
+      displayText: text,
+      sourceText: sourceText,
+    );
   }
 
   /// Processes raw timings and adds sentence indexing using compute isolation
@@ -210,42 +236,43 @@ class WordTimingService {
       return result.map((json) => WordTiming.fromJson(json)).toList();
     } catch (e) {
       AppLogger.warning('Compute isolation failed, falling back to main thread',
-        {'error': e.toString()});
+          {'error': e.toString()});
       // Fallback to main thread processing
       return _processTimingsMainThread(rawTimings, text);
     }
   }
 
   /// Fallback processing on main thread if compute isolation fails
-  List<WordTiming> _processTimingsMainThread(List<WordTiming> rawTimings, String text) {
-    int sentenceIndex = 0;
+  List<WordTiming> _processTimingsMainThread(
+      List<WordTiming> rawTimings, String text) {
     int characterPosition = 0;
 
     final processedTimings = <WordTiming>[];
 
-    for (int i = 0; i < rawTimings.length; i++) {
-      final timing = rawTimings[i];
-
-      // Find character positions in text
-      final wordStart = text.indexOf(timing.word, characterPosition);
-      final wordEnd = wordStart >= 0 ? wordStart + timing.word.length : characterPosition;
-
-      // Detect sentence boundaries
-      if (timing.word.trim().endsWith('.') ||
-          timing.word.trim().endsWith('!') ||
-          timing.word.trim().endsWith('?')) {
-        sentenceIndex++;
+    for (final timing in rawTimings) {
+      int wordStart = text.indexOf(timing.word, characterPosition);
+      if (wordStart < 0) {
+        wordStart = text.indexOf(timing.word);
+      }
+      if (wordStart < 0) {
+        wordStart = characterPosition;
       }
 
-      // Create enhanced timing
+      int wordEnd = wordStart + timing.word.length;
+      if (wordEnd > text.length) {
+        wordEnd = text.length;
+      }
+
       processedTimings.add(WordTiming(
         word: timing.word,
         startMs: timing.startMs,
         endMs: timing.endMs,
-        sentenceIndex: sentenceIndex,
+        sentenceIndex: timing.sentenceIndex,
+        charStart: wordStart >= 0 ? wordStart : null,
+        charEnd: wordEnd,
       ));
 
-      characterPosition = wordEnd + 1;
+      characterPosition = math.max(wordEnd, characterPosition);
     }
 
     return processedTimings;
@@ -313,7 +340,8 @@ class WordTimingService {
     final collection = _collectionCache[contentId];
 
     // Debug logging
-    if (positionMs % 1000 < 100) { // Log roughly every second
+    if (positionMs % 1000 < 100) {
+      // Log roughly every second
       AppLogger.debug('WordTimingService.updatePosition called', {
         'positionMs': positionMs,
         'contentId': contentId,
@@ -424,13 +452,15 @@ class WordTimingService {
       final List<dynamic> json = jsonDecode(cached);
       return json.map((item) => WordTiming.fromJson(item)).toList();
     } catch (e) {
-      AppLogger.debug('Failed to load from local cache', {'error': e.toString()});
+      AppLogger.debug(
+          'Failed to load from local cache', {'error': e.toString()});
       return null;
     }
   }
 
   /// Saves word timings to SharedPreferences cache
-  Future<void> _saveToLocalCache(String contentId, List<WordTiming> timings) async {
+  Future<void> _saveToLocalCache(
+      String contentId, List<WordTiming> timings) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final json = timings.map((t) => t.toJson()).toList();
@@ -454,6 +484,391 @@ class WordTimingService {
     AppLogger.debug('Cache cleared');
   }
 
+  /// Ensure sentence indices exist and are correct. Some Speechify responses
+  /// return a flat list of word marks without `sentence_index`. In that case
+  /// all words may default to 0 and the UI highlights the entire document.
+  /// This method derives sentence indices from the original text using
+  /// character offsets when available.
+  List<WordTiming> ensureSentenceIndexing(
+    List<WordTiming> timings, {
+    required String displayText,
+    String? sourceText,
+  }) {
+    if (timings.isEmpty) return timings;
+
+    final unique = timings.map((t) => t.sentenceIndex).toSet();
+    if (unique.length > 1) {
+      AppLogger.info('Sentence indexing provided by API', {
+        'uniqueSentenceCount': unique.length,
+      });
+      return timings;
+    }
+
+    final source = sourceText ?? displayText;
+    final sourceLength = source.length;
+
+    final adjusted = <WordTiming>[];
+    int sentenceIndex = 0;
+    int searchCursor = 0;
+    int sourceCursor = 0;
+    int? previousSourceStart;
+    int? previousSourceEnd;
+
+    for (int i = 0; i < timings.length; i++) {
+      final current = timings[i];
+      final range = _resolveWordRange(current, displayText, searchCursor);
+      final start = range.$1;
+      final end = range.$2;
+
+      if (start < 0 || end < 0 || start >= displayText.length) {
+        AppLogger.warning(
+            'Failed to resolve word range for sentence detection', {
+          'word': current.word,
+          'charStart': current.charStart,
+          'charEnd': current.charEnd,
+        });
+      }
+
+      int? sourceStart;
+      int? sourceEnd;
+      if (sourceLength > 0) {
+        var match = _findWordInSource(
+          source,
+          current.word,
+          sourceCursor,
+        );
+        if (match == null) {
+          final fallbackIdx = source
+              .toLowerCase()
+              .indexOf(current.word.toLowerCase(), sourceCursor);
+          if (fallbackIdx != -1) {
+            match = _WordRange(fallbackIdx, fallbackIdx + current.word.length);
+          }
+        }
+        if (match != null) {
+          sourceStart = match.start;
+          sourceEnd = match.end;
+          sourceCursor = match.end;
+        } else {
+          sourceStart = sourceCursor;
+          final fallbackEnd =
+              math.min(sourceCursor + current.word.length, sourceLength);
+          sourceEnd = fallbackEnd;
+          sourceCursor = fallbackEnd;
+        }
+      }
+
+      if (adjusted.isNotEmpty) {
+        final prev = adjusted.last;
+        final prevStart = prev.charStart ?? 0;
+        final prevEndExclusive = prev.charEnd ?? (prevStart + prev.word.length);
+        final gapStart = math.max(0, prevEndExclusive);
+        final gapEnd = math.max(gapStart, math.min(start, displayText.length));
+        final displayGap =
+            gapEnd > gapStart ? displayText.substring(gapStart, gapEnd) : '';
+        final timeGap = current.startMs - prev.endMs;
+
+        final previousSourceWord = _extractSourceWord(
+          source,
+          previousSourceStart,
+          previousSourceEnd,
+        );
+        final sourceGap = _extractSourceGap(
+          source,
+          previousSourceEnd,
+          sourceStart,
+        );
+
+        if (timeGap >= _sentencePauseThresholdMs ||
+            _shouldStartNewSentence(
+              gap: sourceGap.isNotEmpty ? sourceGap : displayGap,
+              previousWord: previousSourceWord.isNotEmpty
+                  ? previousSourceWord
+                  : displayText.substring(prevStart,
+                      math.min(prevEndExclusive, displayText.length)),
+            )) {
+          sentenceIndex++;
+        }
+      }
+
+      adjusted.add(
+        current.copyWith(
+          sentenceIndex: sentenceIndex,
+          charStart: start,
+          charEnd: end,
+        ),
+      );
+
+      if (sourceStart != null) {
+        previousSourceStart = sourceStart;
+      }
+      if (sourceEnd != null) {
+        previousSourceEnd = sourceEnd;
+      }
+      searchCursor = end;
+    }
+
+    final inferredCount = adjusted.map((t) => t.sentenceIndex).toSet().length;
+    AppLogger.info('Sentence indices inferred from Speechify text', {
+      'uniqueSentenceCount': inferredCount,
+    });
+
+    return adjusted;
+  }
+
+  (int, int) _resolveWordRange(
+      WordTiming timing, String text, int searchCursor) {
+    final word = timing.word;
+    final textLength = text.length;
+    if (word.isEmpty || textLength == 0) {
+      final cursor = math.max(0, math.min(searchCursor, textLength));
+      return (cursor, cursor);
+    }
+
+    int start = timing.charStart ?? searchCursor;
+    start = math.max(0, math.min(start, textLength));
+
+    int? end = _matchWordAt(text, word, start, timing.charEnd);
+
+    if (end == null && start > 0) {
+      final leftStart = start - 1;
+      end = _matchWordAt(text, word, leftStart, timing.charEnd);
+      if (end != null) {
+        start = leftStart;
+      }
+    }
+
+    if (end == null && start + 1 <= textLength) {
+      final rightStart = math.min(start + 1, textLength);
+      end = _matchWordAt(text, word, rightStart, timing.charEnd);
+      if (end != null) {
+        start = rightStart;
+      }
+    }
+
+    if (end == null) {
+      final windowStart = math.max(0, start - 6);
+      final idx = text.indexOf(word, windowStart);
+      if (idx != -1 && (idx - start).abs() <= 6) {
+        start = idx;
+        end = idx + word.length;
+      }
+    }
+
+    if (end == null) {
+      final idx = text.indexOf(word, math.max(0, searchCursor));
+      if (idx != -1) {
+        start = idx;
+        end = idx + word.length;
+      }
+    }
+
+    if (end == null) {
+      final idx = text.indexOf(word);
+      if (idx != -1) {
+        start = idx;
+        end = idx + word.length;
+      }
+    }
+
+    end ??= math.min(textLength, start + word.length);
+
+    return (
+      math.max(0, math.min(start, textLength)),
+      math.max(0, math.min(end, textLength)),
+    );
+  }
+
+  int? _matchWordAt(String text, String word, int start, int? providedEnd) {
+    final textLength = text.length;
+    if (start < 0 || start >= textLength) return null;
+
+    final candidates = <int>{};
+    if (providedEnd != null) {
+      if (providedEnd >= start && providedEnd <= textLength) {
+        candidates.add(providedEnd);
+      }
+      if (providedEnd + 1 >= start && providedEnd + 1 <= textLength) {
+        candidates.add(providedEnd + 1);
+      }
+    }
+
+    final lengthCandidate = start + word.length;
+    if (lengthCandidate >= start && lengthCandidate <= textLength) {
+      candidates.add(lengthCandidate);
+    }
+
+    for (final candidate in candidates) {
+      if (candidate <= textLength && candidate >= start) {
+        final slice = text.substring(start, candidate);
+        if (slice == word) {
+          return candidate;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  bool _shouldStartNewSentence({
+    required String gap,
+    required String previousWord,
+  }) {
+    final trimmedPrev = previousWord.trimRight();
+    final prevTerminates = trimmedPrev.endsWith('.') ||
+        trimmedPrev.endsWith('!') ||
+        trimmedPrev.endsWith('?');
+    final gapTerminator = _extractSentenceTerminator(gap);
+
+    if (!prevTerminates && gapTerminator == null) {
+      return false;
+    }
+
+    final terminatorBuffer = StringBuffer();
+
+    if (prevTerminates) {
+      final match = RegExp(r'([.!?]+)$').firstMatch(trimmedPrev);
+      if (match != null) {
+        terminatorBuffer.write(match.group(1));
+      }
+    }
+
+    if (gapTerminator != null) {
+      terminatorBuffer.write(gapTerminator);
+    }
+
+    final terminator = terminatorBuffer.toString();
+    if (terminator.isEmpty) {
+      return false;
+    }
+
+    if (terminator.contains('!') || terminator.contains('?')) {
+      return true;
+    }
+
+    if (!terminator.contains('.')) {
+      return false;
+    }
+
+    final cleanedPrev = _stripClosingDelimiters(trimmedPrev);
+    final coreToken =
+        cleanedPrev.replaceAll(RegExp(r'[.!?]+$'), '').toLowerCase();
+
+    if (_isLikelyAbbreviation(coreToken, cleanedPrev)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  String? _extractSentenceTerminator(String gap) {
+    if (gap.isEmpty) return null;
+    final trimmed = gap.trimRight();
+    if (trimmed.isEmpty) return null;
+
+    final buffer = StringBuffer();
+    int index = trimmed.length - 1;
+
+    while (index >= 0 && _closingDelimiters.contains(trimmed[index])) {
+      buffer.write(trimmed[index]);
+      index--;
+    }
+
+    while (index >= 0 && _terminalPunctuation.contains(trimmed[index])) {
+      buffer.write(trimmed[index]);
+      index--;
+    }
+
+    if (buffer.isEmpty) {
+      return null;
+    }
+
+    final chars = buffer.toString().split('').reversed.join();
+    return chars;
+  }
+
+  bool _isLikelyAbbreviation(String token, String original) {
+    if (token.isEmpty) {
+      return false;
+    }
+
+    if (_commonAbbreviations.contains(token.toLowerCase())) {
+      return true;
+    }
+
+    final normalized = _stripClosingDelimiters(original.trim());
+    if (RegExp(r'^[A-Z]{1}\.?$').hasMatch(normalized)) {
+      return true;
+    }
+    if (RegExp(r'^[A-Z]{2,}\.?$').hasMatch(normalized)) {
+      return true;
+    }
+
+    if (normalized.contains('.')) {
+      final cleaned = _stripClosingDelimiters(normalized);
+      final segments = cleaned.split('.').where((s) => s.isNotEmpty).toList();
+      if (segments.length > 1 &&
+          segments.every(
+              (part) => part.length <= 3 && part == part.toUpperCase())) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  String _stripClosingDelimiters(String value) {
+    var result = value.trimRight();
+    while (result.isNotEmpty &&
+        _closingDelimiters.contains(result[result.length - 1])) {
+      result = result.substring(0, result.length - 1).trimRight();
+    }
+    return result;
+  }
+
+  static const Set<String> _commonAbbreviations = {
+    'mr',
+    'mrs',
+    'ms',
+    'dr',
+    'prof',
+    'sr',
+    'jr',
+    'vs',
+    'inc',
+    'ltd',
+    'co',
+    'corp',
+    'dept',
+    'st',
+    'rd',
+    'ave',
+    'etc',
+    'i.e',
+    'e.g',
+    'u.s',
+    'u.k',
+    'no',
+  };
+
+  static const Set<String> _closingDelimiters = {
+    ')',
+    ']',
+    '}',
+    '"',
+    '\'',
+    '’',
+    '”',
+  };
+
+  static const Set<String> _terminalPunctuation = {
+    '.',
+    '!',
+    '?',
+  };
+
+  static const int _sentencePauseThresholdMs = 350;
+
   /// Disposes of streams and cleans up resources
   void dispose() {
     _currentWordController.close();
@@ -463,44 +878,76 @@ class WordTimingService {
   }
 }
 
+_WordRange? _findWordInSource(String source, String word, int start) {
+  if (source.isEmpty || word.isEmpty) return null;
+  if (start >= source.length) return null;
+  final pattern = RegExp('\\b${RegExp.escape(word)}\\b', caseSensitive: false);
+  final match = pattern.firstMatch(source.substring(start));
+  if (match == null) {
+    return null;
+  }
+  final matchedStart = start + match.start;
+  return _WordRange(matchedStart, matchedStart + match.end - match.start);
+}
+
+String _extractSourceGap(String source, int? previousEnd, int? nextStart) {
+  if (previousEnd == null || nextStart == null) return '';
+  final s = math.max(0, math.min(previousEnd, source.length));
+  final e = math.max(s, math.min(nextStart, source.length));
+  if (e <= s) return '';
+  return source.substring(s, e);
+}
+
+String _extractSourceWord(String source, int? start, int? end) {
+  if (start == null || end == null) return '';
+  final s = math.max(0, math.min(start, source.length));
+  final e = math.max(s, math.min(end, source.length));
+  if (e <= s) return '';
+  return source.substring(s, e);
+}
+
+class _WordRange {
+  final int start;
+  final int end;
+  _WordRange(this.start, this.end);
+}
+
 /// Top-level function for processing timings in isolate
 List<Map<String, dynamic>> _processTimingsIsolate(Map<String, dynamic> data) {
   final List<dynamic> timingsJson = data['timings'];
   final String text = data['text'];
 
-  final timings = timingsJson
-      .map((json) => WordTiming.fromJson(json))
-      .toList();
+  final timings = timingsJson.map((json) => WordTiming.fromJson(json)).toList();
 
   // Add sentence indexing and character positions
-  int sentenceIndex = 0;
   int characterPosition = 0;
 
   final processedTimings = <Map<String, dynamic>>[];
 
-  for (int i = 0; i < timings.length; i++) {
-    final timing = timings[i];
-
-    // Find character positions
-    final wordStart = text.indexOf(timing.word, characterPosition);
-    final wordEnd = wordStart >= 0 ? wordStart + timing.word.length : characterPosition;
-
-    // Detect sentence boundaries
-    if (timing.word.trim().endsWith('.') ||
-        timing.word.trim().endsWith('!') ||
-        timing.word.trim().endsWith('?')) {
-      sentenceIndex++;
+  for (final timing in timings) {
+    int wordStart = text.indexOf(timing.word, characterPosition);
+    if (wordStart < 0) {
+      wordStart = text.indexOf(timing.word);
+    }
+    if (wordStart < 0) {
+      wordStart = characterPosition;
     }
 
-    // Add processed timing
+    int wordEnd = wordStart + timing.word.length;
+    if (wordEnd > text.length) {
+      wordEnd = text.length;
+    }
+
     processedTimings.add({
       'word': timing.word,
       'start_ms': timing.startMs,
       'end_ms': timing.endMs,
-      'sentence_index': sentenceIndex,
+      'sentence_index': timing.sentenceIndex,
+      'char_start': wordStart >= 0 ? wordStart : null,
+      'char_end': wordEnd,
     });
 
-    characterPosition = wordEnd + 1;
+    characterPosition = math.max(wordEnd, characterPosition);
   }
 
   return processedTimings;
@@ -595,7 +1042,8 @@ Future<void> validateWordTimingService() async {
 
     // Test 2: Stream initialization (test through public interface)
     bool streamWorking = false;
-    final testSub = service.currentWordStream.take(1).listen((_) => streamWorking = true);
+    final testSub =
+        service.currentWordStream.take(1).listen((_) => streamWorking = true);
     service.updatePosition(100, 'validation-test');
     await Future.delayed(const Duration(milliseconds: 20));
     await testSub.cancel();
@@ -604,14 +1052,14 @@ Future<void> validateWordTimingService() async {
     // Test 3: Cache operations (test through public interface)
     service.clearCache();
     // Test that cache is cleared by checking getCachedTimings returns null
-    assert(service.getCachedTimings('any-key') == null, 'Cache should be empty after clear');
+    assert(service.getCachedTimings('any-key') == null,
+        'Cache should be empty after clear');
     AppLogger.debug('✅ Cache operations working');
 
     // Test 4: Stream throttling (simplified test)
     int updateCount = 0;
-    final subscription = service.currentWordStream
-        .take(5)
-        .listen((_) => updateCount++);
+    final subscription =
+        service.currentWordStream.take(5).listen((_) => updateCount++);
 
     // Simulate rapid updates using public API
     for (int i = 0; i < 20; i++) {
@@ -621,16 +1069,17 @@ Future<void> validateWordTimingService() async {
     await Future.delayed(const Duration(milliseconds: 100));
     subscription.cancel();
 
-    assert(updateCount <= 10, 'Stream should be throttled (got $updateCount updates)');
-    AppLogger.debug('✅ Stream throttling working', {'updateCount': updateCount});
+    assert(updateCount <= 10,
+        'Stream should be throttled (got $updateCount updates)');
+    AppLogger.debug(
+        '✅ Stream throttling working', {'updateCount': updateCount});
 
     stopwatch.stop();
-    assert(stopwatch.elapsedMilliseconds < 1000, 'Validation should complete quickly');
+    assert(stopwatch.elapsedMilliseconds < 1000,
+        'Validation should complete quickly');
 
-    AppLogger.performance('WordTimingService validation complete', {
-      'duration': '${stopwatch.elapsedMilliseconds}ms'
-    });
-
+    AppLogger.performance('WordTimingService validation complete',
+        {'duration': '${stopwatch.elapsedMilliseconds}ms'});
   } catch (e, stackTrace) {
     AppLogger.error(
       'WordTimingService validation failed',

@@ -220,7 +220,7 @@ void validateSpeechifyAudioSource() {
   debugPrint('=== SpeechifyAudioSource Validation ===');
 
   // Test 1: Source creation
-  const testUrl = 'https://api.speechify.com/test/stream.mp3';
+  const testUrl = 'https://api.sws.speechify.com/test/stream.mp3';
   final source = SpeechifyAudioSource(streamUrl: testUrl);
   assert(source.streamUrl == testUrl, 'Stream URL must be set');
   debugPrint('✓ Audio source creation verified');

@@ -42,12 +42,13 @@ class SpeechifyService {
   SpeechifyService._internal() : _dio = DioProvider.createSpeechifyClient();
 
   // Voice configuration
-  static const String defaultVoice = 'henry';  // Valid Speechify voice ID
+  static const String defaultVoice = 'henry'; // Valid Speechify voice ID
   static const double defaultSpeed = 1.0;
 
   // API endpoints
   static const String _synthesizeEndpoint = '/v1/audio/speech';
-  static const String _timingsEndpoint = '/v1/audio/speech';  // Same endpoint returns timings
+  static const String _timingsEndpoint =
+      '/v1/audio/speech'; // Same endpoint returns timings
 
   /// Generate audio stream from text content
   /// Returns base64-encoded audio data
@@ -58,6 +59,15 @@ class SpeechifyService {
     bool isSSML = false,
   }) async {
     try {
+      // Log the endpoint we are about to hit
+      if (kDebugMode) {
+        AppLogger.debug('Preparing Speechify request', {
+          'baseUrl': _dio.options.baseUrl,
+          'endpoint': _synthesizeEndpoint,
+          'fullUrl':
+              Uri.parse(_dio.options.baseUrl + _synthesizeEndpoint).toString(),
+        });
+      }
       // Pass SSML directly to API - Speechify supports SSML tags
       String processedContent = content;
       if (isSSML) {
@@ -74,21 +84,50 @@ class SpeechifyService {
       // Note: For production, consider implementing pagination or chunking for very long content
       // to avoid excessive API costs and memory usage
 
+      final payload = {
+        'input': processedContent,
+        'voice_id': voice,
+        'model': 'simba-turbo',
+        'speed': speed,
+        'include_speech_marks': true, // Request word-level timing data
+      };
+
+      // Hint to API that input is SSML so it can honor <s>/<p> boundaries.
+      if (isSSML) {
+        payload['input_format'] = 'ssml';
+        // Some backends respect this flag to return sentence-level segmentation.
+        payload['include_sentence_marks'] = true;
+      }
+
       final response = await _dio.post(
         _synthesizeEndpoint,
-        data: {
-          'input': processedContent,
-          'voice_id': voice,
-          'model': 'simba-turbo',
-          'speed': speed,
-          'include_speech_marks': true,  // Request word-level timing data
-        },
+        data: payload,
       );
 
       if (response.statusCode == 200 && response.data != null) {
         // Parse the response
         final audioData = response.data['audio_data'] as String?;
         final speechMarks = response.data['speech_marks'];
+        final billableChars = response.data['billable_characters_count'];
+
+        if (kDebugMode) {
+          final audioPreview = (audioData != null && audioData.isNotEmpty)
+              ? audioData.substring(
+                  0, audioData.length > 120 ? 120 : audioData.length)
+              : null;
+          final speechMarksSample =
+              speechMarks is List && speechMarks.isNotEmpty
+                  ? speechMarks.first
+                  : speechMarks;
+
+          AppLogger.debug('Speechify API raw payload', {
+            'statusCode': response.statusCode,
+            'audioFormat': response.data['audio_format'],
+            'audioDataLength': audioData?.length ?? 0,
+            'audioDataPreview': audioPreview,
+            'speechMarksSample': speechMarksSample,
+          });
+        }
 
         // Debug logging to understand API response
         AppLogger.info('Speechify API response structure', {
@@ -97,7 +136,52 @@ class SpeechifyService {
           'hasSpeechMarks': speechMarks != null,
           'speechMarksType': speechMarks?.runtimeType.toString() ?? 'null',
           'responseKeys': response.data.keys.toList(),
+          'billableCharactersCount': billableChars,
         });
+
+        // Validate that speech_marks look like the documented structure
+        if (speechMarks is Map) {
+          final keys =
+              (speechMarks as Map).keys.map((e) => e.toString()).toList();
+          final hasChunks = (speechMarks as Map).containsKey('chunks');
+          final hasType = (speechMarks as Map).containsKey('type');
+          AppLogger.debug('speech_marks keys', {
+            'keys': keys,
+            'hasChunks': hasChunks,
+            'hasType': hasType,
+          });
+        }
+
+        // Summarize availability of character offsets for precise highlighting
+        try {
+          int withChars = 0;
+          int total = 0;
+          if (speechMarks is Map && speechMarks['chunks'] is List) {
+            final List list = speechMarks['chunks'];
+            for (final item in list) {
+              if (item is Map) {
+                if (item.containsKey('start') && item.containsKey('end'))
+                  withChars++;
+                total++;
+              }
+            }
+          } else if (speechMarks is List) {
+            for (final item in speechMarks) {
+              if (item is Map) {
+                if (item.containsKey('start') && item.containsKey('end'))
+                  withChars++;
+                total++;
+              }
+            }
+          }
+          if (total > 0) {
+            AppLogger.info('Speechify marks char-offset coverage', {
+              'withCharPositions': withChars,
+              'totalMarks': total,
+              'coveragePct': ((withChars / total) * 100).toStringAsFixed(1),
+            });
+          }
+        } catch (_) {}
 
         if (audioData == null || audioData.isEmpty) {
           throw AudioException.invalidResponse('No audio data in API response');
@@ -109,10 +193,25 @@ class SpeechifyService {
             ? _parseSpeechMarks(speechMarks, processedContent)
             : _generateMockTimings(processedContent);
 
+        final extractedText = _extractDisplayValue(speechMarks);
+        final fallbackDisplayText =
+            isSSML ? _convertSSMLToPlainText(content) : content;
+        final resolvedDisplayText =
+            (extractedText != null && extractedText.trim().isNotEmpty)
+                ? _normalizeWhitespace(extractedText)
+                : _normalizeWhitespace(fallbackDisplayText);
+
+        AppLogger.info('Resolved display text from Speechify', {
+          'length': resolvedDisplayText.length,
+          'usedSpeechMarksValue':
+              extractedText != null && extractedText.trim().isNotEmpty,
+        });
+
         return AudioGenerationResult(
           audioData: audioData,
           audioFormat: response.data['audio_format'] ?? 'wav',
           wordTimings: wordTimings,
+          displayText: resolvedDisplayText,
         );
       } else {
         throw NetworkException.fromStatusCode(
@@ -121,10 +220,19 @@ class SpeechifyService {
         );
       }
     } on DioException catch (e) {
+      // Expanded diagnostics to make field-level and URL issues obvious
+      final req = e.requestOptions;
       AppLogger.error(
         'Speechify API error',
         error: e.message,
-        data: {'statusCode': e.response?.statusCode},
+        data: {
+          'type': e.type.name,
+          'statusCode': e.response?.statusCode,
+          'method': req.method,
+          'baseUrl': req.baseUrl,
+          'path': req.path,
+          'uri': req.uri.toString(),
+        },
       );
       if (e.response?.statusCode != null) {
         throw NetworkException.fromStatusCode(
@@ -193,7 +301,7 @@ class SpeechifyService {
       // Only add timing if we have a real word after cleaning
       if (cleanWord.isNotEmpty) {
         timings.add(WordTiming(
-          word: cleanWord,  // Use clean word without trailing punctuation
+          word: cleanWord, // Use clean word without trailing punctuation
           startMs: currentMs,
           endMs: currentMs + msPerWord - 50, // Small gap between words
           sentenceIndex: sentenceIndex,
@@ -223,7 +331,8 @@ class SpeechifyService {
   /// - Top level: NestedChunk(s) representing sentences/paragraphs
   /// - Each NestedChunk contains: chunks array with word-level timing
   /// Format: {value: "sentence", start_time, end_time, start, end, chunks: [words]}
-  List<WordTiming> _parseSpeechMarks(dynamic speechMarks, [String? originalText]) {
+  List<WordTiming> _parseSpeechMarks(dynamic speechMarks,
+      [String? originalText]) {
     final timings = <WordTiming>[];
 
     if (speechMarks == null) {
@@ -239,8 +348,14 @@ class SpeechifyService {
         });
 
         // Check if this is a single NestedChunk (has both 'chunks' and 'value')
-        if (speechMarks.containsKey('chunks') && speechMarks.containsKey('value')) {
-          AppLogger.info('Found single NestedChunk structure');
+        if (speechMarks.containsKey('chunks') &&
+            speechMarks.containsKey('value')) {
+          final words = (speechMarks['chunks'] as List?)?.length ?? 0;
+          AppLogger.info('Speechify marks format', {
+            'mode': 'nested_chunks_single',
+            'sentences': 1,
+            'words': words,
+          });
           return _parseNestedChunk(speechMarks, 0);
         }
         // Or it's a wrapper containing chunks
@@ -252,11 +367,26 @@ class SpeechifyService {
             final firstChunk = chunks[0];
             if (firstChunk is Map && firstChunk.containsKey('chunks')) {
               // List of NestedChunks (multiple sentences)
-              AppLogger.info('Found list of NestedChunks', {'count': chunks.length});
+              // Count words across all sentence chunks
+              int totalWords = 0;
+              for (final ch in chunks) {
+                if (ch is Map && ch['chunks'] is List) {
+                  totalWords += (ch['chunks'] as List).length;
+                }
+              }
+              AppLogger.info('Speechify marks format', {
+                'mode': 'nested_chunks_list',
+                'sentences': chunks.length,
+                'words': totalWords,
+              });
               return _parseMultipleSentences(chunks);
             } else {
               // Flat list of words (single sentence)
-              AppLogger.info('Found flat word list in wrapper', {'count': chunks.length});
+              AppLogger.info('Speechify marks format', {
+                'mode': 'flat_words',
+                'sentences': 1,
+                'words': chunks.length,
+              });
               return _parseFlatWordList(chunks, 0, originalText);
             }
           }
@@ -273,11 +403,25 @@ class SpeechifyService {
         final firstItem = speechMarks[0];
         if (firstItem is Map && firstItem.containsKey('chunks')) {
           // List of NestedChunks (multiple sentences)
-          AppLogger.info('Found list of NestedChunks', {'count': speechMarks.length});
+          int totalWords = 0;
+          for (final ch in speechMarks) {
+            if (ch is Map && ch['chunks'] is List) {
+              totalWords += (ch['chunks'] as List).length;
+            }
+          }
+          AppLogger.info('Speechify marks format', {
+            'mode': 'nested_chunks_list',
+            'sentences': speechMarks.length,
+            'words': totalWords,
+          });
           return _parseMultipleSentences(speechMarks);
         } else {
           // Flat word list (single sentence, fallback for old format)
-          AppLogger.info('Found flat word list', {'count': speechMarks.length});
+          AppLogger.info('Speechify marks format', {
+            'mode': 'flat_words',
+            'sentences': 1,
+            'words': speechMarks.length,
+          });
           return _parseFlatWordList(speechMarks, 0, originalText);
         }
       } else {
@@ -293,6 +437,52 @@ class SpeechifyService {
     }
 
     return timings;
+  }
+
+  String? _extractDisplayValue(dynamic node) {
+    if (node == null) return null;
+
+    if (node is Map) {
+      final value = node['value'];
+      if (value is String && value.trim().isNotEmpty) {
+        return value;
+      }
+
+      final chunks = node['chunks'];
+      if (chunks is List && chunks.isNotEmpty) {
+        final buffer = StringBuffer();
+        for (final chunk in chunks) {
+          final chunkText = _extractDisplayValue(chunk);
+          if (chunkText != null && chunkText.trim().isNotEmpty) {
+            if (buffer.isNotEmpty) buffer.write(' ');
+            buffer.write(chunkText.trim());
+          }
+        }
+        final text = buffer.toString().trim();
+        if (text.isNotEmpty) {
+          return text;
+        }
+      }
+    } else if (node is List && node.isNotEmpty) {
+      final parts = <String>[];
+      for (final item in node) {
+        final part = _extractDisplayValue(item);
+        if (part != null && part.trim().isNotEmpty) {
+          parts.add(part.trim());
+        }
+      }
+      if (parts.isNotEmpty) {
+        return parts.join(' ');
+      }
+    } else if (node is String && node.trim().isNotEmpty) {
+      return node;
+    }
+
+    return null;
+  }
+
+  String _normalizeWhitespace(String text) {
+    return text.replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
   /// Parse a single NestedChunk (sentence/paragraph)
@@ -326,7 +516,8 @@ class SpeechifyService {
           word: word,
           startMs: startMs,
           endMs: endMs,
-          sentenceIndex: sentenceIndex,  // All words in this chunk have same sentence index
+          sentenceIndex:
+              sentenceIndex, // All words in this chunk have same sentence index
           charStart: charStart,
           charEnd: charEnd,
         ));
@@ -356,9 +547,17 @@ class SpeechifyService {
   }
 
   /// Parse flat word list (fallback for old format or single sentence)
-  List<WordTiming> _parseFlatWordList(List words, int baseSentenceIndex, [String? originalText]) {
+  List<WordTiming> _parseFlatWordList(List words, int baseSentenceIndex,
+      [String? originalText]) {
     final timings = <WordTiming>[];
     int sentenceIndex = baseSentenceIndex;
+
+    // If the API did not provide sentence indices, derive them from the
+    // original text using character offsets. This handles the common case where
+    // marks are a flat list of words without nested sentence chunks.
+    final sentenceRanges = originalText != null
+        ? _computeSentenceRanges(originalText)
+        : <(int, int)>[];
 
     AppLogger.info('Parsing flat word list', {
       'wordCount': words.length,
@@ -419,12 +618,18 @@ class SpeechifyService {
         charEnd = (mark['end'] as num?)?.toInt();
       }
 
-      // Use API-provided sentence_index if available, otherwise use base index
+      // Determine sentence index:
+      // 1) Prefer API-provided index if present
+      // 2) Otherwise, infer from character offsets against computed sentence ranges
       final apiSentenceIndex = (mark['sentence_index'] as num?)?.toInt();
       if (apiSentenceIndex != null) {
         sentenceIndex = apiSentenceIndex;
+      } else if (charStart != null && sentenceRanges.isNotEmpty) {
+        final inferred = _findSentenceIndexForOffset(sentenceRanges, charStart);
+        if (inferred != null) {
+          sentenceIndex = inferred;
+        }
       }
-      // Note: We no longer do manual sentence detection since the API provides this
 
       timings.add(WordTiming(
         word: word,
@@ -437,6 +642,56 @@ class SpeechifyService {
     }
 
     return timings;
+  }
+
+  /// Split text into sentence ranges using punctuation boundaries.
+  /// Returns a list of (start, end) character index ranges.
+  List<(int, int)> _computeSentenceRanges(String text) {
+    final ranges = <(int, int)>[];
+    int start = 0;
+
+    for (int i = 0; i < text.length; i++) {
+      final ch = text[i];
+      final isTerminator = ch == '.' || ch == '!' || ch == '?';
+      if (isTerminator) {
+        // Extend through any trailing quotes or spaces
+        int end = i + 1;
+        while (end < text.length &&
+            (text[end] == '"' ||
+                text[end] == '\'' ||
+                text[end] == ')' ||
+                text[end] == ']' ||
+                text[end] == ' ')) {
+          end++;
+        }
+        ranges.add((start, end));
+        start = end; // Next sentence starts here
+      }
+    }
+
+    // Tail content without terminal punctuation
+    if (start < text.length) {
+      ranges.add((start, text.length));
+    }
+    return ranges;
+  }
+
+  /// Binary search for the sentence range that contains the given character offset.
+  int? _findSentenceIndexForOffset(List<(int, int)> ranges, int offset) {
+    int left = 0;
+    int right = ranges.length - 1;
+    while (left <= right) {
+      final mid = (left + right) >> 1;
+      final r = ranges[mid];
+      if (offset < r.$1) {
+        right = mid - 1;
+      } else if (offset >= r.$2) {
+        left = mid + 1;
+      } else {
+        return mid;
+      }
+    }
+    return null;
   }
 
   /// Fetch word timings (now integrated with audio generation)
@@ -515,14 +770,16 @@ class SpeechifyService {
 
 /// Result of audio generation with timings
 class AudioGenerationResult {
-  final String audioData;  // Base64-encoded audio
+  final String audioData; // Base64-encoded audio
   final String audioFormat; // Format of audio (wav, mp3, etc)
   final List<WordTiming> wordTimings;
+  final String displayText; // Clean plain text supplied by Speechify
 
   AudioGenerationResult({
     required this.audioData,
     required this.audioFormat,
     required this.wordTimings,
+    required this.displayText,
   });
 
   /// Decode base64 audio data to bytes

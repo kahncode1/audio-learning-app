@@ -322,20 +322,48 @@ class OptimizedHighlightPainter extends CustomPainter {
     final sentenceWords = timingCollection.getWordsInSentence(currentSentenceIndex);
     if (sentenceWords.isEmpty) return;
 
+    // Prefer a continuous highlight using a single selection range per line.
+    // Compute the character range for the entire sentence (end is exclusive).
+    int? startChar;
+    int? endExclusive;
+    for (int i = 0; i < sentenceWords.length; i++) {
+      final w = sentenceWords[i];
+      if (w.charStart == null) continue;
+      final (int s, int e) = _computeSelectionForWord(
+        timingCollection.timings.indexOf(w),
+      );
+      startChar = startChar == null ? s : (s < startChar! ? s : startChar);
+      endExclusive = endExclusive == null ? e : (e > endExclusive! ? e : endExclusive);
+    }
+
     final paint = Paint()
       ..color = sentenceHighlightColor
       ..style = PaintingStyle.fill;
 
-    // Get sentence bounds efficiently
-    for (final word in sentenceWords) {
-      final wordIndex = timingCollection.timings.indexOf(word);
-      if (wordIndex >= 0) {
-        final rect = _getWordRect(wordIndex);
-        if (rect != null) {
-          canvas.drawRRect(
-            RRect.fromRectAndRadius(rect.inflate(2), const Radius.circular(2)),
-            paint,
-          );
+    if (startChar != null && endExclusive != null && endExclusive! >= startChar!) {
+      final boxes = textPainter.getBoxesForSelection(
+        TextSelection(baseOffset: startChar!, extentOffset: endExclusive!),
+      );
+
+      for (final box in boxes) {
+        final rect = Rect.fromLTRB(box.left, box.top, box.right, box.bottom).inflate(1);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(rect, const Radius.circular(2)),
+          paint,
+        );
+      }
+    } else {
+      // Fallback: per-word rectangles (rare; when char positions are missing)
+      for (final word in sentenceWords) {
+        final wordIndex = timingCollection.timings.indexOf(word);
+        if (wordIndex >= 0) {
+          final rect = _getWordRect(wordIndex);
+          if (rect != null) {
+            canvas.drawRRect(
+              RRect.fromRectAndRadius(rect.inflate(1), const Radius.circular(2)),
+              paint,
+            );
+          }
         }
       }
     }
@@ -366,30 +394,115 @@ class OptimizedHighlightPainter extends CustomPainter {
     if (wordIndex < 0 || wordIndex >= timingCollection.timings.length) return null;
 
     final word = timingCollection.timings[wordIndex];
-
-    // Only use API-provided character positions, no fallback
-    if (word.charStart == null || word.charEnd == null) {
-      // No character positions from API - return null (no highlighting)
+    // If we have no character positions from API, we cannot draw a precise
+    // rectangle. Return null to skip highlighting for this word.
+    if (word.charStart == null) {
       return null;
     }
 
-    final wordStart = word.charStart!;
-    final wordEnd = word.charEnd!;
+    // Compute a robust selection range that tolerates off-by-one differences
+    // between API character offsets and the displayed text. This corrects the
+    // common case where highlights appear shifted one character to the right.
+    final (int start, int end) = _computeSelectionForWord(wordIndex);
 
-    // Use TextPainter's efficient box calculation with API positions
+    // Use TextPainter to obtain the bounding box for the computed range
     final boxes = textPainter.getBoxesForSelection(
-      TextSelection(
-        baseOffset: wordStart,
-        extentOffset: wordEnd,
-      ),
+      TextSelection(baseOffset: start, extentOffset: end),
     );
 
     if (boxes.isNotEmpty) {
-      final box = boxes.first;
-      return Rect.fromLTRB(box.left, box.top, box.right, box.bottom);
+      double left = boxes.first.left;
+      double top = boxes.first.top;
+      double right = boxes.first.right;
+      double bottom = boxes.first.bottom;
+
+      for (final b in boxes) {
+        if (b.left < left) left = b.left;
+        if (b.top < top) top = b.top;
+        if (b.right > right) right = b.right;
+        if (b.bottom > bottom) bottom = b.bottom;
+      }
+
+      return Rect.fromLTRB(left, top, right, bottom);
     }
 
     return null;
+  }
+
+  // Check whether the given word matches the text starting at offset.
+  bool _matchesAt(String source, String word, int offset) {
+    if (offset < 0 || offset >= source.length) return false;
+    final end = offset + word.length;
+    if (end > source.length) return false;
+    return source.substring(offset, end) == word;
+  }
+
+  // Computes a corrected [start, endExclusive] selection for a word, using the
+  // API-provided charStart/charEnd as hints but verifying against the actual
+  // displayed text. This fixes 0/1-based index mismatches and minor drifts.
+  (int, int) _computeSelectionForWord(int wordIndex) {
+    final word = timingCollection.timings[wordIndex];
+    final textLen = text.length;
+
+    // Start with API-provided start and length derived from the word value.
+    int start = (word.charStart ?? 0).clamp(0, textLen);
+    int length = word.word.length;
+    int end = (start + length).clamp(0, textLen);
+
+    // Fast-path: if it already matches at start, keep it.
+    if (_matchesAt(text, word.word, start)) {
+      return (start, end);
+    }
+
+    // If API provided an end offset, try to honor it as either exclusive or
+    // inclusive. This addresses engines that report inclusive `end`.
+    if (word.charEnd != null) {
+      final apiEnd = word.charEnd!.clamp(0, textLen);
+      // Treat as exclusive first
+      if (apiEnd > start) {
+        final candidateEnd = apiEnd;
+        final slice = text.substring(start, candidateEnd);
+        if (slice == word.word) {
+          return (start, candidateEnd);
+        }
+      }
+      // Treat as inclusive (add 1) if in bounds
+      if (apiEnd + 1 <= textLen) {
+        final candidateEnd = apiEnd + 1;
+        final slice = text.substring(start, candidateEnd);
+        if (slice == word.word) {
+          return (start, candidateEnd);
+        }
+      }
+    }
+
+    // Try shifting left by 1 (common when API uses 1-based indexing)
+    if (start - 1 >= 0 && _matchesAt(text, word.word, start - 1)) {
+      start = start - 1;
+      end = (start + length).clamp(0, textLen);
+      return (start, end);
+    }
+
+    // Try shifting right by 1
+    if (start + 1 < textLen && _matchesAt(text, word.word, start + 1)) {
+      start = start + 1;
+      end = (start + length).clamp(0, textLen);
+      return (start, end);
+    }
+
+    // Broader search within a small window around the hint to handle minor
+    // discrepancies (e.g., unexpected punctuation or whitespace).
+    final windowStart = (start - 5).clamp(0, textLen);
+    final idx = text.indexOf(word.word, windowStart);
+    if (idx != -1 && (idx - start).abs() <= 5) {
+      start = idx;
+      end = (start + length).clamp(0, textLen);
+      return (start, end);
+    }
+
+    // Fallback: Use API-provided end if available, clamped to bounds.
+    final apiEnd = (word.charEnd ?? end).clamp(0, textLen);
+    return (start, apiEnd);
   }
 
   @override

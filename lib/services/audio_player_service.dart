@@ -47,6 +47,7 @@ class AudioPlayerService {
   // Word timing data
   List<WordTiming> _currentWordTimings = [];
   LearningObject? _currentLearningObject;
+  String? _currentDisplayText;
 
   // Playback speed options
   static const List<double> speedOptions = [0.8, 1.0, 1.25, 1.5, 1.75, 2.0];
@@ -180,9 +181,10 @@ class AudioPlayerService {
 
       // Determine content and format
       // Prefer SSML content if available, otherwise use plain text
-      final content = learningObject.ssmlContent ?? learningObject.plainText ?? '';
+      final content =
+          learningObject.ssmlContent ?? learningObject.plainText ?? '';
       final isSSML = learningObject.ssmlContent != null ||
-                     content.trim().startsWith('<speak>');
+          content.trim().startsWith('<speak>');
 
       debugPrint('Loading audio for: ${learningObject.title}');
       debugPrint('Content type: ${isSSML ? "SSML" : "Plain text"}');
@@ -204,14 +206,55 @@ class AudioPlayerService {
         isSSML: isSSML,
       );
 
+      // Re-map timings to the cleaned text Speechify returned so character offsets
+      // align with the displayed content. Speechify already strips SSML tags in
+      // the `value` field, making it the source of truth for word highlighting.
+      final wordTimingService = WordTimingService.instance;
+      String displayTextForTimings = result.displayText;
+      if (displayTextForTimings.isEmpty) {
+        displayTextForTimings = (learningObject.plainText?.isNotEmpty ?? false)
+            ? learningObject.plainText!
+            : content.replaceAll(RegExp(r'<[^>]+>'), ' ');
+        AppLogger.warning(
+            'Speechify response missing display text, using fallback', {
+          'fallbackLength': displayTextForTimings.length,
+        });
+      }
+
+      _currentDisplayText = displayTextForTimings;
+      _currentLearningObject = learningObject;
+      final normalizedTimings = await wordTimingService.alignTimingsToText(
+        result.wordTimings,
+        displayTextForTimings,
+        sourceText: learningObject.plainText,
+      );
       // Store word timings and share with WordTimingService
-      _currentWordTimings = result.wordTimings;
+      _currentWordTimings = normalizedTimings;
+      final uniqueSentences =
+          normalizedTimings.map((t) => t.sentenceIndex).toSet().length;
+      AppLogger.info('Timings normalized', {
+        'uniqueSentenceCount': uniqueSentences,
+        'totalWords': normalizedTimings.length,
+      });
 
       // Share timings with WordTimingService for highlighting
-      final wordTimingService = WordTimingService.instance;
-      wordTimingService.setCachedTimings(learningObject.id, result.wordTimings);
+      wordTimingService.setCachedTimings(learningObject.id, normalizedTimings);
 
-      debugPrint('Shared ${result.wordTimings.length} word timings with WordTimingService');
+      // Validate char offsets vs. the displayed plain text to ensure alignment
+      final displayLen = displayTextForTimings.length;
+      final withChars = normalizedTimings
+          .where((t) => t.charStart != null && t.charEnd != null)
+          .length;
+      final maxCharEnd = normalizedTimings
+          .map((t) => t.charEnd ?? -1)
+          .fold<int>(-1, (prev, e) => prev > e ? prev : e);
+      AppLogger.info('Shared timings with WordTimingService', {
+        'count': normalizedTimings.length,
+        'withCharOffsets': withChars,
+        'maxCharEnd': maxCharEnd,
+        'displayTextLength': displayLen,
+        'charBoundsOk': displayLen == 0 ? 'n/a' : (maxCharEnd <= displayLen),
+      });
 
       // Create audio source from base64 data
       // For now, we need to handle the base64 audio data
@@ -223,7 +266,8 @@ class AudioPlayerService {
 
       // Update media item for lock screen with actual duration if available
       final duration = _player.duration;
-      _audioHandler?.updateMediaItemForLearning(learningObject, audioDuration: duration);
+      _audioHandler?.updateMediaItemForLearning(learningObject,
+          audioDuration: duration);
 
       // Restore previous position if available
       if (learningObject.currentPositionMs > 0) {
@@ -383,6 +427,7 @@ class AudioPlayerService {
   ProcessingState get processingState => _processingStateSubject.value;
   List<WordTiming> get wordTimings => _currentWordTimings;
   LearningObject? get currentLearningObject => _currentLearningObject;
+  String? get currentDisplayText => _currentDisplayText;
 
   /// Clean up resources
   void dispose() {
