@@ -63,6 +63,14 @@
 - **Implementation**: Replaced TextStyle with GoogleFonts.inter() throughout content display
 - **Benefits**: Improved readability for educational content, consistent typography
 
+### Auto-Scrolling Enhancement
+✅ **Smooth Auto-Scroll Implementation**
+- Added intelligent viewport-based scrolling that keeps highlighted words visible
+- Implements smooth animation with variable duration based on scroll distance
+- Maintains word visibility in middle third of viewport for optimal reading experience
+- Clamps scroll positions to prevent overshooting at document boundaries
+- Scroll duration scales from 200ms (short) to 400ms (long) based on distance
+
 ## Next Steps
 - Widget tests for player controls (Task 5.21)
 - Performance tests for 60fps validation (Task 5.26)

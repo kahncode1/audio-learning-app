@@ -123,28 +123,109 @@ class _SimplifiedDualLevelHighlightedTextState
   void _autoScroll() {
     if (widget.scrollController == null ||
         _currentWordIndex < 0 ||
-        _timingCollection == null) return;
+        _timingCollection == null ||
+        _textPainter.text == null) return;
 
-    // Simple scroll to keep current word visible
     final scrollController = widget.scrollController!;
+
+    // Ensure we have a valid position
+    if (!scrollController.hasClients || !scrollController.position.hasContentDimensions) {
+      return;
+    }
+
     final viewportHeight = scrollController.position.viewportDimension;
 
-    // Estimate line height and position
-    final lineHeight = widget.baseStyle.fontSize! * (widget.baseStyle.height ?? 1.5);
-    // Use configurable chars per line for better estimation
-    final wordsPerLine = SimplifiedDualLevelHighlightedText.defaultCharsPerLine / 5; // Avg 5 chars per word
-    final approximateY = (_currentWordIndex / wordsPerLine) * lineHeight;
+    // Get text boxes for the current word
+    final boxes = _getWordBoxes(_currentWordIndex);
+    if (boxes.isEmpty) return;
 
-    // Center word in viewport
-    final targetScroll = approximateY - (viewportHeight / 2);
+    // Use the first box (words rarely span multiple lines)
+    final wordRect = boxes.first;
+    final wordTop = wordRect.top;
+    final wordBottom = wordRect.bottom;
 
-    if (targetScroll > 0 && targetScroll < scrollController.position.maxScrollExtent) {
+    // Define the reading zone (25-30% from top)
+    // This keeps the highlighted text in the upper portion while showing more content below
+    final readingZoneTop = viewportHeight * 0.25;
+    final readingZoneBottom = viewportHeight * 0.35;
+
+    // Get current scroll offset
+    final currentOffset = scrollController.offset;
+
+    // Calculate word's position in viewport
+    final wordViewportTop = wordTop - currentOffset;
+    final wordViewportBottom = wordBottom - currentOffset;
+
+    // Determine if scrolling is needed
+    bool needsScroll = false;
+    double targetOffset = currentOffset;
+
+    if (wordViewportTop < readingZoneTop) {
+      // Word is too high - scroll up to bring it into zone
+      needsScroll = true;
+      targetOffset = wordTop - readingZoneTop;
+    } else if (wordViewportBottom > viewportHeight * 0.6) {
+      // Word is getting too low - scroll down to keep it in zone
+      // Using 0.6 instead of 0.35 to create a buffer zone that reduces scroll frequency
+      needsScroll = true;
+      targetOffset = wordTop - readingZoneTop;
+    }
+
+    // Handle edge cases
+    if (targetOffset < 0) {
+      targetOffset = 0;
+    } else if (targetOffset > scrollController.position.maxScrollExtent) {
+      targetOffset = scrollController.position.maxScrollExtent;
+    }
+
+    // Perform smooth scroll if needed
+    if (needsScroll && (targetOffset - currentOffset).abs() > 5) {
+      // Only scroll if the difference is significant (>5 pixels)
+      final distance = (targetOffset - currentOffset).abs();
+      final duration = _calculateScrollDuration(distance);
+
       scrollController.animateTo(
-        targetScroll,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
+        targetOffset,
+        duration: duration,
+        curve: Curves.easeOutCubic, // Natural deceleration
       );
     }
+  }
+
+  // Get actual text boxes for a word using TextPainter
+  List<TextBox> _getWordBoxes(int wordIndex) {
+    if (wordIndex < 0 || wordIndex >= _timingCollection!.timings.length) {
+      return [];
+    }
+
+    final word = _timingCollection!.timings[wordIndex];
+    if (word.charStart == null) return [];
+
+    // Use the same logic as OptimizedHighlightPainter for consistency
+    final textLen = widget.text.length;
+    int start = (word.charStart ?? 0).clamp(0, textLen);
+    int length = word.word.length;
+    int end = (start + length).clamp(0, textLen);
+
+    // Adjust for API inconsistencies if needed
+    if (word.charEnd != null) {
+      final apiEnd = word.charEnd!.clamp(0, textLen);
+      if (apiEnd > start && apiEnd <= textLen) {
+        end = apiEnd;
+      }
+    }
+
+    return _textPainter.getBoxesForSelection(
+      TextSelection(baseOffset: start, extentOffset: end),
+    );
+  }
+
+  // Calculate appropriate scroll duration based on distance
+  Duration _calculateScrollDuration(double distance) {
+    // Minimum 200ms, maximum 400ms
+    // Scale based on distance for natural feeling
+    final milliseconds = (200 + (distance / 10)).clamp(200, 400).toInt();
+    return Duration(milliseconds: milliseconds);
   }
 
   @override

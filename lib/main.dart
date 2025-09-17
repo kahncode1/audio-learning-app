@@ -8,6 +8,8 @@ import 'screens/assignments_screen.dart';
 import 'screens/enhanced_audio_player_screen.dart';
 import 'models/learning_object.dart';
 import 'screens/settings_screen.dart';
+import 'widgets/mini_audio_player.dart';
+import 'providers/audio_providers.dart';
 
 void main() async {
   // Ensure Flutter binding is initialized
@@ -38,7 +40,7 @@ class AudioLearningApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Audio Learning Platform',
+      title: 'The Institutes',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         primaryColor: const Color(0xFF2196F3),
@@ -72,12 +74,27 @@ class AudioLearningApp extends StatelessWidget {
           );
         }
         if (settings.name == '/player') {
-          final learningObject = settings.arguments as LearningObject;
-          return MaterialPageRoute(
-            builder: (context) => EnhancedAudioPlayerScreen(
-              learningObject: learningObject,
-            ),
-          );
+          // Handle both Map arguments (new) and direct LearningObject (legacy)
+          if (settings.arguments is Map<String, dynamic>) {
+            final args = settings.arguments as Map<String, dynamic>;
+            return MaterialPageRoute(
+              builder: (context) => EnhancedAudioPlayerScreen(
+                learningObject: args['learningObject'] as LearningObject,
+                courseNumber: args['courseNumber'] as String?,
+                courseTitle: args['courseTitle'] as String?,
+                assignmentTitle: args['assignmentTitle'] as String?,
+                assignmentNumber: args['assignmentNumber'] as int?,
+              ),
+            );
+          } else {
+            // Legacy support for direct LearningObject
+            final learningObject = settings.arguments as LearningObject;
+            return MaterialPageRoute(
+              builder: (context) => EnhancedAudioPlayerScreen(
+                learningObject: learningObject,
+              ),
+            );
+          }
         }
         return null;
       },
@@ -107,21 +124,30 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.headphones,
-              size: 100,
-              color: Theme.of(context).primaryColor,
+            Image.asset(
+              'assets/images/the-institutes-logo.png',
+              height: 80,
+              errorBuilder: (context, error, stackTrace) {
+                // Fallback if logo doesn't load
+                return Icon(
+                  Icons.business,
+                  size: 80,
+                  color: Theme.of(context).primaryColor,
+                );
+              },
             ),
             const SizedBox(height: 20),
             const Text(
-              'Audio Learning Platform',
+              'The Institutes',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 28,
                 fontWeight: FontWeight.bold,
+                color: Color(0xFF003366), // Professional dark blue
               ),
             ),
             const SizedBox(height: 40),
@@ -133,14 +159,14 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-class MainNavigationScreen extends StatefulWidget {
+class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+  ConsumerState<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
+class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = const [
@@ -156,25 +182,46 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shouldShowMiniPlayer = ref.watch(shouldShowMiniPlayerProvider);
+    final bottomSafeArea = MediaQuery.of(context).padding.bottom;
+    final navigationHeight = kBottomNavigationBarHeight + bottomSafeArea;
+
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+      body: Stack(
+        children: [
+          // Main scaffold with navigation
+          Scaffold(
+            body: IndexedStack(
+              index: _selectedIndex,
+              children: _screens,
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+              items: const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.settings),
+                  label: 'Settings',
+                ),
+              ],
+              currentIndex: _selectedIndex,
+              selectedItemColor: Theme.of(context).primaryColor,
+              onTap: _onItemTapped,
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
+
+          // Mini audio player positioned flush above bottom navigation
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            left: 0,
+            right: 0,
+            bottom: shouldShowMiniPlayer ? navigationHeight : -80,
+            child: const MiniAudioPlayer(),
           ),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Theme.of(context).primaryColor,
-        onTap: _onItemTapped,
       ),
     );
   }

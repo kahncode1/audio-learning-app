@@ -143,15 +143,6 @@ void main() {
       });
     });
 
-    group('Word Timing', () {
-      test('should get current word index', () {
-        // Test the word finding logic without actual timings
-        final wordIndex = audioPlayerService.getCurrentWordIndex();
-
-        // Without timings loaded, should return null
-        expect(wordIndex, isNull);
-      });
-    });
 
     group('Stream Getters', () {
       test('should expose isPlaying stream', () {

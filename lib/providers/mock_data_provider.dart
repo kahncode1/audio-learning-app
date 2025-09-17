@@ -73,12 +73,12 @@ void validateMockDataProviders(WidgetRef ref) {
   print('✓ Assignments provider valid');
 
   // Test learning objects provider for different assignments
-  final lo1 = ref.read(mockLearningObjectsProvider('test-assignment-001'));
+  final lo1 = ref.read(mockLearningObjectsProvider('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'));
   assert(lo1.length == 2, 'Assignment 1 should have 2 learning objects');
   print('✓ Learning objects provider valid for assignment 1');
 
   final lo2 = ref.read(mockLearningObjectsProvider('test-assignment-002'));
-  assert(lo2.length == 1, 'Assignment 2 should have 1 learning object');
+  assert(lo2.isEmpty, 'Assignment 2 should have no learning objects');
   print('✓ Learning objects provider valid for assignment 2');
 
   // Test statistic providers
@@ -91,7 +91,7 @@ void validateMockDataProviders(WidgetRef ref) {
   print('✓ Assignment count provider valid');
 
   final loCount = ref.read(mockLearningObjectCountProvider);
-  assert(loCount == 4, 'Learning object count should be 4');
+  assert(loCount == 2, 'Learning object count should be 2');
   print('✓ Learning object count provider valid');
 
   print('=== All Mock Data Providers validations passed ===');

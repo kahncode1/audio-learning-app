@@ -8,6 +8,8 @@ import '../services/progress_service.dart';
 import '../services/word_timing_service.dart';
 import '../models/learning_object.dart';
 import '../providers/providers.dart';
+import '../providers/audio_providers.dart';
+import '../providers/audio_context_provider.dart';
 import '../widgets/simplified_dual_level_highlighted_text.dart';
 import '../utils/app_logger.dart';
 
@@ -25,11 +27,19 @@ import '../utils/app_logger.dart';
 class EnhancedAudioPlayerScreen extends ConsumerStatefulWidget {
   final LearningObject learningObject;
   final bool autoPlay;
+  final String? courseNumber;
+  final String? courseTitle;
+  final String? assignmentTitle;
+  final int? assignmentNumber;
 
   const EnhancedAudioPlayerScreen({
     super.key,
     required this.learningObject,
     this.autoPlay = true,
+    this.courseNumber,
+    this.courseTitle,
+    this.assignmentTitle,
+    this.assignmentNumber,
   });
 
   @override
@@ -68,30 +78,53 @@ class _EnhancedAudioPlayerScreenState
       _progressService = await ProgressService.getInstance();
       debugPrint('Progress service initialized');
 
-      // Use plainText as single source of truth for display
-      // The text processing should have already happened in SpeechifyService
-      _displayText = widget.learningObject.plainText;
+      // Check if we're resuming the same learning object from mini player
+      final currentObject = _audioService.currentLearningObject;
+      final isResumingFromMiniPlayer = currentObject?.id == widget.learningObject.id;
 
-      // Only log if we don't have display text (this would be an error condition)
-      if (_displayText == null || _displayText!.isEmpty) {
-        AppLogger.warning('Learning object has no plainText', {
+      if (isResumingFromMiniPlayer) {
+        debugPrint('Resuming same learning object from mini player, skipping reload');
+        // Just update the display text from the current service state
+        _displayText = _audioService.currentDisplayText ?? widget.learningObject.plainText;
+      } else {
+        // Use plainText as single source of truth for display
+        // The text processing should have already happened in SpeechifyService
+        _displayText = widget.learningObject.plainText;
+
+        // Only log if we don't have display text (this would be an error condition)
+        if (_displayText == null || _displayText!.isEmpty) {
+          AppLogger.warning('Learning object has no plainText', {
+            'learningObjectId': widget.learningObject.id,
+            'hasSSMLContent': widget.learningObject.ssmlContent != null,
+          });
+          // Set a fallback message instead of processing SSML here
+          _displayText = 'No content available for display';
+        }
+
+        AppLogger.info('Display text loaded from plainText field', {
+          'textLength': _displayText?.length ?? 0,
           'learningObjectId': widget.learningObject.id,
-          'hasSSMLContent': widget.learningObject.ssmlContent != null,
+          'source': 'plainText field (single source of truth)',
         });
-        // Set a fallback message instead of processing SSML here
-        _displayText = 'No content available for display';
+
+        // Load the learning object audio
+        debugPrint('Loading learning object audio...');
+        await _audioService.loadLearningObject(widget.learningObject);
+        debugPrint('Audio loaded successfully');
       }
 
-      AppLogger.info('Display text loaded from plainText field', {
-        'textLength': _displayText?.length ?? 0,
-        'learningObjectId': widget.learningObject.id,
-        'source': 'plainText field (single source of truth)',
-      });
+      // Set the current learning object in the provider for mini player
+      ref.read(currentLearningObjectProvider.notifier).state = widget.learningObject;
 
-      // Load the learning object audio
-      debugPrint('Loading learning object audio...');
-      await _audioService.loadLearningObject(widget.learningObject);
-      debugPrint('Audio loaded successfully');
+      // Set the audio context with navigation information
+      final audioContext = AudioContext(
+        courseNumber: widget.courseNumber,
+        courseTitle: widget.courseTitle,
+        assignmentTitle: widget.assignmentTitle,
+        assignmentNumber: widget.assignmentNumber,
+        learningObject: widget.learningObject,
+      );
+      ref.read(audioContextProvider.notifier).state = audioContext;
 
       // Mark as initialized and refresh UI
       final resolvedDisplayText = _audioService.currentDisplayText;

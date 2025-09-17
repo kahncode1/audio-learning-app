@@ -364,52 +364,6 @@ class AudioPlayerService {
     }
   }
 
-  /// Get current word index based on position
-  int? getCurrentWordIndex() {
-    if (_currentWordTimings.isEmpty) return null;
-
-    final positionMs = _positionSubject.value.inMilliseconds;
-
-    // Binary search for current word
-    int left = 0;
-    int right = _currentWordTimings.length - 1;
-
-    while (left <= right) {
-      final mid = (left + right) ~/ 2;
-      final timing = _currentWordTimings[mid];
-
-      if (positionMs >= timing.startMs && positionMs <= timing.endMs) {
-        return mid;
-      } else if (positionMs < timing.startMs) {
-        right = mid - 1;
-      } else {
-        left = mid + 1;
-      }
-    }
-
-    // If not found, return the closest word
-    if (left < _currentWordTimings.length) {
-      return left;
-    }
-
-    return null;
-  }
-
-  /// Get current sentence index based on position
-  int? getCurrentSentenceIndex() {
-    final wordIndex = getCurrentWordIndex();
-    if (wordIndex == null || _currentWordTimings.isEmpty) return null;
-
-    return _currentWordTimings[wordIndex].sentenceIndex;
-  }
-
-  /// Seek to a specific word
-  Future<void> seekToWord(int wordIndex) async {
-    if (wordIndex < 0 || wordIndex >= _currentWordTimings.length) return;
-
-    final timing = _currentWordTimings[wordIndex];
-    await seekToPosition(Duration(milliseconds: timing.startMs));
-  }
 
   // Stream getters
   Stream<bool> get isPlayingStream => _isPlayingSubject.stream;
@@ -482,11 +436,6 @@ void validateAudioPlayerService() {
   assert(instance1.position == Duration.zero, 'Position should start at zero');
   assert(instance1.speed == 1.0, 'Speed should default to 1.0x');
   debugPrint('✓ Initial state verified');
-
-  // Test 5: Word index calculation with empty timings
-  final wordIndex = instance1.getCurrentWordIndex();
-  assert(wordIndex == null, 'Should return null with no timings');
-  debugPrint('✓ Empty word timing handling verified');
 
   debugPrint('=== All AudioPlayerService validations passed ===');
 }
