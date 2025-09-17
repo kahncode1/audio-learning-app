@@ -148,6 +148,28 @@ class _SimplifiedDualLevelHighlightedTextState
   }
 
   @override
+  void didUpdateWidget(SimplifiedDualLevelHighlightedText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Check if the base style (specifically font size) has changed
+    if (oldWidget.baseStyle.fontSize != widget.baseStyle.fontSize ||
+        oldWidget.baseStyle != widget.baseStyle) {
+      // Update the text painter with the new style
+      if (_lastLayoutSize != null) {
+        _updateTextPainter(_lastLayoutSize!.width);
+      }
+    }
+
+    // Also check if text content has changed
+    if (oldWidget.text != widget.text) {
+      if (_lastLayoutSize != null) {
+        _updateTextPainter(_lastLayoutSize!.width);
+      }
+      _loadTimings(); // Reload timings if text changed
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Check if we have valid character position data
     final hasValidCharPositions = _hasValidCharacterPositions();
@@ -473,10 +495,12 @@ class OptimizedHighlightPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(OptimizedHighlightPainter oldDelegate) {
-    // Only repaint when highlighting changes
+    // Repaint when highlighting changes or style changes
     return currentWordIndex != oldDelegate.currentWordIndex ||
            currentSentenceIndex != oldDelegate.currentSentenceIndex ||
-           text != oldDelegate.text;
+           text != oldDelegate.text ||
+           baseStyle != oldDelegate.baseStyle ||
+           baseStyle.fontSize != oldDelegate.baseStyle.fontSize;
   }
 }
 

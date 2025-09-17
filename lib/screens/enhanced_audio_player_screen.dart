@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/audio_player_service.dart';
 import '../services/progress_service.dart';
 import '../services/word_timing_service.dart';
@@ -281,7 +282,7 @@ class _EnhancedAudioPlayerScreenState
                         ? SimplifiedDualLevelHighlightedText(
                             text: _displayText!,
                             contentId: widget.learningObject.id,
-                            baseStyle: TextStyle(
+                            baseStyle: GoogleFonts.inter(
                               fontSize:
                                   _progressService?.currentFontSize ?? 16.0,
                               height: 1.5,
@@ -296,7 +297,7 @@ class _EnhancedAudioPlayerScreenState
                         : Center(
                             child: Text(
                               'No content available',
-                              style: TextStyle(
+                              style: GoogleFonts.inter(
                                 fontSize:
                                     _progressService?.currentFontSize ?? 16.0,
                                 color: Colors.grey,
@@ -306,17 +307,17 @@ class _EnhancedAudioPlayerScreenState
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               // Player controls
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   children: [
-                    // Time display and seek bar
+                    // Seek bar and time display
                     StreamBuilder<Duration>(
                       stream: _audioService.positionStream,
                       builder: (context, positionSnapshot) {
@@ -330,37 +331,50 @@ class _EnhancedAudioPlayerScreenState
 
                             return Column(
                               children: [
-                                // Time labels
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      _formatDuration(position),
-                                      style: const TextStyle(fontSize: 12),
+                                // Full-width seek bar
+                                SliderTheme(
+                                  data: SliderTheme.of(context).copyWith(
+                                    trackHeight: 4.0,
+                                    thumbShape: const RoundSliderThumbShape(
+                                      enabledThumbRadius: 6.0,
                                     ),
-                                    Text(
-                                      _formatDuration(duration),
-                                      style: const TextStyle(fontSize: 12),
+                                    overlayShape: const RoundSliderOverlayShape(
+                                      overlayRadius: 12.0,
                                     ),
-                                  ],
+                                  ),
+                                  child: Slider(
+                                    value: duration.inMilliseconds > 0
+                                        ? position.inMilliseconds /
+                                            duration.inMilliseconds
+                                        : 0.0,
+                                    onChanged: (value) {
+                                      final newPosition = Duration(
+                                        milliseconds:
+                                            (duration.inMilliseconds * value)
+                                                .round(),
+                                      );
+                                      _audioService.seekToPosition(newPosition);
+                                    },
+                                    activeColor: Theme.of(context).primaryColor,
+                                  ),
                                 ),
-                                const SizedBox(height: 8),
-                                // Seek bar
-                                Slider(
-                                  value: duration.inMilliseconds > 0
-                                      ? position.inMilliseconds /
-                                          duration.inMilliseconds
-                                      : 0.0,
-                                  onChanged: (value) {
-                                    final newPosition = Duration(
-                                      milliseconds:
-                                          (duration.inMilliseconds * value)
-                                              .round(),
-                                    );
-                                    _audioService.seekToPosition(newPosition);
-                                  },
-                                  activeColor: Theme.of(context).primaryColor,
+                                // Time labels below the bar
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        _formatDuration(position),
+                                        style: const TextStyle(fontSize: 11),
+                                      ),
+                                      Text(
+                                        _formatDuration(duration),
+                                        style: const TextStyle(fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             );
@@ -368,15 +382,39 @@ class _EnhancedAudioPlayerScreenState
                         );
                       },
                     ),
-                    const SizedBox(height: 16),
-                    // Control buttons
+                    const SizedBox(height: 12),
+                    // All controls in single row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
+                        // Speed control (smaller)
+                        StreamBuilder<double>(
+                          stream: _audioService.speedStream,
+                          builder: (context, snapshot) {
+                            final speed = snapshot.data ?? 1.0;
+                            return SizedBox(
+                              height: 32,
+                              child: TextButton(
+                                onPressed: _audioService.cycleSpeed,
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  minimumSize: const Size(50, 32),
+                                  backgroundColor: Theme.of(context)
+                                      .primaryColor
+                                      .withValues(alpha: 0.1),
+                                ),
+                                child: Text(
+                                  '${speed}x',
+                                  style: const TextStyle(fontSize: 11),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                         // Skip backward
                         IconButton(
                           icon: const Icon(Icons.replay_30),
-                          iconSize: 32,
+                          iconSize: 40,
                           onPressed: _audioService.skipBackward,
                           tooltip: 'Skip back 30s (←)',
                         ),
@@ -385,12 +423,17 @@ class _EnhancedAudioPlayerScreenState
                           stream: _audioService.isPlayingStream,
                           builder: (context, snapshot) {
                             final isPlaying = snapshot.data ?? false;
-                            return FloatingActionButton(
-                              onPressed: _audioService.togglePlayPause,
-                              tooltip: 'Play/Pause (Space)',
-                              child: Icon(
-                                isPlaying ? Icons.pause : Icons.play_arrow,
-                                size: 32,
+                            return SizedBox(
+                              height: 48,
+                              width: 48,
+                              child: FloatingActionButton(
+                                onPressed: _audioService.togglePlayPause,
+                                tooltip: 'Play/Pause (Space)',
+                                elevation: 2,
+                                child: Icon(
+                                  isPlaying ? Icons.pause : Icons.play_arrow,
+                                  size: 28,
+                                ),
                               ),
                             );
                           },
@@ -398,35 +441,11 @@ class _EnhancedAudioPlayerScreenState
                         // Skip forward
                         IconButton(
                           icon: const Icon(Icons.forward_30),
-                          iconSize: 32,
+                          iconSize: 40,
                           onPressed: _audioService.skipForward,
                           tooltip: 'Skip forward 30s (→)',
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // Speed and font controls
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        // Speed control
-                        StreamBuilder<double>(
-                          stream: _audioService.speedStream,
-                          builder: (context, snapshot) {
-                            final speed = snapshot.data ?? 1.0;
-                            return TextButton.icon(
-                              icon: const Icon(Icons.speed),
-                              label: Text('${speed}x'),
-                              onPressed: _audioService.cycleSpeed,
-                              style: TextButton.styleFrom(
-                                backgroundColor: Theme.of(context)
-                                    .primaryColor
-                                    .withValues(alpha: 0.1),
-                              ),
-                            );
-                          },
-                        ),
-                        // Font size control
+                        // Font size control (smaller, fixed width)
                         StreamBuilder<int>(
                           stream: _progressService?.fontSizeIndexStream ??
                               Stream.value(1),
@@ -434,31 +453,38 @@ class _EnhancedAudioPlayerScreenState
                             final fontSizeName =
                                 _progressService?.currentFontSizeName ??
                                     'Medium';
-                            return TextButton.icon(
-                              icon: const Icon(Icons.text_fields),
-                              label: Text(fontSizeName),
-                              onPressed: () async {
-                                await _progressService?.cycleFontSize();
-                                setState(() {}); // Refresh UI
-                              },
-                              style: TextButton.styleFrom(
-                                backgroundColor: Theme.of(context)
-                                    .primaryColor
-                                    .withValues(alpha: 0.1),
+                            return Container(
+                              width: 85, // Fixed width to prevent layout shift
+                              height: 32,
+                              child: TextButton(
+                                onPressed: () async {
+                                  await _progressService?.cycleFontSize();
+                                  setState(() {}); // Refresh UI
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                                  minimumSize: const Size(85, 32),
+                                  backgroundColor: Theme.of(context)
+                                      .primaryColor
+                                      .withValues(alpha: 0.1),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.text_fields, size: 14),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      fontSizeName,
+                                      style: const TextStyle(fontSize: 11),
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Keyboard shortcuts hint
-                    Text(
-                      'Keyboard: Space = Play/Pause | ← → = Skip',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                      ),
                     ),
                   ],
                 ),
