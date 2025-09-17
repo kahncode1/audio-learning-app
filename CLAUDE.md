@@ -68,6 +68,23 @@ audio_learning_app/
 7. **Font Size Persistence** - User preferences stored locally and in cloud
 8. **Hybrid Environment Setup** - Core tools first, platform-specific tools just-in-time
 
+## Critical: Speechify Highlighting System
+
+**NEVER modify these core components without understanding the full pipeline:**
+- **Speechify Request:** Must include `include_speech_marks: true` or highlighting fails
+- **Speech Mark Parsing:** Handles nested/flat structures, removes punctuation from values
+- **Sentence Detection:** 350ms pause threshold + punctuation (protects abbreviations)
+- **UI Widget:** SimplifiedDualLevelHighlightedText with 3-layer paint system
+- **Character Alignment:** `_computeSelectionForWord()` fixes off-by-one API offsets
+
+**Common Breaking Changes to Avoid:**
+- Missing `include_speech_marks` flag → no highlighting
+- Assuming charEnd is exclusive (sometimes inclusive)
+- Not handling abbreviations → broken sentence detection
+- Modifying TextPainter during paint → performance degradation
+
+Full documentation: `/ARCHIVE/highlighting_documentation.md`
+
 ## Development Environment Setup Strategy
 
 This project uses a **phased installation approach** aligned with development milestones:

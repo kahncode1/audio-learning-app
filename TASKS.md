@@ -126,6 +126,8 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 
 **Summary:** Complete dual-level highlighting system with exceptional performance. Binary search at 549μs (10x better than target), perfect 60fps rendering, auto-scrolling, improved tap detection, and LRU cache eviction. All critical code review issues addressed.
 
+**Updated (2025-09-17):** Full documentation of Speechify highlighting pipeline added to `/ARCHIVE/highlighting_documentation.md` including API integration, speech mark parsing, sentence detection, UI components, and character alignment.
+
 ### Word Position Pre-computation ✅
 - [x] 4.10 Implement precomputeWordPositions() with compute() isolation 📁 `/implementations/word-highlighting.dart` (2025-09-14)
   📚 Reference: `/references/code-patterns.md` - Compute Isolation for Heavy Work
@@ -607,3 +609,13 @@ When working on tasks, consult these files:
 - [x] Implement complete UI flow: Courses → Assignments → Learning Objects → Player (2025-09-14)
 - [ ] Add proper loading states while audio streams are initializing
 - [ ] Implement error recovery for failed audio loads
+
+### Highlighting System Notes (Found 2025-09-17)
+- [x] Speechify API requires `include_speech_marks: true` flag (documented)
+- [x] Character offset alignment handles 0/1-based indexing (implemented)
+- [x] Sentence detection uses 350ms pause + punctuation (working)
+- [x] Abbreviation detection prevents false sentence breaks (complete)
+- [x] Three-layer paint system for optimal performance (implemented)
+- [x] LRU cache eviction prevents memory growth (10 doc limit)
+- [ ] Consider adding visual indicator when highlighting data unavailable
+- [ ] Monitor LRU cache behavior for very long documents (>10k words)

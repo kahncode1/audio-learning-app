@@ -469,16 +469,16 @@ The project follows a milestone-based approach with clear deliverables and quali
 ## Feature Specifications
 
 ### Dual-Level Highlighting System
-**Technical Requirements:**
-- Sentence-level background highlighting for reading context
-- Word-level foreground highlighting for precision
-- Binary search algorithm for O(log n) performance
-- Pre-computed word positions using compute()
-- Throttled updates at 16ms intervals
-- RepaintBoundary for isolated repaints
-- Separate streams for word and sentence tracking
-- **Complete Implementation:** `/implementations/word-highlighting.dart`
-- **Performance Patterns:** `/references/code-patterns.md`
+**Technical Implementation:**
+- **API Integration:** Speechify returns word timings via `include_speech_marks: true`
+- **Parsing:** Handles nested sentence chunks or flat word lists
+- **Sentence Inference:** 350ms pause detection + terminal punctuation with abbreviation protection
+- **UI Widget:** SimplifiedDualLevelHighlightedText with OptimizedHighlightPainter
+- **Three-Layer Paint:** Sentence background (#E3F2FD) → Word highlight (#FFF59D) → Static text
+- **Character Alignment:** Smart correction for 0/1-based index mismatches via `_computeSelectionForWord()`
+- **Performance:** 549μs binary search, 60fps rendering, LRU cache eviction (10 doc limit)
+- **Complete Documentation:** `/ARCHIVE/highlighting_documentation.md`
+- **Implementation:** `/implementations/word-highlighting.dart`
 - **Common Issues:** `/references/common-pitfalls.md` #3, #5
 
 ### User Preference System
