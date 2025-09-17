@@ -131,7 +131,7 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
         initiallyExpanded: widget.initiallyExpanded,
         onExpansionChanged: (expanded) => setState(() => isExpanded = expanded),
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-        childrenPadding: const EdgeInsets.only(left: 56, right: 16, bottom: 8),
+        childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
         leading: CircleAvatar(
           backgroundColor: const Color(0xFFE3F2FD),
           foregroundColor: const Color(0xFF2196F3),
@@ -210,10 +210,15 @@ class LearningObjectTile extends StatelessWidget {
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-      leading: const Icon(
-        Icons.play_circle_fill,
-        color: Color(0xFF2196F3),
-        size: 32,
+      leading: Container(
+        width: 40,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 4),
+        child: const Icon(
+          Icons.play_circle_fill,
+          color: Color(0xFF2196F3),
+          size: 32,
+        ),
       ),
       title: Text(
         learningObject.title,
