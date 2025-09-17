@@ -122,6 +122,11 @@ class _SimplifiedDualLevelHighlightedTextState
           if (mounted && context.findRenderObject() != null) {
             final renderBox = context.findRenderObject() as RenderBox?;
             if (renderBox != null) {
+              AppLogger.debug('Pre-computing positions for tap detection', {
+                'contentId': widget.contentId,
+                'textLength': widget.text.length,
+                'width': renderBox.size.width - 32,
+              });
               _timingService.precomputePositions(
                 widget.contentId,
                 widget.text,
@@ -256,7 +261,19 @@ class _SimplifiedDualLevelHighlightedTextState
   }
 
   void _handleTapDown(TapDownDetails details) {
-    if (widget.onWordTap == null || _timingCollection == null) return;
+    if (widget.onWordTap == null || _timingCollection == null) {
+      AppLogger.debug('Tap ignored - no callback or timings', {
+        'hasCallback': widget.onWordTap != null,
+        'hasTimings': _timingCollection != null,
+      });
+      return;
+    }
+
+    AppLogger.debug('Text tapped at position', {
+      'x': details.localPosition.dx,
+      'y': details.localPosition.dy,
+      'contentId': widget.contentId,
+    });
 
     // Use service's optimized position lookup
     final wordIndex = _timingService.findWordAtPosition(
@@ -265,7 +282,16 @@ class _SimplifiedDualLevelHighlightedTextState
     );
 
     if (wordIndex >= 0) {
+      AppLogger.info('Word tap detected', {
+        'wordIndex': wordIndex,
+        'contentId': widget.contentId,
+      });
       widget.onWordTap!(wordIndex);
+    } else {
+      AppLogger.debug('No word found at tap position', {
+        'x': details.localPosition.dx,
+        'y': details.localPosition.dy,
+      });
     }
   }
 

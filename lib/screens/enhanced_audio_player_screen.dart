@@ -178,17 +178,38 @@ class _EnhancedAudioPlayerScreenState
   }
 
   void _handleWordTap(int wordIndex) {
+    AppLogger.debug('_handleWordTap called', {
+      'wordIndex': wordIndex,
+      'contentId': widget.learningObject.id,
+    });
+
     // Get the word timing and seek to that position
     final timings =
         _wordTimingService.getCachedTimings(widget.learningObject.id);
-    if (timings != null && wordIndex >= 0 && wordIndex < timings.length) {
+
+    if (timings == null) {
+      AppLogger.error('No timings cached for tap-to-seek', {
+        'contentId': widget.learningObject.id,
+      });
+      return;
+    }
+
+    if (wordIndex >= 0 && wordIndex < timings.length) {
       final timing = timings[wordIndex];
       final position = Duration(milliseconds: timing.startMs);
-      _audioService.seekToPosition(position);
-      AppLogger.info('Seeking to word', {
+
+      AppLogger.info('Seeking to word via tap', {
         'wordIndex': wordIndex,
         'word': timing.word,
         'positionMs': timing.startMs,
+        'newPosition': position.toString(),
+      });
+
+      _audioService.seekToPosition(position);
+    } else {
+      AppLogger.error('Word index out of range', {
+        'wordIndex': wordIndex,
+        'timingsCount': timings.length,
       });
     }
   }

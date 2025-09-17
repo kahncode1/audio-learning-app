@@ -424,21 +424,55 @@ class WordTimingService {
     final timings = _wordTimingCache[contentId];
     final positions = _positionCache[contentId];
 
-    if (timings == null || positions == null) return -1;
+    if (timings == null || positions == null) {
+      AppLogger.debug('Tap-to-seek: No timings or positions cached', {
+        'contentId': contentId,
+        'hasTimings': timings != null,
+        'hasPositions': positions != null,
+      });
+      return -1;
+    }
 
+    AppLogger.debug('Tap-to-seek: Finding word at position', {
+      'tapX': tapPosition.dx,
+      'tapY': tapPosition.dy,
+      'wordCount': timings.length,
+      'positionCount': positions.length,
+    });
+
+    // Iterate through each word timing
     for (int i = 0; i < timings.length; i++) {
       final timing = timings[i];
 
-      // Estimate word boundaries based on character positions
-      // This is a simplified approach - could be enhanced with more accurate word bounds
-      if (i < positions.length) {
-        final position = positions[i];
+      // Check if this word has character position information
+      if (timing.charStart == null || timing.charEnd == null) {
+        continue;
+      }
+
+      // Get the character range for this word
+      final charStart = timing.charStart!;
+      final charEnd = timing.charEnd!;
+
+      // Check each character position within this word's range
+      for (int charIndex = charStart; charIndex <= charEnd && charIndex < positions.length; charIndex++) {
+        final position = positions[charIndex];
         if (position.rect.contains(tapPosition)) {
+          AppLogger.info('Tap-to-seek: Found word', {
+            'wordIndex': i,
+            'word': timing.word,
+            'charStart': charStart,
+            'charEnd': charEnd,
+            'tapPosition': '(${tapPosition.dx.toStringAsFixed(1)}, ${tapPosition.dy.toStringAsFixed(1)})',
+          });
           return i;
         }
       }
     }
 
+    AppLogger.debug('Tap-to-seek: No word found at position', {
+      'tapX': tapPosition.dx,
+      'tapY': tapPosition.dy,
+    });
     return -1;
   }
 
