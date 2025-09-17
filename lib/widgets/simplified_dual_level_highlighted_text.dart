@@ -34,7 +34,6 @@ class SimplifiedDualLevelHighlightedText extends ConsumerStatefulWidget {
   final TextStyle baseStyle;
   final Color sentenceHighlightColor;
   final Color wordHighlightColor;
-  final Function(int wordIndex)? onWordTap;
   final ScrollController? scrollController;
 
   /// Average number of characters per line for scroll estimation
@@ -48,7 +47,6 @@ class SimplifiedDualLevelHighlightedText extends ConsumerStatefulWidget {
     required this.baseStyle,
     this.sentenceHighlightColor = const Color(0xFFE3F2FD), // Light blue
     this.wordHighlightColor = const Color(0xFFFFF59D), // Yellow
-    this.onWordTap,
     this.scrollController,
   });
 
@@ -115,26 +113,6 @@ class _SimplifiedDualLevelHighlightedTextState
         final nonNullTimings = timings;  // Create non-nullable local variable
         setState(() {
           _timingCollection = WordTimingCollection(nonNullTimings);
-        });
-
-        // Pre-compute positions after first frame
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && context.findRenderObject() != null) {
-            final renderBox = context.findRenderObject() as RenderBox?;
-            if (renderBox != null) {
-              AppLogger.debug('Pre-computing positions for tap detection', {
-                'contentId': widget.contentId,
-                'textLength': widget.text.length,
-                'width': renderBox.size.width - 32,
-              });
-              _timingService.precomputePositions(
-                widget.contentId,
-                widget.text,
-                widget.baseStyle,
-                renderBox.size.width - 32,
-              );
-            }
-          }
         });
       }
     } catch (e) {
@@ -222,20 +200,17 @@ class _SimplifiedDualLevelHighlightedTextState
           _updateTextPainter(constraints.maxWidth);
         }
 
-        return GestureDetector(
-          onTapDown: _handleTapDown,
-          child: CustomPaint(
-            size: Size(constraints.maxWidth, _textPainter.height),
-            painter: OptimizedHighlightPainter(
-              text: widget.text,
-              textPainter: _textPainter,
-              timingCollection: _timingCollection!,
-              currentWordIndex: _currentWordIndex,
-              currentSentenceIndex: _currentSentenceIndex,
-              baseStyle: widget.baseStyle,
-              sentenceHighlightColor: widget.sentenceHighlightColor,
-              wordHighlightColor: widget.wordHighlightColor,
-            ),
+        return CustomPaint(
+          size: Size(constraints.maxWidth, _textPainter.height),
+          painter: OptimizedHighlightPainter(
+            text: widget.text,
+            textPainter: _textPainter,
+            timingCollection: _timingCollection!,
+            currentWordIndex: _currentWordIndex,
+            currentSentenceIndex: _currentSentenceIndex,
+            baseStyle: widget.baseStyle,
+            sentenceHighlightColor: widget.sentenceHighlightColor,
+            wordHighlightColor: widget.wordHighlightColor,
           ),
         );
       },
@@ -258,41 +233,6 @@ class _SimplifiedDualLevelHighlightedTextState
     return _timingCollection!.timings.every((timing) =>
       timing.charStart != null && timing.charEnd != null
     );
-  }
-
-  void _handleTapDown(TapDownDetails details) {
-    if (widget.onWordTap == null || _timingCollection == null) {
-      AppLogger.debug('Tap ignored - no callback or timings', {
-        'hasCallback': widget.onWordTap != null,
-        'hasTimings': _timingCollection != null,
-      });
-      return;
-    }
-
-    AppLogger.debug('Text tapped at position', {
-      'x': details.localPosition.dx,
-      'y': details.localPosition.dy,
-      'contentId': widget.contentId,
-    });
-
-    // Use service's optimized position lookup
-    final wordIndex = _timingService.findWordAtPosition(
-      widget.contentId,
-      details.localPosition
-    );
-
-    if (wordIndex >= 0) {
-      AppLogger.info('Word tap detected', {
-        'wordIndex': wordIndex,
-        'contentId': widget.contentId,
-      });
-      widget.onWordTap!(wordIndex);
-    } else {
-      AppLogger.debug('No word found at tap position', {
-        'x': details.localPosition.dx,
-        'y': details.localPosition.dy,
-      });
-    }
   }
 
   @override

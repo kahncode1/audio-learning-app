@@ -370,7 +370,6 @@ Key technology selections with current implementations:
 - **Word Foreground:** Yellow (#FFF59D) for current word
 - **Active Word Style:** Darker blue text (#1976D2) with bold weight
 - **Smooth Transitions:** 60fps updates for seamless experience
-- **Tap-to-Seek:** Any word can be tapped to seek to that position
 
 ### Content Organization (see `/implementations/assignments-page.dart`)
 - **Expandable Assignments:** First assignment auto-expanded

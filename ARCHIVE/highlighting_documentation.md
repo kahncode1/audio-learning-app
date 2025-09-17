@@ -84,7 +84,7 @@ Speech marks provide:
 - Optional `start` / `end` character indices → used to align highlights with actual text.
 - Sentence grouping when `chunks` are nested.
 
-Without them we would guess timings, resulting in jerky highlighting and broken tap-to-seek.
+Without them we would guess timings, resulting in jerky highlighting.
 
 ### Active Word Calculation
 
@@ -126,11 +126,10 @@ Considerations:
 ## 6. Highlight Rendering Flow
 
 1. `AudioPlayerService` stores normalized timings in `WordTimingService.setCachedTimings`, ensuring both services use the same aligned data.
-2. `WordTimingService.precomputePositions` (compute isolate) builds per-character `Rect` data for tap hit-testing and auto-scroll.
-3. `SimplifiedDualLevelHighlightedText` listens to the service streams:
+2. `SimplifiedDualLevelHighlightedText` listens to the service streams:
    - Sentence highlight uses `TextPainter.getBoxesForSelection` to build a continuous background for the sentence range.
    - Word highlight recalculates the best `[start, end)` span using `_computeSelectionForWord`, tolerating off-by-one char offsets and inclusive `end` values.
-   - Tap-to-seek calls `WordTimingService.findWordAtPosition`, which looks up word indices using cached timing/position data (once the hit-testing bug is fixed to aggregate char ranges).
+   - Auto-scroll keeps the current word visible in the viewport with smooth animation.
 
 ## 7. Common Mistakes & Pitfalls
 
@@ -139,19 +138,19 @@ Considerations:
 - **Assuming `charEnd` is exclusive** → some responses treat it as inclusive; `_computeSelectionForWord` compensates, but custom code should not make assumptions.
 - **Ignoring abbreviation detection** → leads to premature sentence breaks (e.g., highlighting everything after “Dr.” as a new sentence). Keep `_commonAbbreviations` updated when new edge cases appear.
 - **Forgetting pause threshold** – adjust `_sentencePauseThresholdMs` if transcripts lack punctuation but rely on timing gaps for sentence separation.
-- **Hit-testing with raw character boxes** – always consider the full `[charStart, charEnd)` range when mapping a tap back to a word; single characters are not sufficient.
 - **Non-normalized display text** – highlight alignment fails if UI text diverges from the `displayText` Speechify provided. Ensure downstream transformers keep text in sync.
 
 ## 8. When Things Look Off
 
 - **Highlight drift** – confirm that `displayText` matches what is shown; resynchronize timings via `WordTimingService.alignTimingsToText`.
 - **Sentence highlight covers entire document** – check if every word has `sentenceIndex = 0`; the API might have returned flat marks. Verify `_sentencePauseThresholdMs` and abbreviation handling.
-- **Tap-to-seek misses** – regenerate position cache (`clearCache`) after layout changes and ensure `precomputePositions` used the actual text width.
 - **Speechify errors** – log output includes full endpoint, type of speech marks, and character coverage stats. Use those logs to adjust parsing.
 
 This pipeline relies on the combination of Speechify's rich timing metadata and our post-processing to keep the transcript, audio, and UI aligned. Maintain consistency when editing any part of the flow to avoid cascading highlighting regressions.
 
 ## 9. UI Component Architecture
+
+**Note:** Tap-to-seek functionality was removed on 2025-09-17 to simplify the implementation and improve maintainability.
 
 ### SimplifiedDualLevelHighlightedText Widget
 
@@ -162,7 +161,6 @@ The main UI widget (`lib/widgets/simplified_dual_level_highlighted_text.dart`) i
 - **Single immutable TextPainter** – Created once, never modified during paint cycles
 - **Direct service integration** – Subscribes to WordTimingService throttled streams
 - **Auto-scrolling** – Keeps current word centered in viewport with smooth animation
-- **Tap-to-seek** – Maps tap positions to word indices for audio seeking
 - **Fallback UI** – Shows status bar when highlighting data unavailable
 
 **Performance Characteristics:**
@@ -213,11 +211,10 @@ This robust approach ensures highlights align correctly even when:
 - Updates trigger `setState()` only when indices change
 - Proper disposal in reverse order of initialization
 
-**Position Pre-computation:**
-- Calls `precomputePositions()` after first frame
-- Runs in compute isolate to avoid blocking UI
-- Caches character rectangles for tap detection
-- Enables instant tap-to-seek response
+**Position Updates:**
+- Updates are throttled to maintain 60fps
+- Binary search ensures fast word lookup
+- No position pre-computation needed after tap-to-seek removal
 
 **Fallback Behavior:**
 When highlighting data is unavailable (no speech marks or character positions):

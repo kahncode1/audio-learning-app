@@ -177,43 +177,6 @@ class _EnhancedAudioPlayerScreenState
     }
   }
 
-  void _handleWordTap(int wordIndex) {
-    AppLogger.debug('_handleWordTap called', {
-      'wordIndex': wordIndex,
-      'contentId': widget.learningObject.id,
-    });
-
-    // Get the word timing and seek to that position
-    final timings =
-        _wordTimingService.getCachedTimings(widget.learningObject.id);
-
-    if (timings == null) {
-      AppLogger.error('No timings cached for tap-to-seek', data: {
-        'contentId': widget.learningObject.id,
-      });
-      return;
-    }
-
-    if (wordIndex >= 0 && wordIndex < timings.length) {
-      final timing = timings[wordIndex];
-      final position = Duration(milliseconds: timing.startMs);
-
-      AppLogger.info('Seeking to word via tap', {
-        'wordIndex': wordIndex,
-        'word': timing.word,
-        'positionMs': timing.startMs,
-        'newPosition': position.toString(),
-      });
-
-      _audioService.seekToPosition(position);
-    } else {
-      AppLogger.error('Word index out of range', data: {
-        'wordIndex': wordIndex,
-        'timingsCount': timings.length,
-      });
-    }
-  }
-
   String _formatDuration(Duration duration) {
     final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
@@ -328,7 +291,6 @@ class _EnhancedAudioPlayerScreenState
                                 const Color(0xFFE3F2FD), // Light blue
                             wordHighlightColor:
                                 const Color(0xFFFFF59D), // Yellow
-                            onWordTap: _handleWordTap,
                             scrollController: _scrollController,
                           )
                         : Center(

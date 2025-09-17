@@ -153,11 +153,11 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 - [x] 4.22 Write performance tests for 60fps validation 📁 `/implementations/word-highlighting.dart` (2025-09-14)
   📚 Reference: `/references/implementation-standards.md` - Complex Service Validation Example
 
-### Tap-to-Seek Implementation ✅
-- [x] 4.23 Create word tap detection with TapGestureRecognizer 📁 `/implementations/word-highlighting.dart`, `/implementations/audio-player-screen.dart` (2025-09-14)
-- [x] 4.24 Implement seekToWord() functionality 📁 `/implementations/audio-player-screen.dart` (2025-09-14)
-- [x] 4.25 Write unit tests for tap-to-seek (2025-09-14)
-- [x] 4.26 Write UI tests for tap accuracy (2025-09-14)
+### Tap-to-Seek Implementation ❌ REMOVED
+- [ ] ~~4.23 Create word tap detection with TapGestureRecognizer~~ (REMOVED 2025-09-17 - Simplified implementation)
+- [ ] ~~4.24 Implement seekToWord() functionality~~ (REMOVED 2025-09-17 - Simplified implementation)
+- [ ] ~~4.25 Write unit tests for tap-to-seek~~ (REMOVED 2025-09-17 - Simplified implementation)
+- [ ] ~~4.26 Write UI tests for tap accuracy~~ (REMOVED 2025-09-17 - Simplified implementation)
 
 ### Code Review Fixes (Phase II) ✅
 - [x] 4.27 Implement auto-scrolling to keep current word visible (2025-09-14)
@@ -231,7 +231,7 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 ### Highlighted Text Widget with Dual Levels
 - [ ] 5.22 Create dual-level HighlightedText with RepaintBoundary 📁 `/implementations/word-highlighting.dart`, `/implementations/audio-player-screen.dart`
 - [ ] 5.23 Implement smooth scrolling to current position 📁 `/implementations/audio-player-screen.dart`
-- [ ] 5.24 Add word tap detection for seeking 📁 `/implementations/audio-player-screen.dart`
+- [ ] ~~5.24 Add word tap detection for seeking~~ (REMOVED 2025-09-17 - Simplified implementation)
 - [ ] 5.25 Write widget tests for highlighting
 - [ ] 5.26 Write performance tests for 60fps validation
 

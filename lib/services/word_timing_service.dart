@@ -23,7 +23,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,17 +34,6 @@ import '../exceptions/app_exceptions.dart';
 import 'speechify_service.dart';
 
 // TimingServiceException moved to ../exceptions/app_exceptions.dart as TimingException
-
-/// Represents a computed text position for accurate rendering
-class TextPosition {
-  final int offset;
-  final Rect rect;
-
-  const TextPosition({
-    required this.offset,
-    required this.rect,
-  });
-}
 
 /// Service for managing dual-level word and sentence timing with audio synchronization
 class WordTimingService {
@@ -66,12 +54,10 @@ class WordTimingService {
   // Caches for performance optimization with LRU eviction
   final Map<String, List<WordTiming>> _wordTimingCache = {};
   final Map<String, WordTimingCollection> _collectionCache = {};
-  final Map<String, List<TextPosition>> _positionCache = {};
 
   // LRU tracking for cache eviction
   final List<String> _cacheAccessOrder = [];
   static const int _maxCacheEntries = 10; // Limit cache to 10 documents
-  static const int _maxPositionCacheEntries = 1000; // Limit position cache
 
   // Stream controllers for dual-level highlighting
   late final StreamController<int> _currentWordController;
@@ -108,24 +94,7 @@ class WordTimingService {
       final oldestKey = _cacheAccessOrder.removeAt(0);
       _wordTimingCache.remove(oldestKey);
       _collectionCache.remove(oldestKey);
-      _positionCache.remove(oldestKey);
       AppLogger.debug('Evicted cache entry', {'contentId': oldestKey});
-    }
-
-    // Evict position cache if it's getting too large
-    int totalPositions = 0;
-    for (final positions in _positionCache.values) {
-      totalPositions += positions.length;
-    }
-
-    if (totalPositions > _maxPositionCacheEntries) {
-      // Clear position cache for the oldest entry
-      if (_cacheAccessOrder.isNotEmpty) {
-        final oldestKey = _cacheAccessOrder.first;
-        _positionCache.remove(oldestKey);
-        AppLogger.debug('Evicted position cache',
-            {'contentId': oldestKey, 'totalPositions': totalPositions});
-      }
     }
   }
 
@@ -278,63 +247,6 @@ class WordTimingService {
     return processedTimings;
   }
 
-  /// Pre-computes text positions for smooth highlighting and tap detection
-  Future<void> precomputePositions(
-    String contentId,
-    String text,
-    TextStyle textStyle,
-    double maxWidth,
-  ) async {
-    if (_positionCache.containsKey(contentId)) {
-      AppLogger.debug('Positions already computed', {'contentId': contentId});
-      _updateCacheAccessOrder(contentId);
-      return;
-    }
-
-    try {
-      AppLogger.info('Pre-computing text positions', {'contentId': contentId});
-
-      final positions = await compute(_computePositionsIsolate, {
-        'text': text,
-        'textStyle': {
-          'fontSize': textStyle.fontSize ?? 16.0,
-          'fontFamily': textStyle.fontFamily,
-          'fontWeight': textStyle.fontWeight?.index,
-          'letterSpacing': textStyle.letterSpacing,
-          'height': textStyle.height,
-        },
-        'maxWidth': maxWidth,
-      });
-
-      final textPositions = positions
-          .map((p) => TextPosition(
-                offset: p['offset'] as int,
-                rect: Rect.fromLTWH(
-                  p['left'] as double,
-                  p['top'] as double,
-                  p['width'] as double,
-                  p['height'] as double,
-                ),
-              ))
-          .toList();
-
-      _positionCache[contentId] = textPositions;
-      _updateCacheAccessOrder(contentId);
-      _evictLRUCacheIfNeeded(); // Check after adding new positions
-
-      AppLogger.info('Pre-computed text positions', {
-        'contentId': contentId,
-        'positionCount': positions.length,
-      });
-    } catch (e) {
-      AppLogger.warning('Failed to pre-compute positions', {
-        'contentId': contentId,
-        'error': e.toString(),
-      });
-      // Continue without pre-computed positions - highlighting will still work
-    }
-  }
-
   /// Updates current position and triggers dual-level highlighting streams
   void updatePosition(int positionMs, String contentId) {
     final collection = _collectionCache[contentId];
@@ -414,68 +326,6 @@ class WordTimingService {
     });
   }
 
-  /// Gets cached text positions for a content ID
-  List<TextPosition>? getCachedPositions(String contentId) {
-    return _positionCache[contentId];
-  }
-
-  /// Finds the word index at a specific screen position for tap-to-seek
-  int findWordAtPosition(String contentId, Offset tapPosition) {
-    final timings = _wordTimingCache[contentId];
-    final positions = _positionCache[contentId];
-
-    if (timings == null || positions == null) {
-      AppLogger.debug('Tap-to-seek: No timings or positions cached', {
-        'contentId': contentId,
-        'hasTimings': timings != null,
-        'hasPositions': positions != null,
-      });
-      return -1;
-    }
-
-    AppLogger.debug('Tap-to-seek: Finding word at position', {
-      'tapX': tapPosition.dx,
-      'tapY': tapPosition.dy,
-      'wordCount': timings.length,
-      'positionCount': positions.length,
-    });
-
-    // Iterate through each word timing
-    for (int i = 0; i < timings.length; i++) {
-      final timing = timings[i];
-
-      // Check if this word has character position information
-      if (timing.charStart == null || timing.charEnd == null) {
-        continue;
-      }
-
-      // Get the character range for this word
-      final charStart = timing.charStart!;
-      final charEnd = timing.charEnd!;
-
-      // Check each character position within this word's range
-      for (int charIndex = charStart; charIndex <= charEnd && charIndex < positions.length; charIndex++) {
-        final position = positions[charIndex];
-        if (position.rect.contains(tapPosition)) {
-          AppLogger.info('Tap-to-seek: Found word', {
-            'wordIndex': i,
-            'word': timing.word,
-            'charStart': charStart,
-            'charEnd': charEnd,
-            'tapPosition': '(${tapPosition.dx.toStringAsFixed(1)}, ${tapPosition.dy.toStringAsFixed(1)})',
-          });
-          return i;
-        }
-      }
-    }
-
-    AppLogger.debug('Tap-to-seek: No word found at position', {
-      'tapX': tapPosition.dx,
-      'tapY': tapPosition.dy,
-    });
-    return -1;
-  }
-
   /// Loads word timings from SharedPreferences cache
   Future<List<WordTiming>?> _loadFromLocalCache(String contentId) async {
     try {
@@ -513,7 +363,6 @@ class WordTimingService {
   void clearCache() {
     _wordTimingCache.clear();
     _collectionCache.clear();
-    _positionCache.clear();
     _cacheAccessOrder.clear();
     AppLogger.debug('Cache cleared');
   }
@@ -985,75 +834,6 @@ List<Map<String, dynamic>> _processTimingsIsolate(Map<String, dynamic> data) {
   }
 
   return processedTimings;
-}
-
-/// Top-level function for computing text positions in isolate
-List<Map<String, dynamic>> _computePositionsIsolate(Map<String, dynamic> data) {
-  final String text = data['text'];
-  final Map<String, dynamic> styleData = data['textStyle'];
-  final double maxWidth = data['maxWidth'];
-
-  // Create TextStyle from data
-  final textStyle = ui.TextStyle(
-    fontSize: styleData['fontSize']?.toDouble() ?? 16.0,
-    fontFamily: styleData['fontFamily'],
-    fontWeight: styleData['fontWeight'] != null
-        ? FontWeight.values[styleData['fontWeight']]
-        : FontWeight.normal,
-    letterSpacing: styleData['letterSpacing']?.toDouble(),
-    height: styleData['height']?.toDouble(),
-  );
-
-  // Create paragraph builder
-  final paragraphBuilder = ui.ParagraphBuilder(ui.ParagraphStyle(
-    textAlign: TextAlign.left,
-    textDirection: TextDirection.ltr,
-    maxLines: null,
-  ))
-    ..pushStyle(textStyle)
-    ..addText(text);
-
-  final paragraph = paragraphBuilder.build();
-  paragraph.layout(ui.ParagraphConstraints(width: maxWidth));
-
-  final positions = <Map<String, dynamic>>[];
-
-  // Calculate positions for each character
-  for (int i = 0; i < text.length; i++) {
-    try {
-      final boxes = paragraph.getBoxesForRange(i, i + 1);
-      if (boxes.isNotEmpty) {
-        final box = boxes.first;
-        positions.add({
-          'offset': i,
-          'left': box.left,
-          'top': box.top,
-          'width': box.right - box.left,
-          'height': box.bottom - box.top,
-        });
-      } else {
-        // Fallback for characters without boxes
-        positions.add({
-          'offset': i,
-          'left': 0.0,
-          'top': 0.0,
-          'width': 0.0,
-          'height': 0.0,
-        });
-      }
-    } catch (e) {
-      // Handle edge cases
-      positions.add({
-        'offset': i,
-        'left': 0.0,
-        'top': 0.0,
-        'width': 0.0,
-        'height': 0.0,
-      });
-    }
-  }
-
-  return positions;
 }
 
 /// Validation function to verify WordTimingService implementation
