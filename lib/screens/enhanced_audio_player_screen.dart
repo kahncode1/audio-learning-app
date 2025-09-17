@@ -188,7 +188,7 @@ class _EnhancedAudioPlayerScreenState
         _wordTimingService.getCachedTimings(widget.learningObject.id);
 
     if (timings == null) {
-      AppLogger.error('No timings cached for tap-to-seek', {
+      AppLogger.error('No timings cached for tap-to-seek', data: {
         'contentId': widget.learningObject.id,
       });
       return;
@@ -207,7 +207,7 @@ class _EnhancedAudioPlayerScreenState
 
       _audioService.seekToPosition(position);
     } else {
-      AppLogger.error('Word index out of range', {
+      AppLogger.error('Word index out of range', data: {
         'wordIndex': wordIndex,
         'timingsCount': timings.length,
       });
