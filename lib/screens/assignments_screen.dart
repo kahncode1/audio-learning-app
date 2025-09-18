@@ -39,6 +39,12 @@ class AssignmentsScreen extends ConsumerWidget {
             title: Text(courseNumber),
             backgroundColor: const Color(0xFF2196F3),
             foregroundColor: Colors.white,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () => Navigator.pushNamed(context, '/settings'),
+              ),
+            ],
           ),
           backgroundColor: const Color(0xFFF5F5F5),
           body: Stack(
@@ -86,6 +92,12 @@ class AssignmentsScreen extends ConsumerWidget {
             title: Text(courseNumber),
             backgroundColor: const Color(0xFF2196F3),
             foregroundColor: Colors.white,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () => Navigator.pushNamed(context, '/settings'),
+              ),
+            ],
           ),
           backgroundColor: const Color(0xFFF5F5F5),
           body: Stack(

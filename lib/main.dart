@@ -159,67 +159,30 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-class MainNavigationScreen extends ConsumerStatefulWidget {
+class MainNavigationScreen extends ConsumerWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  ConsumerState<MainNavigationScreen> createState() => _MainNavigationScreenState();
-}
-
-class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
-  int _selectedIndex = 0;
-
-  final List<Widget> _screens = const [
-    HomePage(),
-    SettingsScreen(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final shouldShowMiniPlayer = ref.watch(shouldShowMiniPlayerProvider);
-    final bottomSafeArea = MediaQuery.of(context).padding.bottom;
-    final navigationHeight = kBottomNavigationBarHeight + bottomSafeArea;
 
     return Scaffold(
       body: Stack(
         children: [
-          // Main scaffold with navigation
-          Scaffold(
-            body: IndexedStack(
-              index: _selectedIndex,
-              children: _screens,
-            ),
-            bottomNavigationBar: BottomNavigationBar(
-              items: const <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.settings),
-                  label: 'Settings',
-                ),
-              ],
-              currentIndex: _selectedIndex,
-              selectedItemColor: Theme.of(context).primaryColor,
-              onTap: _onItemTapped,
-            ),
-          ),
+          // Main content (HomePage)
+          const HomePage(),
 
-          // Mini audio player positioned flush above bottom navigation
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+          // Mini audio player positioned at the bottom
+          Positioned(
             left: 0,
             right: 0,
-            bottom: shouldShowMiniPlayer ? navigationHeight : -80,
-            child: const MiniAudioPlayer(),
+            bottom: 0,
+            child: AnimatedSlide(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              offset: shouldShowMiniPlayer ? Offset.zero : const Offset(0, 1),
+              child: const AnimatedMiniAudioPlayer(),
+            ),
           ),
         ],
       ),

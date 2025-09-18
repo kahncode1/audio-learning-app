@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/course.dart';
 import '../providers/mock_data_provider.dart';
+import '../providers/audio_providers.dart';
 
 /// HomePage displays the list of available courses with gradient cards
 class HomePage extends ConsumerWidget {
@@ -12,6 +13,7 @@ class HomePage extends ConsumerWidget {
     // Get the test course from mock data provider
     final testCourse = ref.watch(mockCourseProvider);
     final courses = [testCourse]; // List with our test course
+    final shouldShowMiniPlayer = ref.watch(shouldShowMiniPlayerProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -24,6 +26,12 @@ class HomePage extends ConsumerWidget {
         ),
         backgroundColor: const Color(0xFF2196F3),
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.pushNamed(context, '/settings'),
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFFF5F5F5),
       body: courses.isEmpty
@@ -31,7 +39,12 @@ class HomePage extends ConsumerWidget {
               child: Text('No courses available'),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: shouldShowMiniPlayer ? 116 : 16, // Add space for mini player
+              ),
               itemCount: courses.length,
               itemBuilder: (context, index) {
                 final course = courses[index];

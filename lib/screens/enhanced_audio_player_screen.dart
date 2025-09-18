@@ -225,6 +225,12 @@ class _EnhancedAudioPlayerScreenState
         appBar: AppBar(
           title: Text(widget.learningObject.title),
           backgroundColor: Theme.of(context).primaryColor,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () => Navigator.pushNamed(context, '/settings'),
+            ),
+          ],
         ),
         body: Center(
           child: Padding(
@@ -275,6 +281,12 @@ class _EnhancedAudioPlayerScreenState
         appBar: AppBar(
           title: Text(widget.learningObject.title),
           backgroundColor: Theme.of(context).primaryColor,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () => Navigator.pushNamed(context, '/settings'),
+            ),
+          ],
         ),
         body: const Center(
           child: Column(
@@ -296,6 +308,12 @@ class _EnhancedAudioPlayerScreenState
         appBar: AppBar(
           title: Text(widget.learningObject.title),
           backgroundColor: Theme.of(context).primaryColor,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () => Navigator.pushNamed(context, '/settings'),
+            ),
+          ],
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -446,7 +464,11 @@ class _EnhancedAudioPlayerScreenState
                         ),
                         // Skip backward
                         IconButton(
-                          icon: const Icon(Icons.replay_30),
+                          icon: Icon(
+                            Icons.replay_30,
+                            color: Colors.grey.shade700,
+                            weight: 300,
+                          ),
                           iconSize: 40,
                           onPressed: _audioService.skipBackward,
                           tooltip: 'Skip back 30s (←)',
@@ -473,7 +495,11 @@ class _EnhancedAudioPlayerScreenState
                         ),
                         // Skip forward
                         IconButton(
-                          icon: const Icon(Icons.forward_30),
+                          icon: Icon(
+                            Icons.forward_30,
+                            color: Colors.grey.shade700,
+                            weight: 300,
+                          ),
                           iconSize: 40,
                           onPressed: _audioService.skipForward,
                           tooltip: 'Skip forward 30s (→)',
