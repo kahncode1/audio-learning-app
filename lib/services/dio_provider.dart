@@ -20,9 +20,9 @@ class DioProvider {
   static Dio? _dio;
   static Dio? _speechifyDio;
 
-  // Cache configuration
+  // Enhanced cache configuration with size limits
   static final _cacheOptions = CacheOptions(
-    store: MemCacheStore(),
+    store: MemCacheStore(maxSize: 50 * 1024 * 1024), // 50MB memory cache
     policy: CachePolicy.request,
     hitCacheOnErrorExcept: [401, 403],
     maxStale: const Duration(days: 7),
@@ -31,6 +31,10 @@ class DioProvider {
     keyBuilder: CacheOptions.defaultCacheKeyBuilder,
     allowPostMethod: false,
   );
+
+  // Cache statistics
+  static int _cacheHits = 0;
+  static int _cacheMisses = 0;
 
   // Private constructor
   DioProvider._();
@@ -160,6 +164,54 @@ class DioProvider {
     return _speechifyDio!;
   }
 
+  /// Get cache statistics
+  static Map<String, dynamic> getCacheStatistics() {
+    final totalRequests = _cacheHits + _cacheMisses;
+    final hitRate = totalRequests > 0 ? (_cacheHits / totalRequests) * 100 : 0.0;
+
+    return {
+      'cacheHits': _cacheHits,
+      'cacheMisses': _cacheMisses,
+      'hitRate': hitRate,
+      'totalRequests': totalRequests,
+      'cachePolicy': 'LRU',
+      'maxCacheSize': '50MB',
+      'maxStaleAge': '7 days',
+    };
+  }
+
+  /// Clear cache statistics
+  static void clearCacheStatistics() {
+    _cacheHits = 0;
+    _cacheMisses = 0;
+  }
+
+  /// Clear all cached responses
+  static Future<void> clearCache() async {
+    try {
+      await _cacheOptions.store?.clean();
+      AppLogger.info('HTTP cache cleared');
+    } catch (e) {
+      AppLogger.error('Error clearing cache', error: e);
+    }
+  }
+
+  /// Monitor cache performance
+  static void _monitorCachePerformance(Response response) {
+    // Check if response came from cache
+    if (response.extra['fromCache'] == true) {
+      _cacheHits++;
+    } else {
+      _cacheMisses++;
+    }
+
+    // Log cache performance periodically
+    if ((_cacheHits + _cacheMisses) % 100 == 0) {
+      final stats = getCacheStatistics();
+      AppLogger.info('Cache performance', stats);
+    }
+  }
+
   /// Reset the singleton instances (mainly for testing)
   @visibleForTesting
   static void reset() {
@@ -168,6 +220,7 @@ class DioProvider {
     _dio = null;
     _speechifyDio = null;
     _instance = null;
+    clearCacheStatistics();
   }
 }
 

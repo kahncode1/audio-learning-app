@@ -215,18 +215,8 @@ class WordTimingCollection {
       }
     }
 
-    // If no exact match, return the closest word that has finished playing
-    if (bestMatch >= 0) {
-      _lastSearchIndex = bestMatch;
-      return bestMatch;
-    }
-
-    // If no word has finished, return the first upcoming word
-    if (left < timings.length) {
-      _lastSearchIndex = left;
-      return -1; // Indicate no active word, but cache position for next search
-    }
-
+    // No active word found - time is either before all words or after all words
+    // or in a gap between words
     return -1;
   }
 
@@ -267,15 +257,12 @@ class WordTimingCollection {
   List<int> getWordIndicesInRange(int startMs, int endMs) {
     final indices = <int>[];
 
-    // Find start position using binary search
-    final startIndex = _findFirstWordAfterTime(startMs);
-    if (startIndex == -1) return indices;
-
-    // Collect all words in range
-    for (int i = startIndex; i < timings.length; i++) {
+    // Linear search to find all words that overlap with the time range
+    // A word overlaps if it starts before endMs AND ends after startMs
+    for (int i = 0; i < timings.length; i++) {
       final timing = timings[i];
-      if (timing.startMs >= endMs) break;
-      if (timing.endMs >= startMs) {
+      if (timing.startMs >= endMs) break; // No more words in range
+      if (timing.endMs > startMs && timing.startMs < endMs) {
         indices.add(i);
       }
     }

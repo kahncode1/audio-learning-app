@@ -466,7 +466,7 @@ class _EnhancedAudioPlayerScreenState
                         IconButton(
                           icon: Icon(
                             Icons.replay_30,
-                            color: Colors.grey.shade700,
+                            color: Colors.grey.shade500,
                             weight: 300,
                           ),
                           iconSize: 40,
@@ -497,7 +497,7 @@ class _EnhancedAudioPlayerScreenState
                         IconButton(
                           icon: Icon(
                             Icons.forward_30,
-                            color: Colors.grey.shade700,
+                            color: Colors.grey.shade500,
                             weight: 300,
                           ),
                           iconSize: 40,

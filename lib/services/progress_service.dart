@@ -3,7 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../models/progress_state.dart';
+import 'cache_service.dart';
 
 /// ProgressService - Manages progress tracking with preferences
 ///
@@ -12,6 +14,7 @@ import '../models/progress_state.dart';
 /// - SharedPreferences: Local storage
 /// - Supabase: Cloud storage and sync
 /// - RxDart: Debounced saving
+/// - CacheService: Integrated cache management
 ///
 /// Features:
 /// - Debounced progress saving (5-second intervals)
@@ -19,10 +22,14 @@ import '../models/progress_state.dart';
 /// - Playback speed persistence
 /// - Progress sync between local and cloud
 /// - Conflict resolution (server wins)
+/// - Cache-aware progress management (50 items max)
+/// - Background sync with connectivity detection
 class ProgressService {
   static ProgressService? _instance;
   late final SharedPreferences _prefs;
   final SupabaseClient _supabase = Supabase.instance.client;
+  late final CacheService _cacheService;
+  final Connectivity _connectivity = Connectivity();
 
   // Debounce configuration
   static const Duration _debounceDuration = Duration(seconds: 5);
@@ -71,6 +78,7 @@ class ProgressService {
   /// Initialize service
   Future<void> _initialize() async {
     _prefs = await SharedPreferences.getInstance();
+    _cacheService = await CacheService.getInstance();
 
     // Load saved preferences
     _loadPreferences();
@@ -79,6 +87,12 @@ class ProgressService {
     _progressUpdateSubscription = _progressUpdateSubject
         .debounceTime(_debounceDuration)
         .listen(_performProgressSave);
+
+    // Set up background sync
+    _setupBackgroundSync();
+
+    // Clean old cache entries on startup
+    await _cleanOldProgressEntries();
   }
 
   /// Load preferences from local storage
@@ -317,9 +331,127 @@ class ProgressService {
 
     for (final key in keys) {
       await _prefs.remove(key);
+      // Also remove from cache
+      final cacheKey = key.substring(_progressPrefix.length);
+      await _cacheService.remove(cacheKey);
     }
 
     debugPrint('Cleared ${keys.length} progress entries');
+  }
+
+  /// Set up background sync for preferences
+  void _setupBackgroundSync() {
+    // Listen to connectivity changes
+    _connectivity.onConnectivityChanged.listen((result) async {
+      if (result != ConnectivityResult.none) {
+        // Online - sync preferences with cloud
+        await _syncPreferencesWithCloud();
+      }
+    });
+
+    // Periodic sync every 30 seconds when online
+    Timer.periodic(const Duration(seconds: 30), (timer) async {
+      final connectivityResult = await _connectivity.checkConnectivity();
+      if (connectivityResult != ConnectivityResult.none) {
+        await _syncPreferencesWithCloud();
+      }
+    });
+  }
+
+  /// Sync preferences with cloud
+  Future<void> _syncPreferencesWithCloud() async {
+    try {
+      // Get current user
+      final user = _supabase.auth.currentUser;
+      if (user == null) return;
+
+      // Sync font size and playback speed
+      final cloudPrefs = {
+        'user_id': user.id,
+        'font_size_index': _fontSizeIndexSubject.value,
+        'playback_speed': _playbackSpeedSubject.value,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      // Upsert to preferences table (create if needed)
+      await _supabase
+          .from('user_preferences')
+          .upsert(cloudPrefs, onConflict: 'user_id')
+          .timeout(const Duration(seconds: 5));
+
+      debugPrint('Preferences synced to cloud');
+    } catch (e) {
+      // Silently fail - local is sufficient
+      debugPrint('Cloud sync failed (will retry): $e');
+    }
+  }
+
+  /// Clean old progress entries (cache management)
+  Future<void> _cleanOldProgressEntries() async {
+    try {
+      final keys = _prefs
+          .getKeys()
+          .where((key) => key.startsWith(_progressPrefix))
+          .toList();
+
+      // Keep only 50 most recent entries
+      if (keys.length <= 50) return;
+
+      // Get entries with their last access times
+      final entriesWithTime = <MapEntry<String, int>>[];
+
+      for (final key in keys) {
+        final dataString = _prefs.getString(key);
+        if (dataString != null) {
+          // Parse to get updated_at
+          DateTime? updatedAt;
+          for (final pair in dataString.split(',')) {
+            final parts = pair.split(':');
+            if (parts.length == 2 && parts[0] == 'updated_at') {
+              updatedAt = DateTime.tryParse(parts[1]);
+              break;
+            }
+          }
+
+          if (updatedAt != null) {
+            entriesWithTime.add(MapEntry(key, updatedAt.millisecondsSinceEpoch));
+          }
+        }
+      }
+
+      // Sort by time (newest first)
+      entriesWithTime.sort((a, b) => b.value.compareTo(a.value));
+
+      // Remove oldest entries beyond 50
+      if (entriesWithTime.length > 50) {
+        for (int i = 50; i < entriesWithTime.length; i++) {
+          await _prefs.remove(entriesWithTime[i].key);
+          // Also remove from cache
+          final cacheKey = entriesWithTime[i].key.substring(_progressPrefix.length);
+          await _cacheService.remove(cacheKey);
+        }
+
+        debugPrint('Cleaned ${entriesWithTime.length - 50} old progress entries');
+      }
+    } catch (e) {
+      debugPrint('Error cleaning old entries: $e');
+    }
+  }
+
+  /// Get cache statistics for progress data
+  Future<Map<String, dynamic>> getCacheStatistics() async {
+    final progressKeys = _prefs
+        .getKeys()
+        .where((key) => key.startsWith(_progressPrefix))
+        .length;
+
+    final cacheStats = _cacheService.getStatistics();
+
+    return {
+      'progressEntries': progressKeys,
+      'maxEntries': 50,
+      ...cacheStats,
+    };
   }
 
   // Stream getters

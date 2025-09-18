@@ -144,17 +144,39 @@ The system implements a clean separation of concerns across four primary layers:
 - **Comprehensive Guide:** `/documentation/apis/supabase-backend.md`
 
 ### External APIs
-- **Speechify API** - Professional text-to-speech with word timing and sentence indexing (requires custom Dio implementation - no SDK available)
+
+#### Speechify API (Current Implementation)
+- **Professional text-to-speech with word timing and sentence indexing** (requires custom Dio implementation - no SDK available)
   - **Base URL:** `https://api.sws.speechify.com`
   - **Main Endpoint:** `/v1/audio/speech`
   - **Response Format:** JSON with base64-encoded WAV audio and speech marks
   - **Valid Models:** `simba-turbo` (default), `simba-base`, `simba-english`, `simba-multilingual`
   - **Voice IDs:** `henry` (default), other voices available
   - **Required Parameters:** `input` (text), `voice_id`, `model`
+  - **SSML Support:** Full support for emphasis, prosody, breaks, substitutions
 - **Comprehensive Guide:** `/documentation/apis/speechify-api.md`
 - **Integration Guide:** `/documentation/integrations/audio-streaming.md`
 - **Reference Implementation:** `/implementations/audio-service.dart`
 - **Connection Pooling:** `/references/technical-requirements.md` - Connection Pooling for Speechify
+
+#### ElevenLabs API (Alternative Implementation - Milestone 7)
+- **Modern text-to-speech with HTTP streaming** - Mobile-optimized alternative to Speechify
+  - **Base URL:** `https://api.elevenlabs.io`
+  - **Main Endpoints:**
+    - `/v1/text-to-speech/{voice_id}/stream` - HTTP streaming
+    - `/v1/text-to-speech/{voice_id}/stream/with-timestamps` - Streaming with timing data
+  - **Response Format:** Binary audio stream with chunked transfer encoding
+  - **Timing Format:** Character-level timestamps (`character_start_times` array)
+  - **Voice Models:** `eleven_multilingual_v2`, `eleven_turbo_v2`, others available
+  - **NO SSML Support:** Plain text input only (simplified approach)
+  - **Mobile Benefits:** HTTP streaming more battery-efficient than WebSockets
+- **Key Implementation Differences:**
+  - Binary streaming instead of base64 JSON
+  - Character timing requires transformation to word boundaries
+  - Sentence detection must be computed algorithmically (punctuation + 350ms pauses)
+  - No nested chunk structure - flat character array
+- **Comprehensive Guide:** `/documentation/apis/elevenlabs-api.md` (to be created)
+- **Feature Flag:** `USE_ELEVENLABS` in env_config.dart (default: false)
 
 ### HTTP & Network
 - **dio: ^5.4.0** - Advanced HTTP client with interceptors for streaming and retry logic

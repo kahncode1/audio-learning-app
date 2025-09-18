@@ -76,20 +76,22 @@ void main() {
         final wordSub = service.currentWordStream.listen(wordUpdates.add);
         final sentenceSub = service.currentSentenceStream.listen(sentenceUpdates.add);
 
-        // Use public updatePosition method instead of private controller
-        // First we need to set up test data
+        // Set up test data using the public setCachedTimings method
         final testTimings = [
           WordTiming(word: 'test', startMs: 0, endMs: 500, sentenceIndex: 0),
           WordTiming(word: 'word', startMs: 500, endMs: 1000, sentenceIndex: 0),
         ];
+        service.setCachedTimings('test-content', testTimings);
 
-        // Mock the cache by directly calling a hypothetical method
-        // For now, simulate position updates
-        service.updatePosition(250, 'test-content');
-
+        // First update to -1 position (no word) to ensure distinct value
+        service.updatePosition(-100, 'test-content');
         await Future.delayed(const Duration(milliseconds: 50));
 
-        expect(wordUpdates, contains(1));
+        // Now update position to trigger stream events
+        service.updatePosition(250, 'test-content');
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        expect(wordUpdates, contains(0)); // First word is at index 0
         expect(sentenceUpdates, contains(0));
 
         await wordSub.cancel();
@@ -100,15 +102,27 @@ void main() {
         var updateCount = 0;
         final subscription = service.currentWordStream.listen((_) => updateCount++);
 
+        // Set up test data with many words
+        final testTimings = List.generate(
+          100,
+          (i) => WordTiming(
+            word: 'word$i',
+            startMs: i * 10,
+            endMs: (i + 1) * 10,
+            sentenceIndex: i ~/ 10,
+          ),
+        );
+        service.setCachedTimings('test-throttle', testTimings);
+
         // Send many rapid updates using public API
         for (int i = 0; i < 100; i++) {
-          service.updatePosition(i * 10, 'test-throttle');
+          service.updatePosition(i * 10 + 5, 'test-throttle');
         }
 
         // Wait for throttling to take effect
         await Future.delayed(const Duration(milliseconds: 100));
 
-        // Should receive significantly fewer updates than sent
+        // Should receive significantly fewer updates than sent due to throttling
         expect(updateCount, lessThan(20));
         expect(updateCount, greaterThan(0));
 
@@ -160,41 +174,10 @@ void main() {
         service.clearCache();
 
         expect(service.getCachedTimings('test'), isNull);
-        expect(service.getCachedPositions('test'), isNull);
       });
     });
 
-    group('Position Computation', () {
-      testWidgets('should compute positions correctly', (WidgetTester tester) async {
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: Container(),
-          ),
-        ));
-
-        const testText = 'Hello world test';
-        const testStyle = TextStyle(fontSize: 16.0);
-
-        await service.precomputePositions('test', testText, testStyle, 300.0);
-
-        final positions = service.getCachedPositions('test');
-        expect(positions, isNotNull);
-        expect(positions!.length, equals(testText.length));
-
-        // Check position properties
-        for (final position in positions) {
-          expect(position.offset, greaterThanOrEqualTo(0));
-          expect(position.offset, lessThan(testText.length));
-          expect(position.rect.width, greaterThanOrEqualTo(0));
-          expect(position.rect.height, greaterThanOrEqualTo(0));
-        }
-      });
-
-      test('should handle missing positions gracefully', () {
-        final wordIndex = service.findWordAtPosition('nonexistent', const Offset(10, 10));
-        expect(wordIndex, equals(-1));
-      });
-    });
+    // Position Computation tests removed - tap-to-seek functionality was removed from implementation
 
     group('Update Position Logic', () {
       test('should update word and sentence indices', () async {
@@ -204,9 +187,8 @@ void main() {
           WordTiming(word: 'How', startMs: 1500, endMs: 2000, sentenceIndex: 1),
         ];
 
-        // Cannot access private cache directly
-        // This test needs to be rewritten to use public API only
-        // For now, skip the direct cache manipulation
+        // Set up the cache using public API
+        service.setCachedTimings('test', testTimings);
 
         var wordUpdates = <int>[];
         var sentenceUpdates = <int>[];
@@ -214,16 +196,20 @@ void main() {
         final wordSub = service.currentWordStream.listen(wordUpdates.add);
         final sentenceSub = service.currentSentenceStream.listen(sentenceUpdates.add);
 
+        // First emit -1 to ensure subsequent values are different
+        service.updatePosition(-100, 'test');
+        await Future.delayed(const Duration(milliseconds: 50));
+
         // Update to position in first word
         service.updatePosition(250, 'test');
-        await Future.delayed(const Duration(milliseconds: 30));
+        await Future.delayed(const Duration(milliseconds: 50));
 
         expect(wordUpdates, contains(0));
         expect(sentenceUpdates, contains(0));
 
         // Update to position in third word (different sentence)
         service.updatePosition(1750, 'test');
-        await Future.delayed(const Duration(milliseconds: 30));
+        await Future.delayed(const Duration(milliseconds: 50));
 
         expect(wordUpdates, contains(2));
         expect(sentenceUpdates, contains(1));
@@ -365,15 +351,10 @@ void main() {
       expect(() => service.updatePosition(100, 'uncached-content'), returnsNormally);
     });
 
-    test('should handle tap detection on non-existent content', () {
-      const offset = Offset(10, 10);
-      final wordIndex = service.findWordAtPosition('nonexistent', offset);
-      expect(wordIndex, equals(-1));
-    });
+    // Tap detection test removed - tap-to-seek functionality was removed from implementation
 
     test('should handle cache operations on empty service', () {
       expect(service.getCachedTimings('empty'), isNull);
-      expect(service.getCachedPositions('empty'), isNull);
 
       // Clear cache should not crash on empty cache
       expect(() => service.clearCache(), returnsNormally);

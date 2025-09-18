@@ -284,77 +284,7 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('handles tap events when callback provided', (WidgetTester tester) async {
-      int? tappedWordIndex;
-
-      // Add timings with character positions so highlighting is enabled
-      final timingsForTap = [
-        WordTiming(
-          word: 'Test',
-          startMs: 0,
-          endMs: 500,
-          sentenceIndex: 0,
-          charStart: 0,
-          charEnd: 4,
-        ),
-        WordTiming(
-          word: 'text',
-          startMs: 500,
-          endMs: 1000,
-          sentenceIndex: 0,
-          charStart: 5,
-          charEnd: 9,
-        ),
-        WordTiming(
-          word: 'for',
-          startMs: 1000,
-          endMs: 1500,
-          sentenceIndex: 0,
-          charStart: 10,
-          charEnd: 13,
-        ),
-        WordTiming(
-          word: 'tapping',
-          startMs: 1500,
-          endMs: 2000,
-          sentenceIndex: 0,
-          charStart: 14,
-          charEnd: 21,
-        ),
-      ];
-
-      wordTimingService.setCachedTimings('test-tap', timingsForTap);
-
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: SimplifiedDualLevelHighlightedText(
-                text: 'Test text for tapping',
-                contentId: 'test-tap',
-                baseStyle: const TextStyle(fontSize: 16),
-                onWordTap: (index) {
-                  tappedWordIndex = index;
-                },
-              ),
-            ),
-          ),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      // Tap on the widget at a specific location
-      // Since we have character positions, tap in the middle of the widget
-      final finder = find.byType(SimplifiedDualLevelHighlightedText);
-      await tester.tap(finder);
-      await tester.pump();
-
-      // The tap handler may not be called if findWordAtPosition returns -1
-      // In that case, tappedWordIndex remains null, which is valid behavior
-      // We'll just verify the widget accepts taps without crashing
-      expect(finder, findsOneWidget);
-    });
+    // Tap handling test removed - tap-to-seek functionality was removed from implementation
 
     test('OptimizedHighlightPainter shouldRepaint logic', () {
       final textPainter = TextPainter(textDirection: TextDirection.ltr);

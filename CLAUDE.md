@@ -85,12 +85,44 @@ audio_learning_app/
 
 Full documentation: `/ARCHIVE/highlighting_documentation.md`
 
+## Critical: ElevenLabs API Integration (Milestone 7)
+
+**Status:** Alternative TTS implementation - Feature flag controlled
+
+### Key Differences from Speechify:
+- **NO SSML SUPPORT** - Plain text input only (simplified approach)
+- **Binary Streaming** - Not base64 JSON encoded
+- **Character Timing** - Requires transformation to word boundaries
+- **HTTP Streaming** - Uses chunked transfer encoding (mobile-optimized)
+
+### Implementation Requirements:
+1. **Service Parity:** ElevenLabsService must match SpeechifyService interface exactly
+2. **Timing Transformation:** Convert `character_start_times` array to WordTiming objects
+3. **Sentence Detection:** Use punctuation + 350ms pause algorithm (same as Speechify)
+4. **Binary Audio:** Handle progressive chunked streaming (not base64)
+
+### Configuration:
+```yaml
+# .env file
+ELEVENLABS_API_KEY=your_api_key_here
+ELEVENLABS_VOICE_ID=your_voice_id_here
+USE_ELEVENLABS=false  # Toggle between services
+```
+
+### Testing Strategy:
+- Keep both services during development
+- Use feature flag for A/B testing
+- Compare timing accuracy (target ≥95%)
+- Validate on physical iOS/Android devices
+
+**IMPORTANT:** The dual-level highlighting system remains unchanged - only the API response transformation differs
+
 ## Development Environment Setup Strategy
 
 This project uses a **phased installation approach** aligned with development milestones:
 - **Phase 1 (Milestone 1):** Core Flutter tools (~30 min, ~2GB)
-- **Phase 2 (Milestone 7):** Platform-specific tools (2-3 hours, ~15GB)
-- **Phase 3 (Milestone 9):** Testing infrastructure (~15 min, ~100MB)
+- **Phase 2 (Milestone 8):** Platform-specific tools (2-3 hours, ~15GB)
+- **Phase 3 (Milestone 10):** Testing infrastructure (~15 min, ~100MB)
 - **Phase 4 (Milestone 2):** External services configuration
 
 **See:** `ARCHIVE/installation-history.md` for detailed setup guides and commands
