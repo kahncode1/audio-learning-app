@@ -8,8 +8,11 @@ import '../models/word_timing.dart';
 import '../models/learning_object.dart';
 import '../utils/app_logger.dart';
 import 'speechify_service.dart';
+import 'elevenlabs_service.dart';
+import 'tts_service_factory.dart';
 import 'word_timing_service.dart';
 import 'audio/speechify_audio_source.dart';
+import 'audio/elevenlabs_audio_source.dart';
 import 'audio_handler.dart';
 
 /// AudioPlayerService - Main audio playback service with advanced controls
@@ -31,7 +34,6 @@ class AudioPlayerService {
   static AudioPlayerService? _instance;
 
   final AudioPlayer _player;
-  final SpeechifyService _speechifyService;
   AudioLearningHandler? _audioHandler;
 
   // State streams
@@ -60,9 +62,7 @@ class AudioPlayerService {
   final List<StreamSubscription> _subscriptions = [];
 
   // Private constructor
-  AudioPlayerService._()
-      : _player = AudioPlayer(),
-        _speechifyService = SpeechifyService() {
+  AudioPlayerService._() : _player = AudioPlayer() {
     _initializePlayer();
   }
 
@@ -200,8 +200,14 @@ class AudioPlayerService {
         'usingContent': isSSML ? 'SSML' : 'plainText',
       });
 
-      // Generate audio with timings
-      final result = await _speechifyService.generateAudioWithTimings(
+      // Generate audio with timings using the factory
+      final provider = TTSServiceFactory.getCurrentProvider();
+      AppLogger.info('Using TTS provider', {
+        'provider': provider.name,
+        'isSSML': isSSML,
+      });
+
+      final result = await TTSServiceFactory.generateAudioWithTimings(
         content: content,
         isSSML: isSSML,
       );
@@ -256,10 +262,18 @@ class AudioPlayerService {
         'charBoundsOk': displayLen == 0 ? 'n/a' : (maxCharEnd <= displayLen),
       });
 
-      // Create audio source from base64 data
-      // For now, we need to handle the base64 audio data
-      // This will require updating SpeechifyAudioSource to handle base64
-      final audioSource = await createSpeechifyAudioSource(result.audioData);
+      // Create appropriate audio source based on provider
+      AudioSource audioSource;
+      final currentProvider = TTSServiceFactory.getCurrentProvider();
+
+      if (currentProvider == TTSProvider.elevenlabs) {
+        // For ElevenLabs, we need to create a streaming source
+        // Since we already have the audio data, we can use the custom source
+        audioSource = await createSpeechifyAudioSource(result.audioData);
+      } else {
+        // For Speechify, use the existing method
+        audioSource = await createSpeechifyAudioSource(result.audioData);
+      }
 
       // Set the audio source
       await _player.setAudioSource(audioSource);

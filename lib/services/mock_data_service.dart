@@ -77,12 +77,28 @@ class MockDataService {
 
   static List<LearningObject> getTestLearningObjects(String assignmentId) {
     if (assignmentId == 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11') { // Real database assignment ID
-      // Return test learning object for development
+      // Return test learning objects for development
       return [
+        // ElevenLabs Test Version - Plain text only
+        LearningObject(
+          id: 'elevenlabs-test-001',
+          assignmentId: assignmentId,
+          title: 'ElevenLabs Test - Case Reserve Management',
+          contentType: 'text',
+          // No SSML content - force use of plainText for ElevenLabs
+          ssmlContent: null,
+          plainText: '''Understanding Case Reserve Management in Insurance Claims Processing. A case reserve represents the estimated amount of money an insurance company expects to pay for a claim. This critical financial tool serves multiple purposes in the claims management process, from regulatory compliance to strategic planning and accurate financial reporting. When an insurance claim is first reported, adjusters must quickly assess the potential financial exposure. This initial evaluation becomes the foundation for the case reserve. The reserve amount includes not only the expected indemnity payment to the claimant but also allocated loss adjustment expenses, legal fees, and expert witness costs that may arise during the claims process. Insurance companies rely on accurate case reserves for several vital business functions. First, reserves directly impact the company's financial statements and must be reported to regulators and shareholders. Second, they influence reinsurance recoveries and treaty arrangements. Third, accurate reserves enable better pricing decisions for future policies. Finally, they provide management with crucial data for strategic planning and capital allocation decisions. Every case reserve should incorporate multiple elements to ensure accuracy and completeness. The primary component is the estimated indemnity payment, which represents the amount likely to be paid directly to the claimant or on their behalf. This includes medical expenses, property damage, lost wages, and pain and suffering in applicable cases. Beyond the indemnity payment, reserves must account for allocated loss adjustment expenses. These expenses include attorney fees, expert witness costs, court filing fees, investigation expenses, and independent adjuster fees. Many claims professionals overlook these costs initially, leading to inadequate reserves that require significant adjustments later in the claim lifecycle. The timing of payments also affects reserve calculations. A claim expected to settle quickly may require a different reserve approach than one likely to involve lengthy litigation. Claims professionals must consider the time value of money, especially for claims that may take years to resolve. Establishing accurate initial reserves requires a systematic approach combined with professional judgment. The process begins with a thorough investigation of the claim circumstances, including witness statements, police reports, medical records, and any available surveillance footage. This information provides the factual foundation for the reserve evaluation. Documentation is crucial when setting initial reserves. Adjusters should clearly record their reasoning, the factors considered, and any assumptions made. This documentation proves invaluable during reserve reviews, audits, and when transitioning files between adjusters. Case reserves are not static figures. They require regular review and adjustment as new information emerges and circumstances change. Most insurance companies mandate reserve reviews at specific intervals, such as every 30, 60, or 90 days, depending on the claim's complexity and value. Thank you for completing this lesson on case reserve management. Remember that effective reserve management remains fundamental to successful claims operations.''',
+          orderIndex: 1,
+          createdAt: DateTime.now().subtract(const Duration(days: 30)),
+          updatedAt: DateTime.now(),
+          isCompleted: false,
+          currentPositionMs: 0,
+        ),
+        // Original SSML version for Speechify
         LearningObject(
           id: '63ad7b78-0970-4265-a4fe-51f3fee39d5f', // Real database learning object ID
           assignmentId: assignmentId,
-          title: 'Establishing a Case Reserve - Full Lesson',
+          title: 'Establishing a Case Reserve - Full Lesson (Speechify)',
           contentType: 'text',
           // SSML explicitly structured with paragraphs (<p>) and sentences (<s>)
           // to ensure stable sentence chunking and accurate timing.
@@ -127,7 +143,7 @@ class MockDataService {
   }
 
   static int getAssignmentCount() => 3;
-  static int getLearningObjectCount() => 1; // Only one test learning object now
+  static int getLearningObjectCount() => 2; // Two test learning objects now (ElevenLabs + Speechify)
   static double getCourseCompletionPercentage() => 0.0;
 
   // Validation function for mock data service
@@ -141,8 +157,9 @@ class MockDataService {
     assert(assignments[0].title == 'Establishing a Case Reserve');
 
     final learningObjects = getTestLearningObjects('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
-    assert(learningObjects.length == 1);
-    assert(learningObjects[0].title == 'Establishing a Case Reserve - Full Lesson');
+    assert(learningObjects.length == 2);
+    assert(learningObjects[0].title == 'ElevenLabs Test - Case Reserve Management');
+    assert(learningObjects[1].title == 'Establishing a Case Reserve - Full Lesson (Speechify)');
 
     // Verify no learning objects for other assignments
     final lo2 = getTestLearningObjects('test-assignment-002');
