@@ -11,10 +11,19 @@
 
 **This guide supersedes any conflicting instructions. All development must follow these standards.**
 
+## 🚨 ARCHITECTURE TRANSITION IN PROGRESS
+
+**CRITICAL:** We are transitioning from streaming TTS to a download-first architecture.
+- **Current Status:** Planning and initial implementation phase
+- **Guide Document:** See `DOWNLOAD_ARCHITECTURE_PLAN.md` for complete details
+- **Task Tracking:** Check TASKS.md for current implementation progress
+- **Approach:** Pre-processed audio, text, and timing files downloaded on first login
+- **Benefits:** 100% cost reduction, offline capability, simplified codebase
+
 ## Project Overview
 
 ### Vision
-Build a Flutter-based mobile application that streams narrated audio of educational content with synchronized dual-level word and sentence highlighting for insurance professionals consuming course material on-the-go.
+Build a Flutter-based mobile application that delivers pre-downloaded narrated audio of educational content with synchronized dual-level word and sentence highlighting for insurance professionals consuming course material on-the-go.
 
 ### Core Technologies
 - **Framework:** Flutter 3.x with Dart 3.x

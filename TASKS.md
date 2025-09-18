@@ -1,4 +1,12 @@
-# Streaming Audio Learning Platform - Development Tasks
+# Audio Learning Platform - Development Tasks
+
+## 🚨 ARCHITECTURE TRANSITION NOTICE
+
+**We are implementing a Download-First Architecture to replace TTS streaming.**
+- **Architecture Guide:** See `DOWNLOAD_ARCHITECTURE_PLAN.md` for complete specifications
+- **Approach:** Pre-processed audio, text, and timing files
+- **Current Phase:** Initial implementation with test data
+- **Target:** 100% cost reduction, offline capability, simplified codebase
 
 ## Instructions
 
@@ -8,6 +16,7 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 - Tasks marked with 📁 include references to implementation files that should be consulted
 - Tasks marked with 📚 include references to documentation in `/references/` folder
 - Tasks marked with 🔗 include references to comprehensive documentation in `/documentation/` folder
+- Tasks marked with 📋 reference the new `DOWNLOAD_ARCHITECTURE_PLAN.md`
 
 ## Milestone 1: Foundation ✅ COMPLETE (September 13, 2025)
 **Full implementation details archived in:** `ARCHIVE/milestone-history.md`
@@ -613,6 +622,81 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 - All features working in production
 - Monitoring and analytics operational
 - No critical bugs in production
+
+## Milestone 12: Download-First Architecture Implementation 🚧 IN PROGRESS
+
+**Architecture Guide:** 📋 See `DOWNLOAD_ARCHITECTURE_PLAN.md` for complete specifications
+
+### Phase 1: Test Data & Local Implementation (Current)
+- [ ] 12.1 Create test JSON files following schemas defined in 📋 `DOWNLOAD_ARCHITECTURE_PLAN.md`
+  - [ ] Sample content.json with displayText and paragraphs
+  - [ ] Sample timing.json with pre-processed words and sentences
+  - [ ] Test MP3 audio file
+- [ ] 12.2 Set up assets folder structure for test content
+- [ ] 12.3 Implement LocalContentService to read from assets 📋
+  - [ ] getAudioPath() method for MP3 files
+  - [ ] getContent() method for JSON text content
+  - [ ] getTimingData() method for timing JSON
+- [ ] 12.4 Modify AudioPlayerService to support local MP3 playback 📋
+  - [ ] Replace StreamAudioSource with local file AudioSource
+  - [ ] Remove TTS service dependencies
+- [ ] 12.5 Simplify WordTimingService to use pre-processed data 📋
+  - [ ] Remove sentence detection algorithm (350ms pause logic)
+  - [ ] Load timing data directly from JSON
+  - [ ] Remove Speechify/ElevenLabs dependencies
+
+### Phase 2: Download Infrastructure
+- [ ] 12.6 Implement CourseDownloadService 📋
+  - [ ] Download queue management
+  - [ ] Progress tracking stream
+  - [ ] Retry logic for failed downloads
+  - [ ] Background download capability
+- [ ] 12.7 Create download progress UI
+  - [ ] Initial download screen on first login
+  - [ ] Progress indicators (% and MB)
+  - [ ] Retry failed downloads button
+  - [ ] WiFi-only download option
+- [ ] 12.8 Integrate flutter_cache_manager for storage
+  - [ ] Configure cache size limits
+  - [ ] Implement automatic cleanup
+  - [ ] Handle storage permissions
+
+### Phase 3: Supabase Integration
+- [ ] 12.9 Update database schema as per 📋 `DOWNLOAD_ARCHITECTURE_PLAN.md`
+  - [ ] Add audio_url, content_url, timing_url fields
+  - [ ] Create download_progress tracking table
+  - [ ] Remove ssml_content and word_timings fields
+- [ ] 12.10 Set up Supabase Storage buckets
+  - [ ] Configure CDN for MP3 files
+  - [ ] Set up folders for content and timing JSONs
+  - [ ] Configure access policies
+- [ ] 12.11 Update LocalContentService to download from CDN
+  - [ ] Check local cache first
+  - [ ] Download from CDN if not cached
+  - [ ] Handle offline mode gracefully
+
+### Phase 4: Cleanup & Migration
+- [ ] 12.12 Remove TTS streaming services 📋
+  - [ ] Delete SpeechifyService
+  - [ ] Delete ElevenLabsService
+  - [ ] Delete TtsServiceFactory
+  - [ ] Delete streaming audio sources
+- [ ] 12.13 Remove complex algorithms 📋
+  - [ ] Sentence detection (350ms + punctuation)
+  - [ ] Abbreviation protection logic
+  - [ ] Character-to-word mapping
+  - [ ] SSML processing
+- [ ] 12.14 Update all tests for new architecture
+- [ ] 12.15 Performance optimization and testing
+- [ ] 12.16 Migration script for existing users
+
+**Milestone 12 Definition of Done:**
+- All course content downloadable on first login
+- Complete offline playback capability
+- Simplified highlighting with pre-processed sentences
+- All TTS services removed
+- 100% cost reduction achieved
+- Performance targets maintained (60fps, instant playback)
 
 ## Developer Experience Improvements
 
