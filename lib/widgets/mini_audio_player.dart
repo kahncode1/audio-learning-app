@@ -50,7 +50,7 @@ class MiniAudioPlayer extends ConsumerWidget {
       child: InkWell(
         onTap: () => audioControl.navigateToFullPlayer(context),
         child: Container(
-          height: 72,
+          height: 100,
           decoration: BoxDecoration(
             color: backgroundColor,
             boxShadow: [
@@ -75,22 +75,28 @@ class MiniAudioPlayer extends ConsumerWidget {
 
               // Main content
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                       // Learning object icon
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.headphones,
-                          color: Theme.of(context).primaryColor,
-                          size: 24,
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F1F9),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.headphones,
+                            color: Color(0xFF6B9AC4),
+                            size: 22,
+                          ),
                         ),
                       ),
 
@@ -98,9 +104,11 @@ class MiniAudioPlayer extends ConsumerWidget {
 
                       // Title and subtitle
                       Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               currentObject.title,
@@ -123,6 +131,7 @@ class MiniAudioPlayer extends ConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
+                        ),
                         ),
                       ),
 
@@ -151,6 +160,7 @@ class MiniAudioPlayer extends ConsumerWidget {
                       ),
                     ],
                   ),
+                ),
                 ),
               ),
             ],

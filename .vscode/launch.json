@@ -1,0 +1,28 @@
+{
+  // VS Code Flutter Launch Configuration
+  // This enables proper debugging and hot reload in VS Code
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Audio Learning App",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "Audio Learning App (profile mode)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "Audio Learning App (release mode)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "program": "lib/main.dart"
+    }
+  ]
+}

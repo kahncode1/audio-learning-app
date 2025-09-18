@@ -4,7 +4,9 @@ import '../models/assignment.dart';
 import '../models/learning_object.dart';
 import '../providers/mock_data_provider.dart';
 import '../providers/providers.dart';
-import '../services/supabase_service.dart';
+import '../providers/audio_providers.dart';
+import '../providers/audio_context_provider.dart';
+import '../widgets/mini_audio_player.dart';
 
 /// AssignmentsScreen displays assignments with expandable tiles
 class AssignmentsScreen extends ConsumerWidget {
@@ -30,31 +32,8 @@ class AssignmentsScreen extends ConsumerWidget {
             ? realAssignments
             : ref.watch(mockAssignmentsProvider);
 
-        return Scaffold(
-      appBar: AppBar(
-        title: Text(courseNumber),
-        backgroundColor: const Color(0xFF2196F3),
-        foregroundColor: Colors.white,
-      ),
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: ListView.builder(
-        itemCount: assignments.length,
-        itemBuilder: (context, index) {
-          final assignment = assignments[index];
-          return AssignmentTile(
-            assignment: assignment,
-            initiallyExpanded: index == 0, // First assignment expanded
-          );
-        },
-      ),
-    );
-      },
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
-      error: (error, stack) {
-        // Fallback to mock data on error
-        final assignments = ref.watch(mockAssignmentsProvider);
+        final shouldShowMiniPlayer = ref.watch(shouldShowMiniPlayerProvider);
+
         return Scaffold(
           appBar: AppBar(
             title: Text(courseNumber),
@@ -62,15 +41,82 @@ class AssignmentsScreen extends ConsumerWidget {
             foregroundColor: Colors.white,
           ),
           backgroundColor: const Color(0xFFF5F5F5),
-          body: ListView.builder(
-            itemCount: assignments.length,
-            itemBuilder: (context, index) {
-              final assignment = assignments[index];
-              return AssignmentTile(
-                assignment: assignment,
-                initiallyExpanded: index == 0,
-              );
-            },
+          body: Stack(
+            children: [
+              ListView.builder(
+                padding: EdgeInsets.only(
+                  bottom: shouldShowMiniPlayer ? 100 : 0,
+                ),
+                itemCount: assignments.length,
+                itemBuilder: (context, index) {
+                  final assignment = assignments[index];
+                  return AssignmentTile(
+                    assignment: assignment,
+                    courseNumber: courseNumber,
+                    courseTitle: courseTitle,
+                    initiallyExpanded: index == 0,
+                  );
+                },
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: AnimatedSlide(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  offset: shouldShowMiniPlayer ? Offset.zero : const Offset(0, 1),
+                  child: const AnimatedMiniAudioPlayer(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stack) {
+        // Fallback to mock data on error
+        final assignments = ref.watch(mockAssignmentsProvider);
+        final shouldShowMiniPlayer = ref.watch(shouldShowMiniPlayerProvider);
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(courseNumber),
+            backgroundColor: const Color(0xFF2196F3),
+            foregroundColor: Colors.white,
+          ),
+          backgroundColor: const Color(0xFFF5F5F5),
+          body: Stack(
+            children: [
+              ListView.builder(
+                padding: EdgeInsets.only(
+                  bottom: shouldShowMiniPlayer ? 100 : 0,
+                ),
+                itemCount: assignments.length,
+                itemBuilder: (context, index) {
+                  final assignment = assignments[index];
+                  return AssignmentTile(
+                    assignment: assignment,
+                    courseNumber: courseNumber,
+                    courseTitle: courseTitle,
+                    initiallyExpanded: index == 0,
+                  );
+                },
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: AnimatedSlide(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  offset: shouldShowMiniPlayer ? Offset.zero : const Offset(0, 1),
+                  child: const AnimatedMiniAudioPlayer(),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -80,11 +126,15 @@ class AssignmentsScreen extends ConsumerWidget {
 
 class AssignmentTile extends ConsumerStatefulWidget {
   final Assignment assignment;
+  final String courseNumber;
+  final String courseTitle;
   final bool initiallyExpanded;
 
   const AssignmentTile({
     super.key,
     required this.assignment,
+    required this.courseNumber,
+    required this.courseTitle,
     required this.initiallyExpanded,
   });
 
@@ -115,6 +165,11 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
       error: (_, __) => ref.watch(mockLearningObjectsProvider(assignment.id)),
     );
 
+    // Check if this assignment has the currently playing learning object
+    final audioContext = ref.watch(audioContextProvider);
+    final isActiveAssignment = audioContext != null &&
+        audioContext.assignmentNumber == assignment.assignmentNumber;
+
     const completionPercentage = 0.0; // For now, showing 0% completion
     final String completionText = completionPercentage == 0
         ? 'Not started'
@@ -133,8 +188,12 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
         childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
         leading: CircleAvatar(
-          backgroundColor: const Color(0xFFE3F2FD),
-          foregroundColor: const Color(0xFF2196F3),
+          backgroundColor: isActiveAssignment || isExpanded
+              ? const Color(0xFFE3F2FD)
+              : const Color(0xFFF5F5F5),
+          foregroundColor: isActiveAssignment || isExpanded
+              ? const Color(0xFF2196F3)
+              : Colors.grey.shade600,
           child: Text(
             assignment.assignmentNumber.toString(),
             style: const TextStyle(fontWeight: FontWeight.w600),
@@ -169,20 +228,38 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
                   ),
                 ),
               ]
-            : learningObjects
-                .map(
+            : [
+                // Add divider at the top of learning objects list
+                const Divider(height: 1, thickness: 1),
+                ...learningObjects.map(
                   (learningObject) => LearningObjectTile(
                     learningObject: learningObject,
+                    isActive: audioContext?.learningObject.id == learningObject.id,
                     onTap: () {
+                      // Set the audio context before navigation
+                      ref.read(audioContextProvider.notifier).state = AudioContext(
+                        courseNumber: widget.courseNumber,
+                        courseTitle: widget.courseTitle,
+                        assignmentTitle: assignment.title,
+                        assignmentNumber: assignment.assignmentNumber,
+                        learningObject: learningObject,
+                      );
+
                       Navigator.pushNamed(
                         context,
                         '/player',
-                        arguments: learningObject,
+                        arguments: {
+                          'learningObject': learningObject,
+                          'courseNumber': widget.courseNumber,
+                          'courseTitle': widget.courseTitle,
+                          'assignmentTitle': assignment.title,
+                          'assignmentNumber': assignment.assignmentNumber,
+                        },
                       );
                     },
                   ),
-                )
-                .toList(),
+                ),
+              ],
       ),
     );
   }
@@ -190,11 +267,13 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
 
 class LearningObjectTile extends StatelessWidget {
   final LearningObject learningObject;
+  final bool isActive;
   final VoidCallback? onTap;
 
   const LearningObjectTile({
     super.key,
     required this.learningObject,
+    this.isActive = false,
     this.onTap,
   });
 
@@ -214,15 +293,19 @@ class LearningObjectTile extends StatelessWidget {
         width: 40,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 4),
-        child: const Icon(
+        child: Icon(
           Icons.play_circle_fill,
-          color: Color(0xFF2196F3),
+          color: isActive ? const Color(0xFF2196F3) : const Color(0xFFBDBDBD),
           size: 32,
         ),
       ),
       title: Text(
         learningObject.title,
-        style: const TextStyle(fontSize: 15, color: Color(0xFF424242)),
+        style: TextStyle(
+          fontSize: 15,
+          color: isActive ? const Color(0xFF2196F3) : const Color(0xFF424242),
+          fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+        ),
       ),
       subtitle: Text(
         durationText,
