@@ -359,3 +359,29 @@ void validateDioProvider() {
 
   AppLogger.info('All DioProvider validations passed');
 }
+
+/// Extension to add ElevenLabs client creation
+extension DioProviderElevenLabs on DioProvider {
+  /// Create Dio client configured for ElevenLabs API
+  static Dio createElevenLabsClient() {
+    final dio = Dio(BaseOptions(
+      baseUrl: 'https://api.elevenlabs.io',
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 60),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    ));
+
+    // Add logging interceptor in debug mode
+    if (kDebugMode) {
+      dio.interceptors.add(LogInterceptor(
+        requestBody: true,
+        responseBody: false, // Don't log binary audio data
+        error: true,
+      ));
+    }
+
+    return dio;
+  }
+}

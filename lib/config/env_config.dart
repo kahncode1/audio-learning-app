@@ -127,6 +127,28 @@ class EnvConfig {
   }
 
   // ============================================================================
+  // ELEVENLABS CONFIGURATION
+  // ============================================================================
+
+  /// ElevenLabs API key
+  static String get elevenLabsApiKey =>
+      _get('ELEVENLABS_API_KEY', 'your_api_key_here');
+
+  /// ElevenLabs Voice ID
+  static String get elevenLabsVoiceId =>
+      _get('ELEVENLABS_VOICE_ID', '21m00Tcm4TlvDq8ikWAM');
+
+  /// ElevenLabs base URL
+  static String get elevenLabsBaseUrl =>
+      _get('ELEVENLABS_BASE_URL', 'https://api.elevenlabs.io');
+
+  /// Feature flag to use ElevenLabs instead of Speechify
+  static bool get useElevenLabs {
+    final value = _get('USE_ELEVENLABS', 'false');
+    return value.toLowerCase() == 'true';
+  }
+
+  // ============================================================================
   // ENVIRONMENT CONFIGURATION
   // ============================================================================
 
@@ -169,9 +191,15 @@ class EnvConfig {
     }
   }
 
+  /// Check if ElevenLabs is configured
+  static bool get isElevenLabsConfigured =>
+      elevenLabsApiKey != 'your_api_key_here' &&
+      elevenLabsApiKey.isNotEmpty &&
+      elevenLabsVoiceId.isNotEmpty;
+
   /// Check if all required services are configured
   static bool get isFullyConfigured =>
-      isSpeechifyConfigured; // Cognito is optional with mock auth
+      (useElevenLabs ? isElevenLabsConfigured : isSpeechifyConfigured); // Use appropriate TTS service
 
   /// Get configuration status summary
   static void printConfigurationStatus() {
