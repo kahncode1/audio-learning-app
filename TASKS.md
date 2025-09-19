@@ -938,12 +938,32 @@ When working on tasks, consult these files:
 - [ ] Add proper loading states while audio streams are initializing
 - [ ] Implement error recovery for failed audio loads
 
-### Highlighting System Notes (Found 2025-09-17)
+### Highlighting System Notes (Found 2025-09-17, Updated 2025-09-19)
 - [x] Speechify API requires `include_speech_marks: true` flag (documented)
 - [x] Character offset alignment handles 0/1-based indexing (implemented)
 - [x] Sentence detection uses 350ms pause + punctuation (working)
 - [x] Abbreviation detection prevents false sentence breaks (complete)
 - [x] Three-layer paint system for optimal performance (implemented)
 - [x] LRU cache eviction prevents memory growth (10 doc limit)
+- [ ] **Fix highlighting after slider seek** (Found 2025-09-19)
+  - Word/sentence highlighting stops working after using slider to seek
+  - Position jumps > 10 seconds may lose sync with word indices
+  - Need to recalculate current word/sentence after large position changes
 - [ ] Consider adding visual indicator when highlighting data unavailable
 - [ ] Monitor LRU cache behavior for very long documents (>10k words)
+
+### Future Features - Tap to Play (Planned)
+- [ ] **Implement tap-to-play functionality**
+  - User taps on any word in the text to jump to that position
+  - Audio seeks to tapped word and continues playing
+  - Highlighting resumes from tapped position
+  - **Data requirements (already available in preprocessing):**
+    - ✅ Word character positions (`charStart`, `charEnd`)
+    - ✅ Word timing positions (`startMs`, `endMs`)
+    - ✅ Character-to-audio mapping for position calculation
+  - **Implementation approach:**
+    - Detect tap position in text
+    - Find word at tap position using character indices
+    - Get audio position from word's `startMs`
+    - Seek audio player to that position
+    - Resume highlighting from that word

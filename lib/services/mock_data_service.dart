@@ -82,11 +82,11 @@ class MockDataService {
         LearningObject(
           id: '63ad7b78-0970-4265-a4fe-51f3fee39d5f', // Real database learning object ID - matches our test content files
           assignmentId: assignmentId,
-          title: 'Case Reserve Management (Test Download)',
+          title: 'Risk Management and Insurance in Action',
           contentType: 'text',
           // SSML not used in download-first architecture
           ssmlContent: null,
-          plainText: '''Welcome to the lesson on establishing case reserves. A case reserve is an estimate of the amount of money that will be needed to settle a claim. Setting accurate reserves is critical for managing insurance company finances. Reserves must be reviewed regularly to ensure they remain appropriate as claims develop. The initial reserve is often set based on limited information and must be adjusted as more facts become available. Factors to consider include medical costs, lost wages, property damage, and potential legal expenses. Experienced adjusters use historical data and industry benchmarks to guide their reserve decisions. Documentation is essential - every reserve change must be justified and recorded in the claim file. Regular reserve adequacy reviews help identify trends and improve future reserving accuracy. Thank you for completing this comprehensive lesson on case reserve management.''',
+          plainText: '''The objective of this lesson is to illustrate how insurance facilitates key societal activities. This lesson covers the effect of insurance, perception versus reality in the insurance industry, and the evolving role of risk management consulting.''',
           orderIndex: 1,
           createdAt: DateTime.now().subtract(const Duration(days: 30)),
           updatedAt: DateTime.now(),
@@ -120,7 +120,7 @@ class MockDataService {
 
     final learningObjects = getTestLearningObjects('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
     assert(learningObjects.length == 1);
-    assert(learningObjects[0].title == 'Case Reserve Management (Test Download)');
+    assert(learningObjects[0].title == 'Risk Management and Insurance in Action');
 
     // Verify no learning objects for other assignments
     final lo2 = getTestLearningObjects('test-assignment-002');
