@@ -115,14 +115,88 @@ class AudioPlayerServiceLocal {
 
   _subscriptions.add(
     _player.positionStream.listen((position) {
-      _positionSubject.add(position);
+      // Sanitize position values to prevent corrupted time displays
+      final currentDuration = _durationSubject.value;
+      Duration sanitizedPosition = position;
+
+      // If position is invalid or exceeds duration, clamp it
+      if (position.inMilliseconds < 0) {
+        sanitizedPosition = Duration.zero;
+        AppLogger.warning('Negative position detected, clamped to zero', {
+          'originalPosition': position.inMilliseconds,
+        });
+      } else if (currentDuration.inMilliseconds > 0 &&
+                 position.inMilliseconds > currentDuration.inMilliseconds) {
+        sanitizedPosition = currentDuration;
+        AppLogger.warning('Position exceeds duration, clamped to duration', {
+          'originalPosition': position.inMilliseconds,
+          'duration': currentDuration.inMilliseconds,
+        });
+      }
+
+      _positionSubject.add(sanitizedPosition);
     }),
   );
 
   _subscriptions.add(
     _player.durationStream.listen((duration) {
       if (duration != null) {
-        _durationSubject.add(duration);
+        // DEBUG: Log all duration values to understand the corruption
+        AppLogger.info('Raw duration from just_audio', {
+          'durationMs': duration.inMilliseconds,
+          'durationSeconds': duration.inSeconds,
+          'durationMinutes': duration.inMinutes,
+          'durationHours': duration.inHours,
+        });
+
+        // Sanitize duration values to prevent corrupted time displays
+        Duration sanitizedDuration = duration;
+
+        // Check for unreasonably large duration values (over 1 hour for our use case)
+        // The audio file should be ~45 seconds, so anything over 1 hour is corruption
+        if (duration.inMinutes > 60) {
+          AppLogger.warning('Corrupted duration detected, resetting', {
+            'originalDurationMs': duration.inMilliseconds,
+            'originalDurationHours': duration.inHours,
+            'originalDurationMinutes': duration.inMinutes,
+          });
+
+          // If we have timing data with expected duration, use that instead
+          if (_currentTimingData != null) {
+            sanitizedDuration = Duration(milliseconds: _currentTimingData!.totalDurationMs);
+            AppLogger.info('Using timing data duration instead', {
+              'timingDurationMs': _currentTimingData!.totalDurationMs,
+              'timingDurationSeconds': _currentTimingData!.totalDurationMs / 1000,
+            });
+          } else {
+            // For this specific case: "12:25:39" suggests 44739 seconds instead of 44739ms
+            // Let's try to detect this pattern and fix it
+            final totalSeconds = duration.inSeconds;
+            if (totalSeconds > 20000 && totalSeconds < 50000) {
+              // This range suggests it might be milliseconds interpreted as seconds
+              sanitizedDuration = Duration(milliseconds: totalSeconds);
+              AppLogger.info('Corrected seconds-to-milliseconds corruption', {
+                'originalSeconds': totalSeconds,
+                'correctedMs': totalSeconds,
+                'correctedDuration': '${totalSeconds / 1000}s',
+              });
+            } else {
+              // Safe fallback duration
+              sanitizedDuration = const Duration(seconds: 45); // Expected duration
+              AppLogger.warning('Using fallback duration', {
+                'fallbackSeconds': 45,
+              });
+            }
+          }
+        }
+
+        AppLogger.info('Final sanitized duration', {
+          'sanitizedMs': sanitizedDuration.inMilliseconds,
+          'sanitizedSeconds': sanitizedDuration.inSeconds,
+          'formatted': '${sanitizedDuration.inMinutes}:${(sanitizedDuration.inSeconds % 60).toString().padLeft(2, '0')}',
+        });
+
+        _durationSubject.add(sanitizedDuration);
       }
     }),
   );

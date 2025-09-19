@@ -372,11 +372,21 @@ class _EnhancedAudioPlayerScreenState
                     StreamBuilder<Duration>(
                       stream: _audioService.positionStream,
                       builder: (context, positionSnapshot) {
+                        // Handle stream errors gracefully
+                        if (positionSnapshot.hasError) {
+                          AppLogger.error('Position stream error', error: positionSnapshot.error);
+                          return const SizedBox.shrink();
+                        }
                         final position = positionSnapshot.data ?? Duration.zero;
 
                         return StreamBuilder<Duration>(
                           stream: _audioService.durationStream,
                           builder: (context, durationSnapshot) {
+                            // Handle stream errors gracefully
+                            if (durationSnapshot.hasError) {
+                              AppLogger.error('Duration stream error', error: durationSnapshot.error);
+                              return const SizedBox.shrink();
+                            }
                             final duration =
                                 durationSnapshot.data ?? Duration.zero;
 
@@ -394,9 +404,9 @@ class _EnhancedAudioPlayerScreenState
                                     ),
                                   ),
                                   child: Slider(
-                                    value: duration.inMilliseconds > 0
-                                        ? position.inMilliseconds /
-                                            duration.inMilliseconds
+                                    value: duration.inMilliseconds > 0 &&
+                                           position.inMilliseconds <= duration.inMilliseconds
+                                        ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
                                         : 0.0,
                                     onChanged: (value) {
                                       final newPosition = Duration(
@@ -421,7 +431,7 @@ class _EnhancedAudioPlayerScreenState
                                         style: const TextStyle(fontSize: 11),
                                       ),
                                       Text(
-                                        _formatDuration(duration),
+                                        _formatDuration(duration - position),
                                         style: const TextStyle(fontSize: 11),
                                       ),
                                     ],

@@ -257,9 +257,11 @@ class _SimplifiedDualLevelHighlightedTextState
 
     if (_timingCollection == null || !hasValidCharPositions) {
       // Show plain text with status bar when highlighting not available
+      // Layout fixed: Using MainAxisSize.min and Flexible instead of Expanded
       return Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
+          Flexible(
             child: SingleChildScrollView(
               controller: widget.scrollController,
               child: Padding(

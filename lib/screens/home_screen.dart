@@ -21,7 +21,7 @@ class HomePage extends ConsumerWidget {
           children: [
             Icon(Icons.menu, size: 24),
             SizedBox(width: 12),
-            Text('My Courses'),
+            Text('My Courses ✨'),
           ],
         ),
         backgroundColor: const Color(0xFF2196F3),
