@@ -21,13 +21,17 @@ class EnvConfig {
     try {
       await dotenv.load(fileName: '.env');
       _isLoaded = true;
-      debugPrint('✅ Environment variables loaded successfully');
+      if (kDebugMode) {
+        debugPrint('✅ Environment variables loaded successfully');
+      }
 
       // Validate required variables
       _validateEnvironment();
     } catch (e) {
-      debugPrint('⚠️ Failed to load .env file: $e');
-      debugPrint('Using default/hardcoded values as fallback');
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to load .env file: $e');
+        debugPrint('Using default/hardcoded values as fallback');
+      }
       _isLoaded = true; // Mark as loaded even if failed
     }
   }
@@ -36,27 +40,26 @@ class EnvConfig {
   static void _validateEnvironment() {
     final missing = <String>[];
 
-    // Check Speechify API key
-    if (speechifyApiKey == 'YOUR_SPEECHIFY_API_KEY_HERE' ||
-        speechifyApiKey == 'your_speechify_api_key_here' ||
-        speechifyApiKey.isEmpty) {
-      missing.add('SPEECHIFY_API_KEY');
-    }
-
     // Check Cognito (optional for now due to mock auth)
     if (cognitoUserPoolId == 'your_user_pool_id_here' ||
         cognitoUserPoolId.isEmpty) {
-      debugPrint('ℹ️ Cognito User Pool ID not configured (using mock auth)');
+      if (kDebugMode) {
+        debugPrint('ℹ️ Cognito User Pool ID not configured (using mock auth)');
+      }
     }
 
     if (missing.isNotEmpty) {
-      debugPrint('⚠️ Missing or placeholder values for environment variables:');
-      for (final variable in missing) {
-        debugPrint('  - $variable');
+      if (kDebugMode) {
+        debugPrint('⚠️ Missing or placeholder values for environment variables:');
+        for (final variable in missing) {
+          debugPrint('  - $variable');
+        }
+        debugPrint('\n📝 Please update your .env file with actual values');
       }
-      debugPrint('\n📝 Please update your .env file with actual values');
     } else {
-      debugPrint('✅ All required environment variables are configured');
+      if (kDebugMode) {
+        debugPrint('✅ All required environment variables are configured');
+      }
     }
   }
 
@@ -64,18 +67,6 @@ class EnvConfig {
   static String _get(String key, String fallback) {
     return dotenv.env[key] ?? fallback;
   }
-
-  // ============================================================================
-  // SPEECHIFY CONFIGURATION
-  // ============================================================================
-
-  /// Speechify API key
-  static String get speechifyApiKey =>
-      _get('SPEECHIFY_API_KEY', 'YOUR_SPEECHIFY_API_KEY_HERE');
-
-  /// Speechify base URL
-  static String get speechifyBaseUrl =>
-      _get('SPEECHIFY_BASE_URL', 'https://api.sws.speechify.com');
 
   // ============================================================================
   // AWS COGNITO CONFIGURATION
@@ -127,28 +118,6 @@ class EnvConfig {
   }
 
   // ============================================================================
-  // ELEVENLABS CONFIGURATION
-  // ============================================================================
-
-  /// ElevenLabs API key
-  static String get elevenLabsApiKey =>
-      _get('ELEVENLABS_API_KEY', 'your_api_key_here');
-
-  /// ElevenLabs Voice ID
-  static String get elevenLabsVoiceId =>
-      _get('ELEVENLABS_VOICE_ID', '21m00Tcm4TlvDq8ikWAM');
-
-  /// ElevenLabs base URL
-  static String get elevenLabsBaseUrl =>
-      _get('ELEVENLABS_BASE_URL', 'https://api.elevenlabs.io');
-
-  /// Feature flag to use ElevenLabs instead of Speechify
-  static bool get useElevenLabs {
-    final value = _get('USE_ELEVENLABS', 'false');
-    return value.toLowerCase() == 'true';
-  }
-
-  // ============================================================================
   // ENVIRONMENT CONFIGURATION
   // ============================================================================
 
@@ -164,12 +133,6 @@ class EnvConfig {
   // ============================================================================
   // VALIDATION HELPERS
   // ============================================================================
-
-  /// Check if Speechify is configured
-  static bool get isSpeechifyConfigured =>
-      speechifyApiKey != 'YOUR_SPEECHIFY_API_KEY_HERE' &&
-      speechifyApiKey != 'your_speechify_api_key_here' &&
-      speechifyApiKey.isNotEmpty;
 
   /// Check if Cognito is configured
   static bool get isCognitoConfigured =>
@@ -191,52 +154,52 @@ class EnvConfig {
     }
   }
 
-  /// Check if ElevenLabs is configured
-  static bool get isElevenLabsConfigured =>
-      elevenLabsApiKey != 'your_api_key_here' &&
-      elevenLabsApiKey.isNotEmpty &&
-      elevenLabsVoiceId.isNotEmpty;
-
-  /// Check if all required services are configured
-  static bool get isFullyConfigured =>
-      (useElevenLabs ? isElevenLabsConfigured : isSpeechifyConfigured); // Use appropriate TTS service
-
   /// Get configuration status summary
   static void printConfigurationStatus() {
-    debugPrint('\n=== Environment Configuration Status ===');
-    debugPrint('Environment: $environment');
-    debugPrint(
-        'Speechify: ${isSpeechifyConfigured ? "✅ Configured" : "❌ Not configured"}');
-    debugPrint(
-        'Cognito: ${isCognitoConfigured ? "✅ Configured" : "ℹ️ Not configured (using mock auth)"}');
-    debugPrint('Supabase: ✅ Configured');
-    debugPrint('=====================================\n');
+    if (kDebugMode) {
+      debugPrint('\n=== Environment Configuration Status ===');
+      debugPrint('Environment: $environment');
+      debugPrint(
+          'Cognito: ${isCognitoConfigured ? "✅ Configured" : "ℹ️ Not configured (using mock auth)"}');
+      debugPrint('Supabase: ✅ Configured');
+      debugPrint('=====================================\n');
+    }
   }
 }
 
 /// Validation function for EnvConfig
 Future<void> validateEnvConfig() async {
-  debugPrint('=== EnvConfig Validation ===');
+  if (kDebugMode) {
+    debugPrint('=== EnvConfig Validation ===');
+  }
 
   // Test 1: Load environment
   await EnvConfig.load();
   assert(EnvConfig._isLoaded, 'Environment must be loaded');
-  debugPrint('✓ Environment loading verified');
+  if (kDebugMode) {
+    debugPrint('✓ Environment loading verified');
+  }
 
   // Test 2: Check fallback values
   assert(EnvConfig.supabaseUrl.isNotEmpty, 'Supabase URL must have value');
   assert(EnvConfig.environment.isNotEmpty, 'Environment must have value');
-  debugPrint('✓ Fallback values verified');
+  if (kDebugMode) {
+    debugPrint('✓ Fallback values verified');
+  }
 
   // Test 3: Environment checks
   if (EnvConfig.environment == 'development') {
     assert(EnvConfig.isDevelopment, 'Development check must work');
     assert(!EnvConfig.isProduction, 'Production check must be false');
   }
-  debugPrint('✓ Environment checks verified');
+  if (kDebugMode) {
+    debugPrint('✓ Environment checks verified');
+  }
 
   // Test 4: Print configuration status
   EnvConfig.printConfigurationStatus();
 
-  debugPrint('=== All EnvConfig validations passed ===');
+  if (kDebugMode) {
+    debugPrint('=== All EnvConfig validations passed ===');
+  }
 }

@@ -119,9 +119,8 @@ class MockDataService {
     assert(assignments[0].title == 'Establishing a Case Reserve');
 
     final learningObjects = getTestLearningObjects('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
-    assert(learningObjects.length == 2);
-    assert(learningObjects[0].title == 'ElevenLabs Test - Case Reserve Management');
-    assert(learningObjects[1].title == 'Establishing a Case Reserve - Full Lesson (Speechify)');
+    assert(learningObjects.length == 1);
+    assert(learningObjects[0].title == 'Case Reserve Management (Test Download)');
 
     // Verify no learning objects for other assignments
     final lo2 = getTestLearningObjects('test-assignment-002');

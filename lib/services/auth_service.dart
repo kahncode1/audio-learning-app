@@ -210,8 +210,8 @@ class AuthService implements AuthServiceInterface {
   Future<String?> getIdToken() async {
     try {
       final session = await getSession();
-      if (session != null && session.userPoolTokensResult.value != null) {
-        return session.userPoolTokensResult.value!.idToken.raw;
+      if (session != null) {
+        return session.userPoolTokensResult.value.idToken.raw;
       }
       return null;
     } catch (e) {
@@ -224,8 +224,8 @@ class AuthService implements AuthServiceInterface {
   Future<String?> getAccessToken() async {
     try {
       final session = await getSession();
-      if (session != null && session.userPoolTokensResult.value != null) {
-        return session.userPoolTokensResult.value!.accessToken.raw;
+      if (session != null) {
+        return session.userPoolTokensResult.value.accessToken.raw;
       }
       return null;
     } catch (e) {

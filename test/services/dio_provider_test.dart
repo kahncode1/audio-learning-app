@@ -38,14 +38,6 @@ void main() {
         expect(dio1, equals(dio2));
         expect(identical(dio1, dio2), isTrue);
       });
-
-      test('should return the same Dio instance for Speechify client', () {
-        final speechify1 = DioProvider.createSpeechifyClient();
-        final speechify2 = DioProvider.createSpeechifyClient();
-
-        expect(speechify1, equals(speechify2));
-        expect(identical(speechify1, speechify2), isTrue);
-      });
     });
 
     group('Configuration', () {
@@ -58,20 +50,6 @@ void main() {
         expect(dio.options.headers['Content-Type'], equals('application/json'));
         expect(dio.options.headers['Accept'], equals('application/json'));
       });
-
-      test('Speechify Dio should have correct configuration', () {
-        final speechifyDio = DioProvider.createSpeechifyClient();
-
-        expect(speechifyDio.options.baseUrl, equals(AppConfig.speechifyApiUrl));
-        expect(speechifyDio.options.connectTimeout, equals(const Duration(seconds: 5)));
-        expect(speechifyDio.options.receiveTimeout, equals(const Duration(minutes: 5)));
-        expect(speechifyDio.options.sendTimeout, equals(const Duration(seconds: 30)));
-        // Speechify API returns JSON with base64-encoded audio data
-        // The audio is then streamed during playback, but the API response is JSON
-        expect(speechifyDio.options.responseType, equals(ResponseType.json));
-        expect(speechifyDio.options.headers['Authorization'],
-               equals('Bearer ${AppConfig.speechifyApiKey}'));
-      });
     });
 
     group('Interceptor Chain', () {
@@ -82,15 +60,6 @@ void main() {
         // Should have at least 3 interceptors (auth, cache, retry)
         // In debug mode, should also have LogInterceptor (4 total)
         expect(interceptors.length, greaterThanOrEqualTo(3));
-      });
-
-      test('Speechify Dio should have minimal interceptors', () {
-        final speechifyDio = DioProvider.createSpeechifyClient();
-        final interceptors = speechifyDio.interceptors;
-
-        // Should have at least retry interceptor
-        // In debug mode, should also have LogInterceptor
-        expect(interceptors.length, greaterThanOrEqualTo(1));
       });
     });
 
@@ -122,18 +91,6 @@ void main() {
       });
     });
 
-    group('Connection Pooling', () {
-      test('should configure Speechify client for JSON responses with base64 audio', () {
-        final speechifyDio = DioProvider.createSpeechifyClient();
-
-        // Verify the client is configured for streaming
-        // Speechify API returns JSON with base64-encoded audio data
-        // The audio is then streamed during playback, but the API response is JSON
-        expect(speechifyDio.options.responseType, equals(ResponseType.json));
-        expect(speechifyDio.options.receiveTimeout, equals(const Duration(minutes: 5)));
-        expect(speechifyDio, isNotNull);
-      });
-    });
 
     group('Reset Functionality', () {
       test('should create new instances after reset', () {
@@ -148,16 +105,13 @@ void main() {
 
       test('should close existing Dio instances on reset', () {
         final dio = DioProvider.dio;
-        final speechifyDio = DioProvider.createSpeechifyClient();
 
         DioProvider.reset();
 
         // After reset, new instances should be created
         final newDio = DioProvider.dio;
-        final newSpeechifyDio = DioProvider.createSpeechifyClient();
 
         expect(identical(dio, newDio), isFalse);
-        expect(identical(speechifyDio, newSpeechifyDio), isFalse);
       });
     });
 
@@ -188,16 +142,13 @@ void main() {
           // Create instances
           final provider = DioProvider.instance;
           final dio = DioProvider.dio;
-          final speechifyDio = DioProvider.createSpeechifyClient();
 
           // Verify they exist
           assert(provider != null);
           assert(dio != null);
-          assert(speechifyDio != null);
 
           // Verify singleton behavior
           assert(identical(DioProvider.dio, dio));
-          assert(identical(DioProvider.createSpeechifyClient(), speechifyDio));
 
           // Reset and verify new instances
           DioProvider.reset();

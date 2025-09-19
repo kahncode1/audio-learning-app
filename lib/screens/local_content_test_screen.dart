@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/learning_object.dart';
 import '../services/local_content_service.dart';
 import '../services/audio_player_service_local.dart';
-import '../services/word_timing_service_simplified.dart';
 import '../utils/app_logger.dart';
 
 /// LocalContentTestScreen - Test screen for download-first architecture
@@ -29,8 +28,6 @@ class _LocalContentTestScreenState
     extends ConsumerState<LocalContentTestScreen> {
   final LocalContentService _contentService = LocalContentService();
   final AudioPlayerServiceLocal _audioService = AudioPlayerServiceLocal.instance;
-  final WordTimingServiceSimplified _timingService =
-      WordTimingServiceSimplified.instance;
 
   bool _isLoading = false;
   String _status = 'Ready to load content';

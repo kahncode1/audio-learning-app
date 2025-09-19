@@ -52,7 +52,7 @@ final currentUserProvider = FutureProvider<User?>((ref) async {
   return User(
     id: authUser.userId,
     cognitoSub: authUser.userId,
-    email: authUser.username ?? '',
+    email: authUser.username,
     organization: null,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),

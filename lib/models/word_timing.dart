@@ -270,29 +270,6 @@ class WordTimingCollection {
     return indices;
   }
 
-  /// Find the first word that starts at or after the given time
-  int _findFirstWordAfterTime(int timeMs) {
-    if (timings.isEmpty) return -1;
-
-    int left = 0;
-    int right = timings.length - 1;
-    int result = -1;
-
-    while (left <= right) {
-      final mid = left + ((right - left) >> 1);
-      final timing = timings[mid];
-
-      if (timing.startMs >= timeMs) {
-        result = mid;
-        right = mid - 1;
-      } else {
-        left = mid + 1;
-      }
-    }
-
-    return result;
-  }
-
   /// Get total duration covered by all words
   int get totalDurationMs {
     if (timings.isEmpty) return 0;

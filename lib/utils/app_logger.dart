@@ -99,13 +99,17 @@ class AppLogger {
       case LogLevel.debug:
       case LogLevel.info:
       case LogLevel.performance:
-        debugPrint(logMessage);
+        if (kDebugMode) {
+          debugPrint(logMessage);
+        }
         break;
       case LogLevel.warning:
       case LogLevel.error:
-        debugPrint(logMessage);
-        if (stackTrace != null) {
-          debugPrint('Stack trace: $stackTrace');
+        if (kDebugMode) {
+          debugPrint(logMessage);
+          if (stackTrace != null) {
+            debugPrint('Stack trace: $stackTrace');
+          }
         }
         break;
     }

@@ -23,7 +23,6 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:percent_indicator/percent_indicator.dart';
 import '../models/download_models.dart';
 import '../services/course_download_service.dart';
 import '../utils/app_logger.dart';
@@ -237,36 +236,45 @@ class _DownloadProgressScreenState extends State<DownloadProgressScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Circular progress
-                      CircularPercentIndicator(
-                        radius: 120,
-                        lineWidth: 12,
-                        percent: _currentProgress?.percentage ?? 0,
-                        center: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      SizedBox(
+                        width: 240,
+                        height: 240,
+                        child: Stack(
+                          alignment: Alignment.center,
                           children: [
-                            Text(
-                              '${((_currentProgress?.percentage ?? 0) * 100).toStringAsFixed(0)}%',
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                                color: theme.primaryColor,
+                            SizedBox(
+                              width: 240,
+                              height: 240,
+                              child: CircularProgressIndicator(
+                                value: _currentProgress?.percentage ?? 0,
+                                strokeWidth: 12,
+                                backgroundColor: Colors.grey[200],
+                                valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
                               ),
                             ),
-                            if (_currentProgress != null)
-                              Text(
-                                '${_currentProgress!.completedFiles} / ${_currentProgress!.totalFiles}',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[600],
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${((_currentProgress?.percentage ?? 0) * 100).toStringAsFixed(0)}%',
+                                  style: TextStyle(
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primaryColor,
+                                  ),
                                 ),
-                              ),
+                                if (_currentProgress != null)
+                                  Text(
+                                    '${_currentProgress!.completedFiles} / ${_currentProgress!.totalFiles}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
-                        progressColor: theme.primaryColor,
-                        backgroundColor: Colors.grey[200]!,
-                        circularStrokeCap: CircularStrokeCap.round,
-                        animation: true,
-                        animationDuration: 500,
                       ),
                       const SizedBox(height: 32),
 

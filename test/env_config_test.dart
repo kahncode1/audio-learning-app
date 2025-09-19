@@ -19,19 +19,15 @@ void main() {
       expect(EnvConfig.supabaseUrl, contains('supabase'));
     });
 
-    test('Speechify configuration check', () {
-      final apiKey = EnvConfig.speechifyApiKey;
-      expect(apiKey, isNotEmpty);
-
-      if (EnvConfig.isSpeechifyConfigured) {
-      } else {}
+    test('Environment has required Supabase configuration', () {
+      expect(EnvConfig.supabaseUrl, isNotEmpty);
+      expect(EnvConfig.supabaseAnonKey, isNotEmpty);
     });
 
     test('AppConfig uses environment variables', () {
       AppConfig();
 
       // Test that AppConfig now uses EnvConfig
-      expect(AppConfig.speechifyApiKey, equals(EnvConfig.speechifyApiKey));
       expect(AppConfig.supabaseUrl, equals(EnvConfig.supabaseUrl));
       expect(AppConfig.cognitoUserPoolId, equals(EnvConfig.cognitoUserPoolId));
     });
@@ -45,7 +41,6 @@ void main() {
 
     test('Fallback values work correctly', () {
       // Even if .env is missing, we should have fallback values
-      expect(EnvConfig.speechifyBaseUrl, equals('https://api.sws.speechify.com'));
       expect(EnvConfig.cognitoRegion, equals('us-east-1'));
     });
   });

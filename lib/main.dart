@@ -1,17 +1,30 @@
+// Dart & Flutter
 import 'package:flutter/material.dart';
+
+// Third-party packages
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+// Configuration
 import 'config/env_config.dart';
-import 'screens/home_screen.dart';
-import 'screens/course_detail_screen.dart';
-import 'screens/assignments_screen.dart';
-import 'screens/enhanced_audio_player_screen.dart';
+
+// Models
 import 'models/learning_object.dart';
-import 'screens/settings_screen.dart';
-import 'screens/local_content_test_screen.dart';
-import 'screens/cdn_download_test_screen.dart';
-import 'widgets/mini_audio_player.dart';
+
+// Providers
 import 'providers/audio_providers.dart';
+
+// Screens
+import 'screens/assignments_screen.dart';
+import 'screens/cdn_download_test_screen.dart';
+import 'screens/course_detail_screen.dart';
+import 'screens/enhanced_audio_player_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/local_content_test_screen.dart';
+import 'screens/settings_screen.dart';
+
+// Widgets
+import 'widgets/mini_audio_player.dart';
 
 void main() async {
   // Ensure Flutter binding is initialized

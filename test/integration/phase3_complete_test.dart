@@ -109,21 +109,17 @@ void main() {
     test('3. Test LocalContentService file paths', () async {
       print('\n=== Testing Local Content Service ===');
 
-      // Test file path generation
-      final contentPath = localContentService.getContentPath(testLearningObjectId);
-      final timingPath = localContentService.getTimingPath(testLearningObjectId);
+      // Test audio path generation
+      final audioPath = await localContentService.getAudioPath(testLearningObjectId);
 
-      print('Content Path: $contentPath');
-      print('Timing Path: $timingPath');
+      print('Audio Path: $audioPath');
 
-      // Verify paths are properly formatted
-      expect(contentPath, contains(testLearningObjectId));
-      expect(contentPath, endsWith('_content.json'));
-      expect(timingPath, contains(testLearningObjectId));
-      expect(timingPath, endsWith('_timing.json'));
+      // Verify path is properly formatted
+      expect(audioPath, contains(testLearningObjectId));
+      expect(audioPath, endsWith('.mp3'));
 
       // Test that service can handle missing files gracefully
-      final hasContent = await localContentService.hasContent(testLearningObjectId);
+      final hasContent = await localContentService.isContentAvailable(testLearningObjectId);
       print('Has downloaded content: $hasContent');
       expect(hasContent, isFalse); // Should be false since nothing downloaded yet
 
@@ -157,6 +153,7 @@ void main() {
         fileType: FileType.audio,
         url: 'https://example.com/audio.mp3',
         localPath: '/path/to/audio.mp3',
+        expectedSize: 1024000, // 1MB
         status: DownloadStatus.pending,
       );
 
@@ -173,17 +170,23 @@ void main() {
       // Test CourseDownloadProgress
       final progress = CourseDownloadProgress(
         courseId: 'test-course',
-        status: DownloadStatus.downloading,
-        totalTasks: 10,
-        completedTasks: 5,
+        courseName: 'Test Course',
+        totalFiles: 10,
+        completedFiles: 5,
+        failedFiles: 0,
+        totalBytes: 10240000,
+        downloadedBytes: 5120000,
+        tasks: [],
+        startedAt: DateTime.now(),
+        overallStatus: DownloadStatus.downloading,
       );
 
-      expect(progress.progressPercentage, equals(50));
-      expect(progress.remainingTasks, equals(5));
+      expect((progress.percentage * 100).round(), equals(50));
+      expect(progress.pendingFiles, equals(5));
 
       print('✓ CourseDownloadProgress model validated');
-      print('  - Progress: ${progress.progressPercentage}%');
-      print('  - Remaining: ${progress.remainingTasks} tasks');
+      print('  - Progress: ${(progress.percentage * 100).round()}%');
+      print('  - Remaining: ${progress.pendingFiles} files');
     });
 
     test('6. Test queue management with mock learning object', () async {
@@ -194,11 +197,10 @@ void main() {
         id: 'mock-lo-1',
         assignmentId: 'mock-assignment',
         title: 'Mock Learning Object',
-        content: 'Test content',
-        displayContent: 'Test display content',
-        audioUrl: 'https://example.com/mock.mp3',
-        contentUrl: 'https://example.com/mock_content.json',
-        timingUrl: 'https://example.com/mock_timing.json',
+        plainText: 'Test content for display',
+        orderIndex: 1,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
       // Start download (won't actually download due to invalid URLs)
@@ -224,7 +226,7 @@ void main() {
       print('\n=== Testing Error Handling ===');
 
       // Test with invalid learning object ID
-      final hasInvalidContent = await localContentService.hasContent('invalid-id');
+      final hasInvalidContent = await localContentService.isContentAvailable('invalid-id');
       expect(hasInvalidContent, isFalse);
       print('✓ Handles missing content gracefully');
 
@@ -233,7 +235,7 @@ void main() {
         const DownloadSettings(
           wifiOnly: true,
           maxRetries: 3,
-          maxConcurrentDownloads: 2,
+          allowBackground: false,
         ),
       );
       print('✓ Settings updated successfully');

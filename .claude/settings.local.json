@@ -46,7 +46,11 @@
       "Bash(flutter clean:*)",
       "Bash(open ios/Runner.xcworkspace)",
       "Bash(npx supabase:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(xargs:*)",
+      "Bash(while read f)",
+      "Bash(do basename \"$f\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

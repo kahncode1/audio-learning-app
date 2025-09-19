@@ -58,20 +58,6 @@ class AppConfig {
   /// Supabase anonymous key (from environment or fallback)
   static String get supabaseAnonKey => EnvConfig.supabaseAnonKey;
 
-  // ============================================================================
-  // SPEECHIFY API CONFIGURATION
-  // ============================================================================
-
-  /// Speechify API key (from environment or fallback)
-  /// Get from: https://speechify.com/api
-  static String get speechifyApiKey => EnvConfig.speechifyApiKey;
-
-  /// Speechify base URL (from environment or fallback)
-  static String get speechifyBaseUrl => EnvConfig.speechifyBaseUrl;
-
-  /// Speechify API URL (alias for base URL)
-  static String get speechifyApiUrl => speechifyBaseUrl;
-
   /// Current auth token (to be set by auth service)
   static String? currentAuthToken;
 

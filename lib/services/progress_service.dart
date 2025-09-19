@@ -105,8 +105,10 @@ class ProgressService {
     final savedSpeed = _prefs.getDouble(_playbackSpeedKey) ?? 1.0;
     _playbackSpeedSubject.add(savedSpeed);
 
-    debugPrint(
-        'Preferences loaded - Font size: $savedFontSize, Speed: $savedSpeed');
+    if (kDebugMode) {
+      debugPrint(
+          'Preferences loaded - Font size: $savedFontSize, Speed: $savedSpeed');
+    }
   }
 
   /// Save progress for a learning object (debounced)
@@ -140,9 +142,13 @@ class ProgressService {
         await _saveProgressCloud(update);
       }
 
-      debugPrint('Progress saved for ${update.learningObjectId}');
+      if (kDebugMode) {
+        debugPrint('Progress saved for ${update.learningObjectId}');
+      }
     } catch (e) {
-      debugPrint('Error saving progress: $e');
+      if (kDebugMode) {
+        debugPrint('Error saving progress: $e');
+      }
     }
   }
 
@@ -183,7 +189,9 @@ class ProgressService {
           .from('progress')
           .upsert(progressData, onConflict: 'user_id,learning_object_id');
     } catch (e) {
-      debugPrint('Error saving to Supabase: $e');
+      if (kDebugMode) {
+        debugPrint('Error saving to Supabase: $e');
+      }
       // Don't throw - local save is sufficient
     }
   }
@@ -216,7 +224,9 @@ class ProgressService {
       // Fall back to local
       return _loadProgressLocal(learningObjectId);
     } catch (e) {
-      debugPrint('Error loading progress: $e');
+      if (kDebugMode) {
+        debugPrint('Error loading progress: $e');
+      }
       return _loadProgressLocal(learningObjectId);
     }
   }
@@ -263,7 +273,9 @@ class ProgressService {
             DateTime.tryParse(dataMap['updated_at'] ?? '') ?? DateTime.now(),
       );
     } catch (e) {
-      debugPrint('Error parsing local progress: $e');
+      if (kDebugMode) {
+        debugPrint('Error parsing local progress: $e');
+      }
       return null;
     }
   }
@@ -294,7 +306,9 @@ class ProgressService {
             DateTime.tryParse(response['updated_at'] ?? '') ?? DateTime.now(),
       );
     } catch (e) {
-      debugPrint('Error loading from Supabase: $e');
+      if (kDebugMode) {
+        debugPrint('Error loading from Supabase: $e');
+      }
       return null;
     }
   }
@@ -305,7 +319,9 @@ class ProgressService {
 
     _fontSizeIndexSubject.add(index);
     await _prefs.setInt(_fontSizeKey, index);
-    debugPrint('Font size index saved: $index');
+    if (kDebugMode) {
+      debugPrint('Font size index saved: $index');
+    }
   }
 
   /// Cycle to next font size
@@ -319,7 +335,9 @@ class ProgressService {
   Future<void> setPlaybackSpeed(double speed) async {
     _playbackSpeedSubject.add(speed);
     await _prefs.setDouble(_playbackSpeedKey, speed);
-    debugPrint('Playback speed saved: $speed');
+    if (kDebugMode) {
+      debugPrint('Playback speed saved: $speed');
+    }
   }
 
   /// Clear all progress (for logout)
@@ -336,7 +354,9 @@ class ProgressService {
       await _cacheService.remove(cacheKey);
     }
 
-    debugPrint('Cleared ${keys.length} progress entries');
+    if (kDebugMode) {
+      debugPrint('Cleared ${keys.length} progress entries');
+    }
   }
 
   /// Set up background sync for preferences
@@ -379,10 +399,14 @@ class ProgressService {
           .upsert(cloudPrefs, onConflict: 'user_id')
           .timeout(const Duration(seconds: 5));
 
-      debugPrint('Preferences synced to cloud');
+      if (kDebugMode) {
+        debugPrint('Preferences synced to cloud');
+      }
     } catch (e) {
       // Silently fail - local is sufficient
-      debugPrint('Cloud sync failed (will retry): $e');
+      if (kDebugMode) {
+        debugPrint('Cloud sync failed (will retry): $e');
+      }
     }
   }
 
@@ -431,10 +455,14 @@ class ProgressService {
           await _cacheService.remove(cacheKey);
         }
 
-        debugPrint('Cleaned ${entriesWithTime.length - 50} old progress entries');
+        if (kDebugMode) {
+          debugPrint('Cleaned ${entriesWithTime.length - 50} old progress entries');
+        }
       }
     } catch (e) {
-      debugPrint('Error cleaning old entries: $e');
+      if (kDebugMode) {
+        debugPrint('Error cleaning old entries: $e');
+      }
     }
   }
 
@@ -498,37 +526,51 @@ class _ProgressUpdate {
 
 /// Validation function for ProgressService
 Future<void> validateProgressService() async {
-  debugPrint('=== ProgressService Validation ===');
+  if (kDebugMode) {
+    debugPrint('=== ProgressService Validation ===');
+  }
 
   // Test 1: Service initialization
   final service = await ProgressService.getInstance();
   assert(service != null, 'Service must initialize');
-  debugPrint('✓ Service initialization verified');
+  if (kDebugMode) {
+    debugPrint('✓ Service initialization verified');
+  }
 
   // Test 2: Font size configuration
   assert(ProgressService.fontSizeNames.length == 4, 'Must have 4 font sizes');
   assert(ProgressService.fontSizeValues.length == 4,
       'Must have 4 font size values');
   assert(ProgressService.defaultFontSizeIndex == 1, 'Default must be Medium');
-  debugPrint('✓ Font size configuration verified');
+  if (kDebugMode) {
+    debugPrint('✓ Font size configuration verified');
+  }
 
   // Test 3: Debounce duration
   assert(ProgressService._debounceDuration == const Duration(seconds: 5),
       'Debounce must be 5 seconds');
-  debugPrint('✓ Debounce configuration verified');
+  if (kDebugMode) {
+    debugPrint('✓ Debounce configuration verified');
+  }
 
   // Test 4: Initial state
   assert(service.fontSizeIndex >= 0 && service.fontSizeIndex < 4,
       'Font size index must be valid');
   assert(service.playbackSpeed > 0, 'Playback speed must be positive');
-  debugPrint('✓ Initial state verified');
+  if (kDebugMode) {
+    debugPrint('✓ Initial state verified');
+  }
 
   // Test 5: Font size cycling
   final initialIndex = service.fontSizeIndex;
   await service.cycleFontSize();
   final newIndex = service.fontSizeIndex;
   assert(newIndex == (initialIndex + 1) % 4, 'Font size must cycle correctly');
-  debugPrint('✓ Font size cycling verified');
+  if (kDebugMode) {
+    debugPrint('✓ Font size cycling verified');
+  }
 
-  debugPrint('=== All ProgressService validations passed ===');
+  if (kDebugMode) {
+    debugPrint('=== All ProgressService validations passed ===');
+  }
 }

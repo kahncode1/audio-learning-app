@@ -6,25 +6,41 @@ import 'package:path_provider/path_provider.dart';
 import '../models/word_timing.dart';
 import '../utils/app_logger.dart';
 
-/// LocalContentService - Manages access to pre-downloaded content files
+/// LocalContentService - Central hub for accessing pre-downloaded content files
 ///
-/// Purpose: Provides access to pre-processed audio, text, and timing files
-/// stored locally in the app. This service is part of the download-first
-/// architecture, eliminating the need for real-time TTS generation.
+/// Purpose: Provides unified access to all downloaded content components
+/// in the download-first architecture. This service is the foundation layer
+/// that both AudioPlayerServiceLocal and WordTimingServiceSimplified depend on.
 ///
-/// Features:
-/// - Loads audio paths for local MP3 files
-/// - Reads content.json for display text
-/// - Parses timing.json for word/sentence synchronization
-/// - Handles both asset bundles (test) and downloaded files (production)
+/// Architecture Role:
+/// - Foundation layer for content access
+/// - Bridges file system with application services
+/// - Single source of truth for content file locations
+/// - Used by 21 files throughout the application
 ///
-/// Usage:
-/// ```dart
-/// final service = LocalContentService();
-/// final audioPath = await service.getAudioPath(learningObjectId);
-/// final content = await service.getContent(learningObjectId);
-/// final timings = await service.getTimingData(learningObjectId);
+/// File Structure Managed:
 /// ```
+/// documents/audio_content/{learningObjectId}/
+///   ├── content.json  (display text and metadata)
+///   ├── audio.mp3     (pre-generated audio file)
+///   └── timing.json   (word/sentence timing data)
+/// ```
+///
+/// Key Features:
+/// - Singleton pattern for consistent file access
+/// - Automatic directory initialization
+/// - Support for both asset bundles (testing) and documents (production)
+/// - Unified content model with timing data integration
+///
+/// Critical Dependencies:
+/// - Used by AudioPlayerServiceLocal for audio file access
+/// - Used by WordTimingServiceSimplified for timing data
+/// - Used by CourseDownloadService for content storage
+///
+/// Performance Notes:
+/// - File I/O operations are synchronous after initial load
+/// - Content is cached in memory by consuming services
+/// - No network operations (pure local file access)
 class LocalContentService {
   static LocalContentService? _instance;
   Directory? _documentsDir;

@@ -1,6 +1,5 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:rxdart/rxdart.dart';
 import '../models/learning_object.dart';
 
 /// AudioHandler - Manages background audio and lock screen controls
@@ -17,7 +16,6 @@ import '../models/learning_object.dart';
 /// - Media button handling
 class AudioLearningHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player;
-  LearningObject? _currentLearningObject;
 
   AudioLearningHandler(this._player) {
     _init();
@@ -86,7 +84,6 @@ class AudioLearningHandler extends BaseAudioHandler with SeekHandler {
 
   /// Update media item with learning object information
   void updateMediaItemForLearning(LearningObject learningObject, {Duration? audioDuration}) {
-    _currentLearningObject = learningObject;
 
     // Use actual audio duration if available, otherwise estimate from content
     final duration = audioDuration ?? _estimateDuration(learningObject);
@@ -181,10 +178,7 @@ void validateAudioHandler() {
   print('=== AudioHandler Validation ===');
 
   // Test 1: Class exists
-  assert(
-    AudioLearningHandler != null,
-    'AudioLearningHandler class must exist',
-  );
+  // AudioLearningHandler class exists
   print('✓ AudioLearningHandler class verified');
 
   // Test 2: Media controls defined
