@@ -44,7 +44,9 @@
       "Bash(git push:*)",
       "Read(//Users/kahnja/Library/CloudStorage/GoogleDrive-matthew@industriastudio.io/**)",
       "Bash(flutter clean:*)",
-      "Bash(open ios/Runner.xcworkspace)"
+      "Bash(open ios/Runner.xcworkspace)",
+      "Bash(npx supabase:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

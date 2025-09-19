@@ -39,7 +39,7 @@ These implementations provide tested, production-ready code that should be refer
 
 ## Project Vision
 
-The Streaming Audio Learning Platform delivers a Flutter-based mobile application that streams narrated audio of educational content with synchronized dual-level word and sentence read-along highlighting for insurance professionals consuming course material on-the-go.
+The Audio Learning Platform delivers a Flutter-based mobile application that plays pre-downloaded educational content with synchronized dual-level word and sentence highlighting for insurance professionals consuming course material offline.
 
 **Core Value Proposition:**
 - Transform written course content into consumable audio format
@@ -73,13 +73,13 @@ The system implements a clean separation of concerns across four primary layers:
    - Hosted on Supabase Cloud for scalability
    - **Reference Models:** `/implementations/models.dart`
 
-3. **External Services (Speechify API)**
-   - Professional text-to-speech generation
-   - Word-level timing data with sentence indexing for dual-level synchronization
-   - SSML content processing
-   - Voice customization (professional_male_v2)
-   - **Reference Implementation:** `/implementations/audio-service.dart`
-   - **Connection Pooling:** `/references/technical-requirements.md`
+3. **Content Delivery (Pre-processed Files)**
+   - Pre-generated MP3 audio files
+   - JSON-based word and sentence timing data
+   - Content metadata and display text
+   - Stored locally after initial download
+   - **Reference Implementation:** `/services/local_content_service.dart`
+   - **Architecture Guide:** `/DOWNLOAD_ARCHITECTURE_PLAN.md`
 
 4. **Mobile Application (Flutter)**
    - Cross-platform iOS and Android clients
@@ -98,14 +98,14 @@ The system implements a clean separation of concerns across four primary layers:
 
 1. **Authentication:** User logs in via AWS Cognito SSO → Flutter receives ID token → Creates Supabase session through JWT bridging
 2. **Content Loading:** Flutter fetches authorized courses/learning objects from Supabase (backend automatically filters expired content via RLS)
-3. **Audio Streaming:** Flutter requests audio stream from Speechify API with SSML content → Implements custom StreamAudioSource
+3. **Content Loading:** Flutter loads pre-downloaded MP3 files and timing data from local storage → Instant playback with no buffering
 4. **Progress Tracking:** Flutter saves position, font size, and playback speed to Supabase every 5 seconds using debounced updates → Caches locally with SharedPreferences
 5. **Highlighting Sync:** Word timings with sentence indices enable dual-level highlighting → Binary search for current word → Sentence tracking for context
 
 ### Critical Architectural Decisions
 
 - **Supabase Selection:** Chosen for real-time capabilities, built-in Row Level Security, automatic JWT validation, and seamless PostgreSQL integration
-- **Speechify API:** Selected for professional voice quality, accurate word-level timing data with sentence support, and SSML processing
+- **Download-First Architecture:** Pre-processed content eliminates runtime TTS costs, enables offline playback, and simplifies codebase by 40%
 - **AWS Cognito:** Leverages existing enterprise SSO infrastructure, provides secure token management
 - **Dual-Level Word Highlighting Implementation:** No existing Flutter packages provide synchronized dual-level (sentence + word) highlighting - requires 100% custom development (see `/implementations/word-highlighting.dart` and `/references/common-pitfalls.md` #5)
 - **Flutter Framework:** Enables single codebase for iOS and Android, reducing development and maintenance costs
@@ -143,40 +143,24 @@ The system implements a clean separation of concerns across four primary layers:
 - **supabase_flutter: ^2.3.0** - Supabase client providing database queries and real-time listeners
 - **Comprehensive Guide:** `/documentation/apis/supabase-backend.md`
 
-### External APIs
+### Content Delivery System
 
-#### Speechify API (Current Implementation)
-- **Professional text-to-speech with word timing and sentence indexing** (requires custom Dio implementation - no SDK available)
-  - **Base URL:** `https://api.sws.speechify.com`
-  - **Main Endpoint:** `/v1/audio/speech`
-  - **Response Format:** JSON with base64-encoded WAV audio and speech marks
-  - **Valid Models:** `simba-turbo` (default), `simba-base`, `simba-english`, `simba-multilingual`
-  - **Voice IDs:** `henry` (default), other voices available
-  - **Required Parameters:** `input` (text), `voice_id`, `model`
-  - **SSML Support:** Full support for emphasis, prosody, breaks, substitutions
-- **Comprehensive Guide:** `/documentation/apis/speechify-api.md`
-- **Integration Guide:** `/documentation/integrations/audio-streaming.md`
-- **Reference Implementation:** `/implementations/audio-service.dart`
-- **Connection Pooling:** `/references/technical-requirements.md` - Connection Pooling for Speechify
-
-#### ElevenLabs API (Alternative Implementation - Milestone 7)
-- **Modern text-to-speech with HTTP streaming** - Mobile-optimized alternative to Speechify
-  - **Base URL:** `https://api.elevenlabs.io`
-  - **Main Endpoints:**
-    - `/v1/text-to-speech/{voice_id}/stream` - HTTP streaming
-    - `/v1/text-to-speech/{voice_id}/stream/with-timestamps` - Streaming with timing data
-  - **Response Format:** Binary audio stream with chunked transfer encoding
-  - **Timing Format:** Character-level timestamps (`character_start_times` array)
-  - **Voice Models:** `eleven_multilingual_v2`, `eleven_turbo_v2`, others available
-  - **NO SSML Support:** Plain text input only (simplified approach)
-  - **Mobile Benefits:** HTTP streaming more battery-efficient than WebSockets
-- **Key Implementation Differences:**
-  - Binary streaming instead of base64 JSON
-  - Character timing requires transformation to word boundaries
-  - Sentence detection must be computed algorithmically (punctuation + 350ms pauses)
-  - No nested chunk structure - flat character array
-- **Comprehensive Guide:** `/documentation/apis/elevenlabs-api.md` (to be created)
-- **Feature Flag:** `USE_ELEVENLABS` in env_config.dart (default: false)
+#### Pre-processed Content Files
+- **Downloaded on first login** - All course materials cached locally
+  - **Audio Files:** MP3 format, ~1MB per minute
+  - **Timing Data:** JSON files with word/sentence boundaries
+  - **Content Metadata:** Display text and course information
+  - **File Structure:** `learning_object_id/audio.mp3`, `content.json`, `timing.json`
+- **Benefits:**
+  - 100% cost reduction (no runtime TTS API calls)
+  - Instant playback with no buffering
+  - Complete offline capability
+  - Simplified codebase (~40% reduction)
+- **Implementation Guides:**
+  - **Architecture:** `/DOWNLOAD_ARCHITECTURE_PLAN.md`
+  - **Preprocessing:** `/DOWNLOAD_APP_DATA_CONFIGURATION.md`
+  - **CDN Setup:** `/SUPABASE_CDN_SETUP.md`
+  - **Service Implementation:** `/services/local_content_service.dart`
 
 ### HTTP & Network
 - **dio: ^5.4.0** - Advanced HTTP client with interceptors for streaming and retry logic
@@ -290,8 +274,8 @@ Key technology selections with current implementations:
 
 **LearningObject** (see `/implementations/models.dart`)
 - Individual content pieces (chapters, sections)
-- Contains SSML content for audio generation
-- Stores cached word timings with sentence indices from Speechify
+- References pre-downloaded audio and timing files
+- Stores cached word timings with sentence indices
 - Tracks user progress (isCompleted, isInProgress)
 - Stores last playback position
 
@@ -352,12 +336,12 @@ Key technology selections with current implementations:
 - **Network:** Adaptive bitrate based on connection quality
 - **Storage:** <100MB app size plus cache
 
-### Audio Buffering Strategy (see `/implementations/audio-service.dart`)
-- **Forward Buffer:** Maintain 10-second minimum forward buffer
-- **Cache Previous:** Keep last 30 seconds for instant replay
-- **Progressive Loading:** Stream audio in chunks for smooth playback
-- **Buffer Monitoring:** Track buffer health via RxDart streams
-- **Segment Caching:** Use flutter_cache_manager for persistence
+### Audio Playback Strategy (see `/services/audio_player_service_local.dart`)
+- **Instant Start:** Local MP3 files play immediately
+- **No Buffering:** Complete file available locally
+- **Seek Performance:** Instant seeking to any position
+- **Memory Efficient:** Audio player handles file streaming
+- **Offline Ready:** No network required after download
 
 ### Optimization Techniques (see `/implementations/word-highlighting.dart`)
 - **RepaintBoundary:** Isolate dual-level highlighting widget repaints

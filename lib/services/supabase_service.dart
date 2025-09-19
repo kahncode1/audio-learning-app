@@ -40,7 +40,7 @@ class SupabaseService {
     if (_client == null) {
       throw StateError('SupabaseService not initialized. Call initialize() first.');
     }
-    return client!;
+    return _client!;
   }
 
   /// Get or create AuthService instance

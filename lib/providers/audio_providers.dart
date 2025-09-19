@@ -19,13 +19,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
-import '../services/audio_player_service.dart';
+import '../services/audio_player_service_local.dart';
 import '../models/learning_object.dart';
 import 'audio_context_provider.dart';
 
-/// Singleton AudioPlayerService provider
-final audioPlayerServiceProvider = Provider<AudioPlayerService>((ref) {
-  return AudioPlayerService.instance;
+/// Singleton AudioPlayerServiceLocal provider (using download-first architecture)
+final audioPlayerServiceProvider = Provider<AudioPlayerServiceLocal>((ref) {
+  return AudioPlayerServiceLocal.instance;
 });
 
 /// Current learning object being played

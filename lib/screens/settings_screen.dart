@@ -75,22 +75,22 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.science, color: Colors.purple),
-              title: const Text('ElevenLabs Test (Phase 4)'),
-              subtitle: const Text('Test TTS service integration'),
+              leading: const Icon(Icons.download_done, color: Colors.green),
+              title: const Text('Local Content Test'),
+              subtitle: const Text('Test download-first architecture'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
-                Navigator.pushNamed(context, '/elevenlabs-test');
+                Navigator.pushNamed(context, '/local-content-test');
               },
             ),
             ListTile(
-              leading: const Icon(Icons.api, color: Colors.purple),
-              title: const Text('TTS Service'),
-              subtitle: Text(EnvConfig.useElevenLabs ? 'ElevenLabs' : 'Speechify'),
-              trailing: Switch(
-                value: EnvConfig.useElevenLabs,
-                onChanged: null, // Read-only for now
-              ),
+              leading: const Icon(Icons.cloud_download, color: Colors.blue),
+              title: const Text('CDN Download Test'),
+              subtitle: const Text('Test Supabase CDN download flow'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.pushNamed(context, '/cdn-download-test');
+              },
             ),
           ],
         ],

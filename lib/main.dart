@@ -8,7 +8,8 @@ import 'screens/assignments_screen.dart';
 import 'screens/enhanced_audio_player_screen.dart';
 import 'models/learning_object.dart';
 import 'screens/settings_screen.dart';
-import 'screens/elevenlabs_test_screen.dart';
+import 'screens/local_content_test_screen.dart';
+import 'screens/cdn_download_test_screen.dart';
 import 'widgets/mini_audio_player.dart';
 import 'providers/audio_providers.dart';
 
@@ -53,7 +54,8 @@ class AudioLearningApp extends StatelessWidget {
         '/main': (context) => const MainNavigationScreen(),
         '/home': (context) => const HomePage(),
         '/settings': (context) => const SettingsScreen(),
-        '/elevenlabs-test': (context) => const ElevenLabsTestScreen(),
+        '/local-content-test': (context) => const LocalContentTestScreen(),
+        '/cdn-download-test': (context) => const CDNDownloadTestScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/course-detail') {

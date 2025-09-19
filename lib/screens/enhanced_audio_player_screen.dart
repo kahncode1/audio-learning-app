@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../services/audio_player_service.dart';
+import '../services/audio_player_service_local.dart';
 import '../services/progress_service.dart';
-import '../services/word_timing_service.dart';
+import '../services/word_timing_service_simplified.dart';
 import '../models/learning_object.dart';
 import '../providers/providers.dart';
 import '../providers/audio_providers.dart';
@@ -49,8 +49,8 @@ class EnhancedAudioPlayerScreen extends ConsumerStatefulWidget {
 
 class _EnhancedAudioPlayerScreenState
     extends ConsumerState<EnhancedAudioPlayerScreen> {
-  late final AudioPlayerService _audioService;
-  late final WordTimingService _wordTimingService;
+  late final AudioPlayerServiceLocal _audioService;
+  late final WordTimingServiceSimplified _wordTimingService;
   ProgressService? _progressService;
   final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
@@ -62,8 +62,8 @@ class _EnhancedAudioPlayerScreenState
   @override
   void initState() {
     super.initState();
-    _audioService = AudioPlayerService.instance;
-    _wordTimingService = WordTimingService.instance;
+    _audioService = AudioPlayerServiceLocal.instance;
+    _wordTimingService = WordTimingServiceSimplified.instance;
     _initializePlayer();
     _setupKeyboardShortcuts();
   }

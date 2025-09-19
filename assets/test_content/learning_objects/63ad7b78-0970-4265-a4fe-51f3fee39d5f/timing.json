@@ -1,0 +1,485 @@
+{
+  "version": "1.0",
+  "words": [
+    {
+      "word": "Understanding",
+      "startMs": 0,
+      "endMs": 1280,
+      "charStart": 0,
+      "charEnd": 13
+    },
+    {
+      "word": "Case",
+      "startMs": 1280,
+      "endMs": 1621,
+      "charStart": 14,
+      "charEnd": 18
+    },
+    {
+      "word": "Reserve",
+      "startMs": 1621,
+      "endMs": 2091,
+      "charStart": 19,
+      "charEnd": 26
+    },
+    {
+      "word": "Management",
+      "startMs": 2091,
+      "endMs": 2645,
+      "charStart": 27,
+      "charEnd": 37
+    },
+    {
+      "word": "in",
+      "startMs": 2645,
+      "endMs": 2773,
+      "charStart": 38,
+      "charEnd": 40
+    },
+    {
+      "word": "Insurance",
+      "startMs": 2773,
+      "endMs": 3243,
+      "charStart": 41,
+      "charEnd": 50
+    },
+    {
+      "word": "Claims",
+      "startMs": 3243,
+      "endMs": 3584,
+      "charStart": 51,
+      "charEnd": 57
+    },
+    {
+      "word": "Processing",
+      "startMs": 3584,
+      "endMs": 4480,
+      "charStart": 58,
+      "charEnd": 68
+    },
+    {
+      "word": "A",
+      "startMs": 4480,
+      "endMs": 4736,
+      "charStart": 70,
+      "charEnd": 71
+    },
+    {
+      "word": "case",
+      "startMs": 4736,
+      "endMs": 5120,
+      "charStart": 72,
+      "charEnd": 76
+    },
+    {
+      "word": "reserve",
+      "startMs": 5120,
+      "endMs": 5504,
+      "charStart": 77,
+      "charEnd": 84
+    },
+    {
+      "word": "represents",
+      "startMs": 5504,
+      "endMs": 6059,
+      "charStart": 85,
+      "charEnd": 95
+    },
+    {
+      "word": "the",
+      "startMs": 6059,
+      "endMs": 6272,
+      "charStart": 96,
+      "charEnd": 99
+    },
+    {
+      "word": "estimated",
+      "startMs": 6272,
+      "endMs": 6869,
+      "charStart": 100,
+      "charEnd": 109
+    },
+    {
+      "word": "amount",
+      "startMs": 6869,
+      "endMs": 7125,
+      "charStart": 110,
+      "charEnd": 116
+    },
+    {
+      "word": "of",
+      "startMs": 7125,
+      "endMs": 7253,
+      "charStart": 117,
+      "charEnd": 119
+    },
+    {
+      "word": "money",
+      "startMs": 7253,
+      "endMs": 7723,
+      "charStart": 120,
+      "charEnd": 125
+    },
+    {
+      "word": "an",
+      "startMs": 7723,
+      "endMs": 7851,
+      "charStart": 126,
+      "charEnd": 128
+    },
+    {
+      "word": "insurance",
+      "startMs": 7851,
+      "endMs": 8320,
+      "charStart": 129,
+      "charEnd": 138
+    },
+    {
+      "word": "company",
+      "startMs": 8320,
+      "endMs": 8789,
+      "charStart": 139,
+      "charEnd": 146
+    },
+    {
+      "word": "expects",
+      "startMs": 8789,
+      "endMs": 9344,
+      "charStart": 147,
+      "charEnd": 154
+    },
+    {
+      "word": "to",
+      "startMs": 9344,
+      "endMs": 9429,
+      "charStart": 155,
+      "charEnd": 157
+    },
+    {
+      "word": "pay",
+      "startMs": 9429,
+      "endMs": 9728,
+      "charStart": 158,
+      "charEnd": 161
+    },
+    {
+      "word": "for",
+      "startMs": 9728,
+      "endMs": 9856,
+      "charStart": 162,
+      "charEnd": 165
+    },
+    {
+      "word": "a",
+      "startMs": 9856,
+      "endMs": 9941,
+      "charStart": 166,
+      "charEnd": 167
+    },
+    {
+      "word": "claim",
+      "startMs": 9941,
+      "endMs": 10539,
+      "charStart": 168,
+      "charEnd": 173
+    },
+    {
+      "word": "This",
+      "startMs": 10538,
+      "endMs": 11135,
+      "charStart": 175,
+      "charEnd": 179
+    },
+    {
+      "word": "critical",
+      "startMs": 11135,
+      "endMs": 11562,
+      "charStart": 180,
+      "charEnd": 188
+    },
+    {
+      "word": "financial",
+      "startMs": 11562,
+      "endMs": 12074,
+      "charStart": 189,
+      "charEnd": 198
+    },
+    {
+      "word": "tool",
+      "startMs": 12074,
+      "endMs": 12586,
+      "charStart": 199,
+      "charEnd": 203
+    },
+    {
+      "word": "serves",
+      "startMs": 12586,
+      "endMs": 12927,
+      "charStart": 204,
+      "charEnd": 210
+    },
+    {
+      "word": "multiple",
+      "startMs": 12927,
+      "endMs": 13397,
+      "charStart": 211,
+      "charEnd": 219
+    },
+    {
+      "word": "purposes",
+      "startMs": 13397,
+      "endMs": 14122,
+      "charStart": 220,
+      "charEnd": 228
+    },
+    {
+      "word": "in",
+      "startMs": 14122,
+      "endMs": 14250,
+      "charStart": 229,
+      "charEnd": 231
+    },
+    {
+      "word": "the",
+      "startMs": 14250,
+      "endMs": 14335,
+      "charStart": 232,
+      "charEnd": 235
+    },
+    {
+      "word": "claims",
+      "startMs": 14335,
+      "endMs": 14847,
+      "charStart": 236,
+      "charEnd": 242
+    },
+    {
+      "word": "management",
+      "startMs": 14847,
+      "endMs": 15274,
+      "charStart": 243,
+      "charEnd": 253
+    },
+    {
+      "word": "process",
+      "startMs": 15274,
+      "endMs": 15829,
+      "charStart": 254,
+      "charEnd": 261
+    },
+    {
+      "word": "from",
+      "startMs": 16128,
+      "endMs": 16384,
+      "charStart": 263,
+      "charEnd": 267
+    },
+    {
+      "word": "regulatory",
+      "startMs": 16384,
+      "endMs": 16981,
+      "charStart": 268,
+      "charEnd": 278
+    },
+    {
+      "word": "compliance",
+      "startMs": 16981,
+      "endMs": 17749,
+      "charStart": 279,
+      "charEnd": 289
+    },
+    {
+      "word": "to",
+      "startMs": 17749,
+      "endMs": 17834,
+      "charStart": 290,
+      "charEnd": 292
+    },
+    {
+      "word": "strategic",
+      "startMs": 17834,
+      "endMs": 18389,
+      "charStart": 293,
+      "charEnd": 302
+    },
+    {
+      "word": "planning",
+      "startMs": 18389,
+      "endMs": 18901,
+      "charStart": 303,
+      "charEnd": 311
+    },
+    {
+      "word": "and",
+      "startMs": 18901,
+      "endMs": 19114,
+      "charStart": 312,
+      "charEnd": 315
+    },
+    {
+      "word": "accurate",
+      "startMs": 19114,
+      "endMs": 19541,
+      "charStart": 316,
+      "charEnd": 324
+    },
+    {
+      "word": "financial",
+      "startMs": 19541,
+      "endMs": 20010,
+      "charStart": 325,
+      "charEnd": 334
+    },
+    {
+      "word": "reporting",
+      "startMs": 20010,
+      "endMs": 20778,
+      "charStart": 335,
+      "charEnd": 344
+    },
+    {
+      "word": "When",
+      "startMs": 20778,
+      "endMs": 21034,
+      "charStart": 346,
+      "charEnd": 350
+    },
+    {
+      "word": "an",
+      "startMs": 21034,
+      "endMs": 21162,
+      "charStart": 351,
+      "charEnd": 353
+    },
+    {
+      "word": "insurance",
+      "startMs": 21162,
+      "endMs": 21631,
+      "charStart": 354,
+      "charEnd": 363
+    },
+    {
+      "word": "claim",
+      "startMs": 21631,
+      "endMs": 21973,
+      "charStart": 364,
+      "charEnd": 369
+    },
+    {
+      "word": "is",
+      "startMs": 21973,
+      "endMs": 22143,
+      "charStart": 370,
+      "charEnd": 372
+    },
+    {
+      "word": "first",
+      "startMs": 22143,
+      "endMs": 22399,
+      "charStart": 373,
+      "charEnd": 378
+    },
+    {
+      "word": "reported,",
+      "startMs": 22399,
+      "endMs": 23039,
+      "charStart": 379,
+      "charEnd": 388
+    },
+    {
+      "word": "adjusters",
+      "startMs": 23039,
+      "endMs": 23637,
+      "charStart": 389,
+      "charEnd": 398
+    },
+    {
+      "word": "must",
+      "startMs": 23637,
+      "endMs": 23807,
+      "charStart": 399,
+      "charEnd": 403
+    },
+    {
+      "word": "quickly",
+      "startMs": 23807,
+      "endMs": 24149,
+      "charStart": 404,
+      "charEnd": 411
+    },
+    {
+      "word": "assess",
+      "startMs": 24149,
+      "endMs": 24575,
+      "charStart": 412,
+      "charEnd": 418
+    },
+    {
+      "word": "the",
+      "startMs": 24575,
+      "endMs": 24661,
+      "charStart": 419,
+      "charEnd": 422
+    },
+    {
+      "word": "potential",
+      "startMs": 24661,
+      "endMs": 25087,
+      "charStart": 423,
+      "charEnd": 432
+    },
+    {
+      "word": "financial",
+      "startMs": 25087,
+      "endMs": 25557,
+      "charStart": 433,
+      "charEnd": 442
+    },
+    {
+      "word": "exposure",
+      "startMs": 25557,
+      "endMs": 26325,
+      "charStart": 443,
+      "charEnd": 451
+    }
+  ],
+  "sentences": [
+    {
+      "text": "Understanding Case Reserve Management in Insurance Claims Processing.",
+      "startMs": 0,
+      "endMs": 4480,
+      "wordStartIndex": 0,
+      "wordEndIndex": 7,
+      "charStart": 0,
+      "charEnd": 0
+    },
+    {
+      "text": "A case reserve represents the estimated amount of money an insurance company expects to pay for a claim.",
+      "startMs": 4480,
+      "endMs": 10539,
+      "wordStartIndex": 8,
+      "wordEndIndex": 25,
+      "charStart": 0,
+      "charEnd": 0
+    },
+    {
+      "text": "This critical financial tool serves multiple purposes in the claims management process, from regulatory compliance to strategic planning and accurate financial reporting.",
+      "startMs": 10538,
+      "endMs": 20778,
+      "wordStartIndex": 26,
+      "wordEndIndex": 47,
+      "charStart": 0,
+      "charEnd": 0
+    },
+    {
+      "text": "When an insurance claim is first reported, adjusters must quickly assess the potential financial exposure.",
+      "startMs": 20778,
+      "endMs": 26325,
+      "wordStartIndex": 48,
+      "wordEndIndex": 62,
+      "charStart": 0,
+      "charEnd": 0
+    }
+  ],
+  "totalDurationMs": 26325
+}

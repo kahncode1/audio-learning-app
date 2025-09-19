@@ -292,7 +292,7 @@ class LearningObjectTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Estimate duration based on content length
-    final durationMinutes = ((learningObject.ssmlContent?.length ?? 500) / 150).round(); // Rough estimate
+    final durationMinutes = ((learningObject.plainText?.length ?? 500) / 150).round(); // Rough estimate
     String durationText = '$durationMinutes min';
 
     if (learningObject.currentPositionMs > 0) {

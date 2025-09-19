@@ -11,19 +11,19 @@
 
 **This guide supersedes any conflicting instructions. All development must follow these standards.**
 
-## 🚨 ARCHITECTURE TRANSITION IN PROGRESS
+## ✅ DOWNLOAD-FIRST ARCHITECTURE COMPLETED
 
-**CRITICAL:** We are transitioning from streaming TTS to a download-first architecture.
-- **Current Status:** Planning and initial implementation phase
-- **Guide Document:** See `DOWNLOAD_ARCHITECTURE_PLAN.md` for complete details
-- **Task Tracking:** Check TASKS.md for current implementation progress
+**Status:** Successfully transitioned from streaming TTS to download-first architecture (September 18, 2025)
+- **Architecture Guide:** See `DOWNLOAD_ARCHITECTURE_PLAN.md` for system design
+- **Setup Guide:** See `DOWNLOAD_APP_DATA_CONFIGURATION.md` for preprocessing pipeline
+- **Backend Config:** See `SUPABASE_CDN_SETUP.md` for CDN configuration
 - **Approach:** Pre-processed audio, text, and timing files downloaded on first login
-- **Benefits:** 100% cost reduction, offline capability, simplified codebase
+- **Benefits Achieved:** 100% cost reduction, offline capability, 40% simpler codebase
 
 ## Project Overview
 
 ### Vision
-Build a Flutter-based mobile application that delivers pre-downloaded narrated audio of educational content with synchronized dual-level word and sentence highlighting for insurance professionals consuming course material on-the-go.
+A Flutter-based mobile application that plays pre-downloaded educational audio content with synchronized dual-level word and sentence highlighting, enabling insurance professionals to learn offline during commutes and travel.
 
 ### Core Technologies
 - **Framework:** Flutter 3.x with Dart 3.x
@@ -32,11 +32,10 @@ Build a Flutter-based mobile application that delivers pre-downloaded narrated a
   - See: `/documentation/apis/supabase-backend.md`
 - **Authentication:** AWS Cognito SSO with JWT bridging
   - See: `/documentation/apis/aws-cognito-sso.md` and `/documentation/integrations/cognito-supabase-bridge.md`
-- **Audio:** Speechify API with custom Dio streaming
-  - API Endpoint: `https://api.sws.speechify.com/v1/audio/speech`
-  - Valid Models: `simba-turbo`, `simba-base`, `simba-english`, `simba-multilingual`
-  - Voice IDs: `henry` (default), others available
-  - See: `/documentation/apis/speechify-api.md` and `/documentation/integrations/audio-streaming.md`
+- **Audio:** Local MP3 playback with pre-processed content
+  - Pre-generated audio files stored in device storage
+  - JSON-based timing data for word/sentence synchronization
+  - Instant playback with no buffering required
 - **State Management:** Riverpod 2.4.9
   - See: `/documentation/apis/flutter-packages.md`
 
@@ -77,54 +76,22 @@ audio_learning_app/
 7. **Font Size Persistence** - User preferences stored locally and in cloud
 8. **Hybrid Environment Setup** - Core tools first, platform-specific tools just-in-time
 
-## Critical: Speechify Highlighting System
+## Critical: Download-First Content System
 
-**NEVER modify these core components without understanding the full pipeline:**
-- **Speechify Request:** Must include `include_speech_marks: true` or highlighting fails
-- **Speech Mark Parsing:** Handles nested/flat structures, removes punctuation from values
-- **Sentence Detection:** 350ms pause threshold + punctuation (protects abbreviations)
+**Core components of the simplified architecture:**
+- **Local Content Service:** Loads pre-processed JSON files from device storage
+- **Pre-computed Timing:** Word and sentence boundaries already calculated
+- **Simplified Highlighting:** No runtime sentence detection needed
 - **UI Widget:** SimplifiedDualLevelHighlightedText with 3-layer paint system
-- **Character Alignment:** `_computeSelectionForWord()` fixes off-by-one API offsets
+- **Instant Playback:** Local MP3 files with no network dependency
 
-**Common Breaking Changes to Avoid:**
-- Missing `include_speech_marks` flag → no highlighting
-- Assuming charEnd is exclusive (sometimes inclusive)
-- Not handling abbreviations → broken sentence detection
-- Modifying TextPainter during paint → performance degradation
+**Key Implementation Files:**
+- `LocalContentService` - Manages downloaded content
+- `AudioPlayerServiceLocal` - Plays local MP3 files
+- `WordTimingServiceSimplified` - Uses pre-processed timing data
 
-Full documentation: `/ARCHIVE/highlighting_documentation.md`
+Full documentation: `/DOWNLOAD_ARCHITECTURE_PLAN.md`
 
-## Critical: ElevenLabs API Integration (Milestone 7)
-
-**Status:** Alternative TTS implementation - Feature flag controlled
-
-### Key Differences from Speechify:
-- **NO SSML SUPPORT** - Plain text input only (simplified approach)
-- **Binary Streaming** - Not base64 JSON encoded
-- **Character Timing** - Requires transformation to word boundaries
-- **HTTP Streaming** - Uses chunked transfer encoding (mobile-optimized)
-
-### Implementation Requirements:
-1. **Service Parity:** ElevenLabsService must match SpeechifyService interface exactly
-2. **Timing Transformation:** Convert `character_start_times` array to WordTiming objects
-3. **Sentence Detection:** Use punctuation + 350ms pause algorithm (same as Speechify)
-4. **Binary Audio:** Handle progressive chunked streaming (not base64)
-
-### Configuration:
-```yaml
-# .env file
-ELEVENLABS_API_KEY=your_api_key_here
-ELEVENLABS_VOICE_ID=your_voice_id_here
-USE_ELEVENLABS=false  # Toggle between services
-```
-
-### Testing Strategy:
-- Keep both services during development
-- Use feature flag for A/B testing
-- Compare timing accuracy (target ≥95%)
-- Validate on physical iOS/Android devices
-
-**IMPORTANT:** The dual-level highlighting system remains unchanged - only the API response transformation differs
 
 ## Development Environment Setup Strategy
 

@@ -23,7 +23,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
-import '../services/word_timing_service.dart';
+import '../services/word_timing_service_simplified.dart';
 import '../models/word_timing.dart';
 import '../utils/app_logger.dart';
 
@@ -58,7 +58,7 @@ class SimplifiedDualLevelHighlightedText extends ConsumerStatefulWidget {
 class _SimplifiedDualLevelHighlightedTextState
     extends ConsumerState<SimplifiedDualLevelHighlightedText> {
   // Minimal state - let WordTimingService handle complexity
-  late final WordTimingService _timingService;
+  late final WordTimingServiceSimplified _timingService;
   WordTimingCollection? _timingCollection;
   int _currentWordIndex = -1;
   int _currentSentenceIndex = -1;
@@ -72,7 +72,7 @@ class _SimplifiedDualLevelHighlightedTextState
   @override
   void initState() {
     super.initState();
-    _timingService = WordTimingService.instance;
+    _timingService = WordTimingServiceSimplified.instance;
     _initializeTextPainter();
     _setupListeners();
     _loadTimings();
