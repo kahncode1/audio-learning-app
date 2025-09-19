@@ -163,3 +163,30 @@ final audioControlProvider =
     StateNotifierProvider<AudioControlNotifier, AsyncValue<void>>((ref) {
   return AudioControlNotifier(ref);
 });
+
+// =============================================================================
+// CRITICAL HIGHLIGHTING PROVIDERS - DO NOT MODIFY WITHOUT EXTENSIVE TESTING
+// =============================================================================
+// These providers were moved from the original providers.dart file
+// They are essential for the dual-level highlighting system to work correctly
+
+/// Current word index for highlighting
+/// CRITICAL: Used by SimplifiedDualLevelHighlightedText widget
+/// Controls which word is highlighted in yellow (#FFF59D)
+final currentWordIndexProvider = StateProvider<int>((ref) => -1);
+
+/// Current sentence index for highlighting
+/// CRITICAL: Used by SimplifiedDualLevelHighlightedText widget
+/// Controls which sentence has blue background (#E3F2FD)
+final currentSentenceIndexProvider = StateProvider<int>((ref) => -1);
+
+/// Audio playback position in milliseconds
+/// CRITICAL: Drives word timing synchronization
+/// Updated by WordTimingServiceSimplified via RxDart streams
+/// NOTE: This is different from audioPositionProvider which uses Duration
+final playbackPositionProvider = StateProvider<int>((ref) => 0);
+
+/// Audio playback state (playing/paused)
+/// Simple state provider used by some legacy components
+/// NOTE: This is different from audioPlayingStateProvider which is a stream
+final isPlayingProvider = StateProvider<bool>((ref) => false);

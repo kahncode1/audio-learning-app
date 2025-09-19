@@ -24,7 +24,13 @@ The project uses a modular implementation approach with reference files:
 ├── assignments-page.dart       # Expandable assignment tiles
 ├── auth-service.dart          # AWS Cognito SSO bridge
 ├── progress-service.dart       # Progress tracking with preferences
-├── providers.dart             # Riverpod state management
+├── providers/                  # Modularized Riverpod state management (Phase 6 refinement)
+│   ├── providers.dart         # Barrel export for backward compatibility
+│   ├── auth_providers.dart    # Authentication state
+│   ├── course_providers.dart  # Course data providers
+│   ├── audio_providers.dart   # Audio playback & highlighting (CRITICAL)
+│   ├── ui_providers.dart      # Font size & speed preferences (CRITICAL)
+│   └── progress_providers.dart # Progress tracking
 ├── dio-config.dart            # HTTP client configuration
 └── models.dart                # Data model definitions
 
@@ -117,11 +123,16 @@ The system implements a clean separation of concerns across four primary layers:
 ### Frontend Framework
 - **Flutter 3.x with Dart 3.x** - Cross-platform mobile development framework providing native performance
 
-### State Management
+### State Management (Modularized in Phase 6)
 - **riverpod: ^2.4.9** - Reactive caching and data-binding framework with compile-time safety
 - **flutter_riverpod: ^2.4.9** - Flutter integration providing widget rebuilding and provider composition
 - **Package Guide:** `/documentation/apis/flutter-packages.md`
-- **Reference Implementation:** `/implementations/providers.dart`
+- **Reference Implementation:** `/lib/providers/` - Modularized architecture (Sept 19, 2025)
+  - **auth_providers.dart** - Authentication and user state
+  - **course_providers.dart** - Course, assignment, learning object data
+  - **audio_providers.dart** - Audio playback and highlighting state (CRITICAL)
+  - **ui_providers.dart** - Font size and playback speed preferences (CRITICAL)
+  - **progress_providers.dart** - Progress tracking and synchronization
 - **Patterns:** `/references/code-patterns.md` - State Management with Riverpod
 
 ### Audio Core
