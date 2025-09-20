@@ -55,7 +55,10 @@ class _EnhancedAudioPlayerScreenState
   final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   StreamSubscription<Duration>? _positionSub;
+  StreamSubscription<bool>? _playingStateSub;
+  Timer? _fullscreenTimer;
   bool _isInitialized = false;
+  bool _isFullscreen = false;
   String? _errorMessage;
   String? _displayText;
 
@@ -66,6 +69,7 @@ class _EnhancedAudioPlayerScreenState
     _wordTimingService = WordTimingServiceSimplified.instance;
     _initializePlayer();
     _setupKeyboardShortcuts();
+    _setupPlayingStateListener();
   }
 
   Future<void> _initializePlayer() async {
@@ -194,6 +198,45 @@ class _EnhancedAudioPlayerScreenState
     _focusNode.requestFocus();
   }
 
+  void _setupPlayingStateListener() {
+    _playingStateSub = _audioService.isPlayingStream.listen((isPlaying) {
+      if (isPlaying && !_isFullscreen) {
+        _startFullscreenTimer();
+      } else {
+        _cancelFullscreenTimer();
+      }
+    });
+  }
+
+  void _startFullscreenTimer() {
+    _cancelFullscreenTimer();
+    _fullscreenTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted && !_isFullscreen) {
+        _enterFullscreen();
+      }
+    });
+  }
+
+  void _cancelFullscreenTimer() {
+    _fullscreenTimer?.cancel();
+    _fullscreenTimer = null;
+  }
+
+  void _enterFullscreen() {
+    setState(() {
+      _isFullscreen = true;
+    });
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
+
+  void _exitFullscreen() {
+    setState(() {
+      _isFullscreen = false;
+    });
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    _cancelFullscreenTimer();
+  }
+
   void _handleKeyEvent(KeyEvent event) {
     final key = event.logicalKey;
 
@@ -303,25 +346,32 @@ class _EnhancedAudioPlayerScreenState
       focusNode: _focusNode,
       onKeyEvent: _handleKeyEvent,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.learningObject.title),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () => Navigator.pushNamed(context, '/settings'),
-            ),
-          ],
-        ),
+        appBar: _isFullscreen
+            ? null
+            : AppBar(
+                title: Text(widget.learningObject.title),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    onPressed: () => Navigator.pushNamed(context, '/settings'),
+                  ),
+                ],
+              ),
         body: Column(
             children: [
-              // Content area for highlighted text
+              // Content area for highlighted text with GestureDetector
               Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    child: _displayText != null && _displayText!.isNotEmpty
-                        ? SimplifiedDualLevelHighlightedText(
+                child: GestureDetector(
+                  onTap: _isFullscreen ? _exitFullscreen : null,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: _isFullscreen ? 24 : 20,
+                      vertical: _isFullscreen ? 20 : 12,
+                    ),
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      child: _displayText != null && _displayText!.isNotEmpty
+                          ? SimplifiedDualLevelHighlightedText(
                             text: _displayText!,
                             contentId: widget.learningObject.id,
                             baseStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -344,19 +394,30 @@ class _EnhancedAudioPlayerScreenState
                               ),
                             ),
                           ),
+                    ),
                   ),
                 ),
               ),
-              // Subtle divider
-              Container(
-                height: 1,
-                color: Theme.of(context).dividerColor.withOpacity(0.15),
-              ),
-              // Player controls
-              Container(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-                child: Column(
-                  children: [
+              // Subtle divider (hidden in fullscreen)
+              if (!_isFullscreen)
+                Container(
+                  height: 1,
+                  color: Theme.of(context).dividerColor.withOpacity(0.15),
+                ),
+              // Player controls with animated opacity
+              AnimatedOpacity(
+                opacity: _isFullscreen ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 300),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: _isFullscreen ? 0 : null,
+                  padding: _isFullscreen
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                  child: _isFullscreen
+                      ? const SizedBox.shrink()
+                      : Column(
+                          children: [
                     // Seek bar and time display
                     StreamBuilder<Duration>(
                       stream: _audioService.positionStream,
@@ -544,6 +605,7 @@ class _EnhancedAudioPlayerScreenState
                       ],
                     ),
                   ],
+                        ),
                 ),
               ),
             ],
@@ -554,9 +616,18 @@ class _EnhancedAudioPlayerScreenState
 
   @override
   void dispose() {
-    // Cancel stream subscription to prevent callbacks after dispose
+    // Cancel stream subscriptions to prevent callbacks after dispose
     _positionSub?.cancel();
     _positionSub = null;
+    _playingStateSub?.cancel();
+    _playingStateSub = null;
+
+    // Cancel fullscreen timer and restore UI if needed
+    _cancelFullscreenTimer();
+    if (_isFullscreen) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    }
+
     _focusNode.dispose();
     _scrollController.dispose();
     // Don't dispose the audio service or word timing service - they're singletons

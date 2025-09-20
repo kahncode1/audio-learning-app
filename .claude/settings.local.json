@@ -54,7 +54,8 @@
       "Bash(cp:*)",
       "Bash(node:*)",
       "Read(//Users/kahnja/**)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(open:*)"
     ],
     "deny": [],
     "ask": []
