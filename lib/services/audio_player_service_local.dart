@@ -446,6 +446,12 @@ class AudioPlayerServiceLocal {
   Future<void> seekToPosition(Duration position) async {
   try {
     await _player.seek(position);
+
+    // Reset the locality cache AFTER seek completes for accurate highlighting
+    // This is debounced internally to prevent cache thrashing during slider drags
+    WordTimingServiceSimplified.instance.resetLocalityCacheForSeek();
+
+    AppLogger.debug('Seek completed', {'position': position.inMilliseconds});
   } catch (e) {
     AppLogger.error('Error seeking position', error: e);
   }

@@ -51,7 +51,10 @@
       "Bash(while read f)",
       "Bash(do basename \"$f\")",
       "Bash(done)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(node:*)",
+      "Read(//Users/kahnja/**)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

@@ -247,6 +247,31 @@ class WordTimingServiceSimplified {
   _currentSentenceIndexSubject.add(sentenceIndex);
   }
 
+  // Track last reset time to prevent cache thrashing during rapid seeks
+  DateTime? _lastCacheReset;
+  static const int _cacheResetDebounceMs = 100; // Minimum time between resets
+
+  /// Reset the locality cache for accurate lookups after seeks
+  /// Should be called when a seek operation is performed
+  /// Includes debouncing to prevent cache thrashing during slider drags
+  void resetLocalityCacheForSeek() {
+    if (_currentTimingData != null) {
+      // Debounce rapid resets (e.g., from slider dragging)
+      final now = DateTime.now();
+      if (_lastCacheReset != null) {
+        final timeSinceLastReset = now.difference(_lastCacheReset!).inMilliseconds;
+        if (timeSinceLastReset < _cacheResetDebounceMs) {
+          // Skip this reset - too soon after the last one
+          return;
+        }
+      }
+
+      _currentTimingData!.resetLocalityCache();
+      _lastCacheReset = now;
+      AppLogger.debug('Locality cache reset for seek operation');
+    }
+  }
+
   /// Stream of current word index
   Stream<int> get currentWordStream => _currentWordIndexSubject.stream;
 

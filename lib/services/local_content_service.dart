@@ -316,42 +316,55 @@ class TimingData {
   final List<SentenceTiming> sentences;
   final int totalDurationMs;
 
+  // Use WordTimingCollection for optimized O(log n) lookups with locality caching
+  late final WordTimingCollection _wordCollection;
+
   TimingData({
     required this.words,
     required this.sentences,
     required this.totalDurationMs,
-  });
+  }) {
+    // Initialize the optimized collection
+    _wordCollection = WordTimingCollection(words);
+  }
 
   /// Find the current word index based on position in milliseconds
+  /// Now uses binary search with locality caching instead of linear search
   int getCurrentWordIndex(int positionMs) {
-    for (int i = 0; i < words.length; i++) {
-      if (positionMs >= words[i].startMs && positionMs <= words[i].endMs) {
-        return i;
-      }
-    }
+    // Use the optimized binary search with locality caching
+    final index = _wordCollection.findActiveWordIndex(positionMs);
 
-    // If position is past all words, return last word
-    if (positionMs >= totalDurationMs && words.isNotEmpty) {
+    // If no word found but position is past all words, return last word
+    if (index == -1 && positionMs >= totalDurationMs && words.isNotEmpty) {
       return words.length - 1;
     }
 
-    return -1;
+    return index;
   }
 
   /// Find the current sentence index based on position
+  /// Now uses the optimized collection's sentence lookup
   int getCurrentSentenceIndex(int positionMs) {
-    for (int i = 0; i < sentences.length; i++) {
-      if (positionMs >= sentences[i].startTime && positionMs <= sentences[i].endTime) {
-        return i;
-      }
-    }
+    // Use the optimized collection to find active sentence
+    final index = _wordCollection.findActiveSentenceIndex(positionMs);
 
-    // If position is past all sentences, return last sentence
-    if (positionMs >= totalDurationMs && sentences.isNotEmpty) {
+    // If no sentence found but position is past all sentences, return last sentence
+    if (index == -1 && positionMs >= totalDurationMs && sentences.isNotEmpty) {
       return sentences.length - 1;
     }
 
-    return -1;
+    return index;
+  }
+
+  /// Reset the locality cache for accurate lookups after seeks
+  /// This should be called when a seek/jump is detected
+  void resetLocalityCache() {
+    _wordCollection.resetLocalityCache();
+  }
+
+  /// Dispose of resources when timing data is no longer needed
+  void dispose() {
+    _wordCollection.dispose();
   }
 }
 
