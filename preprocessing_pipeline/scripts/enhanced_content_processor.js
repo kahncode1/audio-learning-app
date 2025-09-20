@@ -150,20 +150,21 @@ function formatTextWithParagraphs(text) {
 function processEnhancedContent(markdownText, options = {}) {
   console.log('Processing Markdown content with enhanced formatting...');
 
-  // Remove Markdown syntax but preserve structure
-  let processedText = markdownText
-    // Remove Markdown headers but keep the text
-    .replace(/^#+\s+/gm, '')
-    // Remove Markdown bold/italic but keep the text
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/\*(.*?)\*/g, '$1')
-    // Remove links, keep text
-    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
-    // Clean up extra whitespace
-    .trim();
+  // IMPORTANT: Keep the original text EXACTLY as is to maintain character position alignment
+  // No text transformations that would change character positions
+  let processedText = markdownText.trim();
 
-  // Format with proper paragraph breaks and identify headers
-  const formatted = formatTextWithParagraphs(processedText);
+  // For metadata only - identify structure without modifying text
+  const lines = processedText.split('\n');
+  const headers = identifyHeaders(lines);
+  const paragraphs = processedText.split(/\n\n+/).filter(p => p.trim());
+
+  // Create formatted object without modifying the actual text
+  const formatted = {
+    text: processedText, // Original text, unmodified
+    headers: headers,
+    paragraphs: paragraphs
+  };
 
   // Calculate metadata
   const plainText = formatted.text.replace(/\*\*/g, ''); // Remove bold markers for word count
@@ -173,7 +174,7 @@ function processEnhancedContent(markdownText, options = {}) {
 
   console.log(`Processed: ${wordCount} words, ${characterCount} characters`);
   console.log(`Found ${formatted.headers.length} section headers`);
-  console.log(`Created ${formatted.paragraphs.length} paragraphs with spacing`);
+  console.log(`Identified ${formatted.paragraphs.length} paragraphs (no spacing added)`);
 
   return {
     version: '1.0',

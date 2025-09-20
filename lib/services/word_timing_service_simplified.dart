@@ -236,39 +236,62 @@ class WordTimingServiceSimplified {
 
   /// Update position and emit current word/sentence indices
   void updatePosition(int positionMs, String learningObjectId) {
-  if (_currentTimingData == null || _currentLearningObjectId != learningObjectId) {
-    return;
-  }
+    // Log timing data state
+    if (_currentTimingData == null || _currentLearningObjectId != learningObjectId) {
+      AppLogger.warning('🔴 HIGHLIGHT: updatePosition called but timing data not ready', {
+        'positionMs': positionMs,
+        'learningObjectId': learningObjectId,
+        'hasTimingData': _currentTimingData != null,
+        'currentLearningObjectId': _currentLearningObjectId,
+        'mismatch': _currentLearningObjectId != learningObjectId,
+      });
+      return;
+    }
 
-  final wordIndex = getCurrentWordIndex(positionMs);
-  final sentenceIndex = getCurrentSentenceIndex(positionMs);
+    final wordIndex = getCurrentWordIndex(positionMs);
+    final sentenceIndex = getCurrentSentenceIndex(positionMs);
 
-  _currentWordIndexSubject.add(wordIndex);
-  _currentSentenceIndexSubject.add(sentenceIndex);
+    // Log every 500ms to avoid spam
+    if (positionMs % 500 < 100) {
+      AppLogger.info('🟢 HIGHLIGHT: Position update', {
+        'positionMs': positionMs,
+        'wordIndex': wordIndex,
+        'sentenceIndex': sentenceIndex,
+        'totalWords': _currentTimingData?.words.length ?? 0,
+        'totalSentences': _currentTimingData?.sentences.length ?? 0,
+        'usingLookupTable': _currentTimingData?.lookupTable != null,
+      });
+    }
+
+    _currentWordIndexSubject.add(wordIndex);
+    _currentSentenceIndexSubject.add(sentenceIndex);
   }
 
   // Track last reset time to prevent cache thrashing during rapid seeks
   DateTime? _lastCacheReset;
-  static const int _cacheResetDebounceMs = 100; // Minimum time between resets
+  static const int _cacheResetDebounceMs = 50; // Reduced to handle rapid seeks better
 
   /// Reset the locality cache for accurate lookups after seeks
   /// Should be called when a seek operation is performed
   /// Includes debouncing to prevent cache thrashing during slider drags
   void resetLocalityCacheForSeek() {
     if (_currentTimingData != null) {
-      // Debounce rapid resets (e.g., from slider dragging)
+      // Always reset cache for seeks - debounce is now shorter
       final now = DateTime.now();
       if (_lastCacheReset != null) {
         final timeSinceLastReset = now.difference(_lastCacheReset!).inMilliseconds;
         if (timeSinceLastReset < _cacheResetDebounceMs) {
-          // Skip this reset - too soon after the last one
+          // Still reset but don't log to avoid spam
+          _currentTimingData!.resetLocalityCache();
           return;
         }
       }
 
       _currentTimingData!.resetLocalityCache();
       _lastCacheReset = now;
-      AppLogger.debug('Locality cache reset for seek operation');
+      AppLogger.info('🔄 CACHE: Locality cache reset for seek', {
+        'learningObjectId': _currentLearningObjectId,
+      });
     }
   }
 

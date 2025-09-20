@@ -90,6 +90,10 @@ class _SimplifiedDualLevelHighlightedTextState
     // Direct stream subscription - WordTimingService handles throttling
     _wordSubscription = _timingService.currentWordStream.listen((wordIndex) {
       if (mounted && wordIndex != null && wordIndex != _currentWordIndex) {
+        AppLogger.info('🎨 WIDGET: Word index update received', {
+          'oldIndex': _currentWordIndex,
+          'newIndex': wordIndex,
+        });
         setState(() => _currentWordIndex = wordIndex);
         _autoScroll();
       }
@@ -97,6 +101,10 @@ class _SimplifiedDualLevelHighlightedTextState
 
     _sentenceSubscription = _timingService.currentSentenceStream.listen((sentenceIndex) {
       if (mounted && sentenceIndex != null && sentenceIndex != _currentSentenceIndex) {
+        AppLogger.info('🎨 WIDGET: Sentence index update received', {
+          'oldIndex': _currentSentenceIndex,
+          'newIndex': sentenceIndex,
+        });
         setState(() => _currentSentenceIndex = sentenceIndex);
       }
     });
@@ -112,6 +120,12 @@ class _SimplifiedDualLevelHighlightedTextState
 
       if (mounted && timings != null && timings.isNotEmpty) {
         final nonNullTimings = timings;  // Create non-nullable local variable
+        AppLogger.info('🎨 WIDGET: Timing data loaded', {
+          'contentId': widget.contentId,
+          'wordCount': nonNullTimings.length,
+          'firstWord': nonNullTimings.first.word,
+          'lastWord': nonNullTimings.last.word,
+        });
         setState(() {
           _timingCollection = WordTimingCollection(nonNullTimings);
         });
@@ -145,10 +159,10 @@ class _SimplifiedDualLevelHighlightedTextState
     final wordTop = wordRect.top;
     final wordBottom = wordRect.bottom;
 
-    // Define the reading zone (25-30% from top)
-    // This keeps the highlighted text in the upper portion while showing more content below
-    final readingZoneTop = viewportHeight * 0.25;
-    final readingZoneBottom = viewportHeight * 0.35;
+    // Define the reading zone (20-40% from top)
+    // This keeps the highlighted text consistently in the upper-middle portion
+    final readingZoneTop = viewportHeight * 0.20;
+    final readingZoneBottom = viewportHeight * 0.40;
 
     // Get current scroll offset
     final currentOffset = scrollController.offset;
@@ -165,9 +179,9 @@ class _SimplifiedDualLevelHighlightedTextState
       // Word is too high - scroll up to bring it into zone
       needsScroll = true;
       targetOffset = wordTop - readingZoneTop;
-    } else if (wordViewportBottom > viewportHeight * 0.6) {
-      // Word is getting too low - scroll down to keep it in zone
-      // Using 0.6 instead of 0.35 to create a buffer zone that reduces scroll frequency
+    } else if (wordViewportBottom > readingZoneBottom) {
+      // Word is getting too low - scroll down immediately to keep it in zone
+      // This triggers scroll as soon as word exits the 40% mark
       needsScroll = true;
       targetOffset = wordTop - readingZoneTop;
     }
@@ -223,9 +237,9 @@ class _SimplifiedDualLevelHighlightedTextState
 
   // Calculate appropriate scroll duration based on distance
   Duration _calculateScrollDuration(double distance) {
-    // Minimum 200ms, maximum 400ms
+    // Minimum 150ms, maximum 300ms for faster response
     // Scale based on distance for natural feeling
-    final milliseconds = (200 + (distance / 10)).clamp(200, 400).toInt();
+    final milliseconds = (150 + (distance / 15)).clamp(150, 300).toInt();
     return Duration(milliseconds: milliseconds);
   }
 
@@ -405,7 +419,7 @@ class OptimizedHighlightPainter extends CustomPainter {
     for (int i = 0; i < sentenceWords.length; i++) {
       final w = sentenceWords[i];
       if (w.charStart == null) continue;
-      final (int s, int e) = _computeSelectionForWord(
+      final (int s, int e) = _getWordSelection(
         timingCollection.timings.indexOf(w),
       );
       startChar = startChar == null ? s : (s < startChar! ? s : startChar);
@@ -476,10 +490,8 @@ class OptimizedHighlightPainter extends CustomPainter {
       return null;
     }
 
-    // Compute a robust selection range that tolerates off-by-one differences
-    // between API character offsets and the displayed text. This corrects the
-    // common case where highlights appear shifted one character to the right.
-    final (int start, int end) = _computeSelectionForWord(wordIndex);
+    // Get the character positions from the lookup table
+    final (int start, int end) = _getWordSelection(wordIndex);
 
     // Use TextPainter to obtain the bounding box for the computed range
     final boxes = textPainter.getBoxesForSelection(
@@ -505,80 +517,17 @@ class OptimizedHighlightPainter extends CustomPainter {
     return null;
   }
 
-  // Check whether the given word matches the text starting at offset.
-  bool _matchesAt(String source, String word, int offset) {
-    if (offset < 0 || offset >= source.length) return false;
-    final end = offset + word.length;
-    if (end > source.length) return false;
-    return source.substring(offset, end) == word;
-  }
-
-  // Computes a corrected [start, endExclusive] selection for a word, using the
-  // API-provided charStart/charEnd as hints but verifying against the actual
-  // displayed text. This fixes 0/1-based index mismatches and minor drifts.
-  (int, int) _computeSelectionForWord(int wordIndex) {
+  // Get the selection range for a word using direct character positions from the lookup table
+  (int, int) _getWordSelection(int wordIndex) {
     final word = timingCollection.timings[wordIndex];
     final textLen = text.length;
 
-    // Start with API-provided start and length derived from the word value.
+    // Use the character positions from our pre-processed lookup table
+    // These positions are already validated and correct
     int start = (word.charStart ?? 0).clamp(0, textLen);
-    int length = word.word.length;
-    int end = (start + length).clamp(0, textLen);
+    int end = (word.charEnd ?? (start + word.word.length)).clamp(0, textLen);
 
-    // Fast-path: if it already matches at start, keep it.
-    if (_matchesAt(text, word.word, start)) {
-      return (start, end);
-    }
-
-    // If API provided an end offset, try to honor it as either exclusive or
-    // inclusive. This addresses engines that report inclusive `end`.
-    if (word.charEnd != null) {
-      final apiEnd = word.charEnd!.clamp(0, textLen);
-      // Treat as exclusive first
-      if (apiEnd > start) {
-        final candidateEnd = apiEnd;
-        final slice = text.substring(start, candidateEnd);
-        if (slice == word.word) {
-          return (start, candidateEnd);
-        }
-      }
-      // Treat as inclusive (add 1) if in bounds
-      if (apiEnd + 1 <= textLen) {
-        final candidateEnd = apiEnd + 1;
-        final slice = text.substring(start, candidateEnd);
-        if (slice == word.word) {
-          return (start, candidateEnd);
-        }
-      }
-    }
-
-    // Try shifting left by 1 (common when API uses 1-based indexing)
-    if (start - 1 >= 0 && _matchesAt(text, word.word, start - 1)) {
-      start = start - 1;
-      end = (start + length).clamp(0, textLen);
-      return (start, end);
-    }
-
-    // Try shifting right by 1
-    if (start + 1 < textLen && _matchesAt(text, word.word, start + 1)) {
-      start = start + 1;
-      end = (start + length).clamp(0, textLen);
-      return (start, end);
-    }
-
-    // Broader search within a small window around the hint to handle minor
-    // discrepancies (e.g., unexpected punctuation or whitespace).
-    final windowStart = (start - 5).clamp(0, textLen);
-    final idx = text.indexOf(word.word, windowStart);
-    if (idx != -1 && (idx - start).abs() <= 5) {
-      start = idx;
-      end = (start + length).clamp(0, textLen);
-      return (start, end);
-    }
-
-    // Fallback: Use API-provided end if available, clamped to bounds.
-    final apiEnd = (word.charEnd ?? end).clamp(0, textLen);
-    return (start, apiEnd);
+    return (start, end);
   }
 
   @override

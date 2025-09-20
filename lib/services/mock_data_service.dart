@@ -93,6 +93,34 @@ class MockDataService {
           isCompleted: false,
           currentPositionMs: 0,
         ),
+        // Test learning object with FIXED timing data (same audio, corrected character positions)
+        LearningObject(
+          id: 'test-fixed-timing', // Test ID for fixed timing version
+          assignmentId: assignmentId,
+          title: 'Risk Management (Fixed Timing Test)',
+          contentType: 'text',
+          ssmlContent: null,
+          plainText: '''The objective of this lesson is to illustrate how insurance facilitates key societal activities. This lesson covers the effect of insurance, perception versus reality in the insurance industry, and the evolving role of risk management consulting.''',
+          orderIndex: 2,
+          createdAt: DateTime.now().subtract(const Duration(days: 30)),
+          updatedAt: DateTime.now(),
+          isCompleted: false,
+          currentPositionMs: 0,
+        ),
+        // Test learning object with properly formatted text and aligned character positions
+        LearningObject(
+          id: 'test-properly-formatted', // Test ID for properly formatted version
+          assignmentId: assignmentId,
+          title: 'Risk Management (Properly Formatted)',
+          contentType: 'text',
+          ssmlContent: null,
+          plainText: '''The objective of this lesson is to illustrate how insurance facilitates key societal activities. This lesson covers the effect of insurance, perception versus reality in the insurance industry, and the evolving role of risk management consulting.''',
+          orderIndex: 3,
+          createdAt: DateTime.now().subtract(const Duration(days: 30)),
+          updatedAt: DateTime.now(),
+          isCompleted: false,
+          currentPositionMs: 0,
+        ),
       ];
     } else if (assignmentId == 'test-assignment-002') {
       // Return empty list - no test data for other assignments
@@ -105,7 +133,7 @@ class MockDataService {
   }
 
   static int getAssignmentCount() => 3;
-  static int getLearningObjectCount() => 1; // Single test learning object for download-first architecture
+  static int getLearningObjectCount() => 3; // Three test learning objects (original + fixed timing + properly formatted)
   static double getCourseCompletionPercentage() => 0.0;
 
   // Validation function for mock data service
@@ -119,8 +147,10 @@ class MockDataService {
     assert(assignments[0].title == 'Establishing a Case Reserve');
 
     final learningObjects = getTestLearningObjects('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
-    assert(learningObjects.length == 1);
+    assert(learningObjects.length == 3);
     assert(learningObjects[0].title == 'Risk Management and Insurance in Action');
+    assert(learningObjects[1].title == 'Risk Management (Fixed Timing Test)');
+    assert(learningObjects[2].title == 'Risk Management (Properly Formatted)');
 
     // Verify no learning objects for other assignments
     final lo2 = getTestLearningObjects('test-assignment-002');

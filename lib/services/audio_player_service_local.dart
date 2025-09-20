@@ -75,6 +75,7 @@ class AudioPlayerServiceLocal {
   TimingData? _currentTimingData;
   LearningObject? _currentLearningObject;
   String? _currentDisplayText;
+  String? _currentLearningObjectId;
 
   // Playback speed options
   static const List<double> speedOptions = [0.8, 1.0, 1.25, 1.5, 1.75, 2.0];
@@ -302,6 +303,7 @@ class AudioPlayerServiceLocal {
     // Extract display text
     _currentDisplayText = LocalContentService.getDisplayText(content);
     _currentLearningObject = learningObject;
+    _currentLearningObjectId = learningObject.id;
     _currentTimingData = timingData;
     _currentWordTimings = timingData.words;
 
@@ -445,13 +447,40 @@ class AudioPlayerServiceLocal {
   /// Seek to specific position
   Future<void> seekToPosition(Duration position) async {
   try {
+    final oldPosition = _positionSubject.value;
+    final jumpDistance = (position.inMilliseconds - oldPosition.inMilliseconds).abs();
+
+    // Log significant seeks for debugging
+    if (jumpDistance > 1000) {
+      AppLogger.info('🎯 SEEK: Large position jump detected', {
+        'oldPosition': oldPosition.inMilliseconds,
+        'newPosition': position.inMilliseconds,
+        'jumpDistance': jumpDistance,
+        'jumpDirection': position > oldPosition ? 'forward' : 'backward',
+      });
+    }
+
     await _player.seek(position);
 
     // Reset the locality cache AFTER seek completes for accurate highlighting
     // This is debounced internally to prevent cache thrashing during slider drags
     WordTimingServiceSimplified.instance.resetLocalityCacheForSeek();
 
-    AppLogger.debug('Seek completed', {'position': position.inMilliseconds});
+    // Force immediate position update after seek
+    _positionSubject.add(position);
+
+    // Update word timing immediately after seek
+    if (_currentLearningObjectId != null) {
+      WordTimingServiceSimplified.instance.updatePosition(
+        position.inMilliseconds,
+        _currentLearningObjectId!,
+      );
+    }
+
+    AppLogger.debug('Seek completed', {
+      'position': position.inMilliseconds,
+      'cacheReset': true,
+    });
   } catch (e) {
     AppLogger.error('Error seeking position', error: e);
   }

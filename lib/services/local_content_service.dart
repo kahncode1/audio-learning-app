@@ -6,6 +6,77 @@ import 'package:path_provider/path_provider.dart';
 import '../models/word_timing.dart';
 import '../utils/app_logger.dart';
 
+/// Position lookup entry for O(1) access
+class PositionLookupEntry {
+  final int wordIndex;
+  final int sentenceIndex;
+
+  PositionLookupEntry({
+    required this.wordIndex,
+    required this.sentenceIndex,
+  });
+}
+
+/// Position lookup table for O(1) word/sentence lookups
+class PositionLookupTable {
+  final String version;
+  final int interval;
+  final int totalDurationMs;
+  final List<List<int>> lookup;
+
+  PositionLookupTable({
+    required this.version,
+    required this.interval,
+    required this.totalDurationMs,
+    required this.lookup,
+  });
+
+  /// Get the word and sentence indices at a specific time
+  PositionLookupEntry? getIndicesAtTime(int timeMs) {
+    if (timeMs < 0 || timeMs > totalDurationMs) {
+      return null;
+    }
+
+    // Calculate index in lookup table
+    final index = timeMs ~/ interval;
+    if (index >= lookup.length) {
+      // Use last entry if beyond table
+      if (lookup.isNotEmpty) {
+        final lastEntry = lookup.last;
+        return PositionLookupEntry(
+          wordIndex: lastEntry[0],
+          sentenceIndex: lastEntry[1],
+        );
+      }
+      return null;
+    }
+
+    final entry = lookup[index];
+    return PositionLookupEntry(
+      wordIndex: entry[0],
+      sentenceIndex: entry[1],
+    );
+  }
+
+  /// Create from JSON
+  factory PositionLookupTable.fromJson(Map<String, dynamic> json) {
+    final lookupData = json['lookup'] as List;
+    final lookup = lookupData.map((entry) {
+      if (entry is List) {
+        return entry.cast<int>();
+      }
+      return <int>[];
+    }).toList();
+
+    return PositionLookupTable(
+      version: json['version'] as String,
+      interval: json['interval'] as int,
+      totalDurationMs: json['totalDurationMs'] as int,
+      lookup: lookup,
+    );
+  }
+}
+
 /// LocalContentService - Central hub for accessing pre-downloaded content files
 ///
 /// Purpose: Provides unified access to all downloaded content components
@@ -181,15 +252,32 @@ class LocalContentService {
       // Check for downloaded file first
       final downloadedPath = await _getDownloadedFilePath(learningObjectId, 'timing.json');
       String jsonString;
+      String? lookupJsonString;
 
       if (downloadedPath != null) {
         // Load from downloaded file
         final file = File(downloadedPath);
         jsonString = await file.readAsString();
+
+        // Try to load position lookup table
+        final lookupPath = downloadedPath.replaceAll('timing.json', 'position_lookup.json');
+        final lookupFile = File(lookupPath);
+        if (await lookupFile.exists()) {
+          lookupJsonString = await lookupFile.readAsString();
+        }
       } else {
         // Fall back to assets
         final assetPath = '$_testContentPath/$learningObjectId/timing.json';
         jsonString = await rootBundle.loadString(assetPath);
+
+        // Try to load position lookup table from assets
+        try {
+          final lookupAssetPath = '$_testContentPath/$learningObjectId/position_lookup.json';
+          lookupJsonString = await rootBundle.loadString(lookupAssetPath);
+        } catch (e) {
+          // Lookup table is optional, fallback to binary search
+          AppLogger.info('LocalContentService: No position lookup table found, will use binary search');
+        }
       }
 
       final timingJson = json.decode(jsonString) as Map<String, dynamic>;
@@ -204,12 +292,12 @@ class LocalContentService {
             endMs: wordData['endMs'] as int,
             charStart: wordData['charStart'] as int,
             charEnd: wordData['charEnd'] as int,
-            sentenceIndex: 0, // Default to 0, will be updated based on sentence data
+            sentenceIndex: wordData['sentenceIndex'] as int? ?? 0, // Use sentenceIndex from JSON
           ));
         }
       }
 
-      // Parse sentence data and update word sentence indices
+      // Parse sentence data
       final sentences = <SentenceTiming>[];
       if (timingJson['sentences'] != null) {
         int sentenceIndex = 0;
@@ -217,17 +305,8 @@ class LocalContentService {
           final startIdx = sentData['wordStartIndex'] as int;
           final endIdx = sentData['wordEndIndex'] as int;
 
-          // Update sentence indices for words in this sentence
-          for (int i = startIdx; i <= endIdx && i < words.length; i++) {
-            words[i] = WordTiming(
-              word: words[i].word,
-              startMs: words[i].startMs,
-              endMs: words[i].endMs,
-              charStart: words[i].charStart,
-              charEnd: words[i].charEnd,
-              sentenceIndex: sentenceIndex,
-            );
-          }
+          // Note: We no longer need to update word sentence indices here
+          // since we're reading them directly from the JSON
 
           sentences.add(SentenceTiming(
             text: sentData['text'] as String,
@@ -248,12 +327,32 @@ class LocalContentService {
         totalDurationMs: timingJson['totalDurationMs'] as int,
       );
 
+      // Load and set position lookup table if available
+      if (lookupJsonString != null) {
+        try {
+          final lookupJson = json.decode(lookupJsonString) as Map<String, dynamic>;
+          final lookupTable = PositionLookupTable.fromJson(lookupJson);
+          timingData.setLookupTable(lookupTable);
+
+          AppLogger.info('LocalContentService: Loaded position lookup table', {
+            'learningObjectId': learningObjectId,
+            'entries': lookupTable.lookup.length,
+            'interval': '${lookupTable.interval}ms',
+          });
+        } catch (e) {
+          AppLogger.warning('LocalContentService: Failed to load position lookup table', {
+            'error': e.toString(),
+          });
+        }
+      }
+
       AppLogger.info('LocalContentService: Loaded timing data', {
         'learningObjectId': learningObjectId,
         'wordCount': words.length,
         'sentenceCount': sentences.length,
         'duration': '${timingData.totalDurationMs / 1000}s',
         'source': downloadedPath != null ? 'downloaded' : 'assets',
+        'hasLookupTable': lookupJsonString != null,
       });
 
       return timingData;
@@ -316,55 +415,104 @@ class TimingData {
   final List<SentenceTiming> sentences;
   final int totalDurationMs;
 
-  // Use WordTimingCollection for optimized O(log n) lookups with locality caching
-  late final WordTimingCollection _wordCollection;
+  // Position lookup table for O(1) lookups
+  PositionLookupTable? lookupTable;
+
+  // Fallback to WordTimingCollection if lookup table not available
+  WordTimingCollection? _wordCollection;
 
   TimingData({
     required this.words,
     required this.sentences,
     required this.totalDurationMs,
   }) {
-    // Initialize the optimized collection
-    _wordCollection = WordTimingCollection(words);
+    // Will be initialized when lookup table is loaded
+  }
+
+  /// Set the position lookup table
+  void setLookupTable(PositionLookupTable table) {
+    lookupTable = table;
+    AppLogger.info('TimingData: Using O(1) position lookup table', {
+      'entries': table.lookup.length,
+      'interval': table.interval,
+    });
+  }
+
+  /// Initialize fallback collection if no lookup table
+  void _initializeFallback() {
+    if (_wordCollection == null && lookupTable == null) {
+      _wordCollection = WordTimingCollection(words);
+      AppLogger.info('TimingData: Using fallback binary search');
+    }
   }
 
   /// Find the current word index based on position in milliseconds
-  /// Now uses binary search with locality caching instead of linear search
+  /// Uses O(1) lookup table if available, falls back to binary search
   int getCurrentWordIndex(int positionMs) {
-    // Use the optimized binary search with locality caching
-    final index = _wordCollection.findActiveWordIndex(positionMs);
-
-    // If no word found but position is past all words, return last word
-    if (index == -1 && positionMs >= totalDurationMs && words.isNotEmpty) {
-      return words.length - 1;
+    // Use lookup table if available (O(1))
+    if (lookupTable != null) {
+      final entry = lookupTable!.getIndicesAtTime(positionMs);
+      if (entry != null) {
+        return entry.wordIndex;
+      }
     }
 
-    return index;
+    // Fallback to binary search
+    _initializeFallback();
+    if (_wordCollection != null) {
+      final index = _wordCollection!.findActiveWordIndex(positionMs);
+
+      // If no word found but position is past all words, return last word
+      if (index == -1 && positionMs >= totalDurationMs && words.isNotEmpty) {
+        return words.length - 1;
+      }
+
+      return index;
+    }
+
+    return -1;
   }
 
   /// Find the current sentence index based on position
-  /// Now uses the optimized collection's sentence lookup
+  /// Uses O(1) lookup table if available, falls back to binary search
   int getCurrentSentenceIndex(int positionMs) {
-    // Use the optimized collection to find active sentence
-    final index = _wordCollection.findActiveSentenceIndex(positionMs);
-
-    // If no sentence found but position is past all sentences, return last sentence
-    if (index == -1 && positionMs >= totalDurationMs && sentences.isNotEmpty) {
-      return sentences.length - 1;
+    // Use lookup table if available (O(1))
+    if (lookupTable != null) {
+      final entry = lookupTable!.getIndicesAtTime(positionMs);
+      if (entry != null) {
+        return entry.sentenceIndex;
+      }
     }
 
-    return index;
+    // Fallback to binary search
+    _initializeFallback();
+    if (_wordCollection != null) {
+      final index = _wordCollection!.findActiveSentenceIndex(positionMs);
+
+      // If no sentence found but position is past all sentences, return last sentence
+      if (index == -1 && positionMs >= totalDurationMs && sentences.isNotEmpty) {
+        return sentences.length - 1;
+      }
+
+      return index;
+    }
+
+    return -1;
   }
 
   /// Reset the locality cache for accurate lookups after seeks
-  /// This should be called when a seek/jump is detected
+  /// Not needed with lookup table, but kept for compatibility
   void resetLocalityCache() {
-    _wordCollection.resetLocalityCache();
+    if (_wordCollection != null) {
+      _wordCollection!.resetLocalityCache();
+    }
+    // Lookup table doesn't need cache reset (O(1) always accurate)
   }
 
   /// Dispose of resources when timing data is no longer needed
   void dispose() {
-    _wordCollection.dispose();
+    _wordCollection?.dispose();
+    lookupTable = null;
   }
 }
 

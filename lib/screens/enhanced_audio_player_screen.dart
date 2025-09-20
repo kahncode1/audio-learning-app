@@ -115,6 +115,11 @@ class _EnhancedAudioPlayerScreenState
         debugPrint('Loading learning object audio...');
         await _audioService.loadLearningObject(widget.learningObject);
         debugPrint('Audio loaded successfully');
+
+        // Pre-load timing data to ensure it's ready before playback
+        debugPrint('Pre-loading timing data...');
+        await _wordTimingService.loadTimings(widget.learningObject.id);
+        debugPrint('Timing data loaded successfully');
       }
 
       // Set the current learning object in the provider for mini player

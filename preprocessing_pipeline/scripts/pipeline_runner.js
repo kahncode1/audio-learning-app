@@ -43,6 +43,53 @@ function generateTimingJson(words, sentences, totalDurationMs) {
 }
 
 /**
+ * Generate position lookup table for O(1) word/sentence lookups
+ * Creates a mapping from time position to word and sentence indices
+ */
+function generatePositionLookup(words, totalDurationMs, interval = 10) {
+  const lookup = [];
+  let currentWordIndex = 0;
+
+  // Generate lookup entry for every `interval` milliseconds
+  for (let timeMs = 0; timeMs <= totalDurationMs; timeMs += interval) {
+    // Find the word that is active at this time
+    while (currentWordIndex < words.length - 1 &&
+           words[currentWordIndex].endMs <= timeMs) {
+      currentWordIndex++;
+    }
+
+    // Check if current word is actually active at this time
+    let activeWordIndex = -1;
+    let activeSentenceIndex = -1;
+
+    if (currentWordIndex < words.length) {
+      const word = words[currentWordIndex];
+      if (timeMs >= word.startMs && timeMs < word.endMs) {
+        activeWordIndex = currentWordIndex;
+        activeSentenceIndex = word.sentenceIndex || 0;
+      } else if (currentWordIndex > 0) {
+        // Check previous word
+        const prevWord = words[currentWordIndex - 1];
+        if (timeMs >= prevWord.startMs && timeMs < prevWord.endMs) {
+          activeWordIndex = currentWordIndex - 1;
+          activeSentenceIndex = prevWord.sentenceIndex || 0;
+        }
+      }
+    }
+
+    // Add entry [wordIndex, sentenceIndex]
+    lookup.push([activeWordIndex, activeSentenceIndex]);
+  }
+
+  return {
+    version: '1.0',
+    interval: interval,
+    totalDurationMs: Math.round(totalDurationMs),
+    lookup: lookup
+  };
+}
+
+/**
  * Create output directory structure for learning object
  */
 function createOutputStructure(outputDir, learningObjectId) {
@@ -112,6 +159,15 @@ async function runPipeline(options) {
     );
     console.log(`✓ Generated timing data (${(totalDurationMs / 1000).toFixed(2)} seconds)`);
 
+    // Step 5b: Generate position lookup table
+    console.log('\nStep 5b: Generating position lookup table...');
+    const lookupJson = generatePositionLookup(
+      sentenceResult.wordsWithSentences,
+      totalDurationMs,
+      10 // 10ms interval
+    );
+    console.log(`✓ Generated lookup table (${lookupJson.lookup.length} entries at ${lookupJson.interval}ms intervals)`);
+
     // Step 6: Create output structure and save files
     console.log('\nStep 6: Saving output files...');
     const loOutputDir = createOutputStructure(outputDir, learningObjectId);
@@ -125,6 +181,11 @@ async function runPipeline(options) {
     const timingPath = path.join(loOutputDir, 'timing.json');
     fs.writeFileSync(timingPath, JSON.stringify(timingJson, null, 2));
     console.log(`✓ Saved timing.json to: ${timingPath}`);
+
+    // Save position_lookup.json
+    const lookupPath = path.join(loOutputDir, 'position_lookup.json');
+    fs.writeFileSync(lookupPath, JSON.stringify(lookupJson, null, 2));
+    console.log(`✓ Saved position_lookup.json to: ${lookupPath}`);
 
     // Copy audio file if provided
     if (audioFile && fs.existsSync(audioFile)) {

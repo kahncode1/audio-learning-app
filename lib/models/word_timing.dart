@@ -167,35 +167,55 @@ class WordTimingCollection {
   int findActiveWordIndex(int timeMs) {
     if (timings.isEmpty) return -1;
 
-    // Quick check: if time hasn't changed much, start near last position
+    // If cache has been reset (set to -1), skip locality check entirely
+    // This ensures we always do full binary search after seeks
     if (_lastSearchIndex >= 0 && _lastSearchIndex < timings.length) {
       final lastTiming = timings[_lastSearchIndex];
-      if (lastTiming.isActiveAt(timeMs)) {
+
+      // Check if we've jumped too far (more than 2 seconds)
+      // This indicates a seek operation - be very aggressive
+      final timeDiff = (timeMs - lastTiming.startMs).abs();
+      if (timeDiff > 2000) {
+        // Large time jump detected - reset cache and do full search
+        _lastSearchIndex = -1;
+        // Fall through to binary search
+      } else if (lastTiming.isActiveAt(timeMs)) {
         return _lastSearchIndex;
-      }
+      } else {
+        // Only check immediate neighbors for normal playback
+        // This avoids cache corruption from large jumps
+        const searchRange = 3;
 
-      // Check adjacent positions for temporal locality
-      if (_lastSearchIndex > 0) {
-        final prevTiming = timings[_lastSearchIndex - 1];
-        if (prevTiming.isActiveAt(timeMs)) {
-          _lastSearchIndex = _lastSearchIndex - 1;
-          return _lastSearchIndex;
+        // Search backward
+        for (int i = 1; i <= searchRange && _lastSearchIndex - i >= 0; i++) {
+          final timing = timings[_lastSearchIndex - i];
+          if (timing.isActiveAt(timeMs)) {
+            _lastSearchIndex = _lastSearchIndex - i;
+            return _lastSearchIndex;
+          }
+          // Stop searching backward if we've gone past the target time
+          if (timing.endMs > timeMs) break;
         }
-      }
 
-      if (_lastSearchIndex < timings.length - 1) {
-        final nextTiming = timings[_lastSearchIndex + 1];
-        if (nextTiming.isActiveAt(timeMs)) {
-          _lastSearchIndex = _lastSearchIndex + 1;
-          return _lastSearchIndex;
+        // Search forward
+        for (int i = 1; i <= searchRange && _lastSearchIndex + i < timings.length; i++) {
+          final timing = timings[_lastSearchIndex + i];
+          if (timing.isActiveAt(timeMs)) {
+            _lastSearchIndex = _lastSearchIndex + i;
+            return _lastSearchIndex;
+          }
+          // Stop searching forward if we've gone before the target time
+          if (timing.startMs > timeMs) break;
         }
+
+        // If we didn't find it in the immediate vicinity, reset and do full search
+        _lastSearchIndex = -1;
       }
     }
 
-    // Full binary search if locality check fails
+    // Full binary search - always used after seeks or when cache is invalid
     int left = 0;
     int right = timings.length - 1;
-    int bestMatch = -1;
 
     while (left <= right) {
       final mid = left + ((right - left) >> 1); // Avoid overflow
@@ -208,15 +228,11 @@ class WordTimingCollection {
         right = mid - 1;
       } else {
         left = mid + 1;
-        // Keep track of the closest word that has passed
-        if (timing.endMs <= timeMs) {
-          bestMatch = mid;
-        }
       }
     }
 
-    // No active word found - time is either before all words or after all words
-    // or in a gap between words
+    // No active word found - reset cache
+    _lastSearchIndex = -1;
     return -1;
   }
 
