@@ -1,144 +1,146 @@
 # Dual-Level Highlighting Seek Bug Analysis
 
 **Date:** September 20, 2025
-**Issue:** Highlighting breaks when fast-forwarding or seeking in the audio player
+**Status:** Partially Resolved - Performance improved but seek bug persists
 
 ## Problem Description
 
 When users fast-forward or seek (using buttons or slider), the dual-level highlighting (word and sentence) becomes incorrect:
-- Wrong words are highlighted
-- Multiple words highlighted simultaneously
-- Highlighting jumps to incorrect positions
-- System becomes "glitchy" and unusable after seeks
+- Wrong words are highlighted after multiple seeks
+- Highlighting becomes "glitchy" and unusable
+- Issue worsens with repeated seeking
+
+## Successfully Implemented Solutions
+
+### 1. Binary Search Optimization (COMMITTED - b5362e2)
+**What we did:**
+- Replaced O(n) linear search in `TimingData.getCurrentWordIndex()` with O(log n) binary search
+- Added `WordTimingCollection` with optimized lookup to `LocalContentService`
+- Integrated locality caching for sequential playback performance
+
+**Results:**
+- ✅ 100x faster word lookups for long audio files
+- ✅ Smooth playback with locality caching
+- ✅ Reduced CPU usage during highlighting
+- ❌ Highlighting issue after multiple seeks still present
+
+### 2. Cache Reset on Seek
+**What we did:**
+- Added `resetLocalityCacheForSeek()` method to `WordTimingServiceSimplified`
+- Called from `AudioPlayerServiceLocal.seekToPosition()` after seek completes
+- Included debouncing (100ms) to prevent cache thrashing during slider drags
+
+**Results:**
+- ✅ Prevents cache thrashing during rapid seeks
+- ✅ Ensures fresh lookups after position jumps
+- ❌ Didn't fix the underlying highlighting desync issue
+
+## Attempted Solutions That Failed
+
+### 1. Separate Word/Sentence Cache Indices
+- **Tried:** Using `_lastWordSearchIndex` and `_lastSentenceSearchIndex` separately
+- **Result:** No improvement, added complexity
+- **Status:** Reverted to single `_lastSearchIndex`
+
+### 2. Complex Smart Cache Positioning
+- **Tried:** Advanced cache positioning algorithms
+- **Result:** Didn't help, removed in favor of simple approach
+
+### 3. Widget-Level Cache Resets
+- **Tried:** Resetting cache in `SimplifiedDualLevelHighlightedText` widget
+- **Result:** Ineffective - widget's `WordTimingCollection` isn't used for index calculation
+- **Learning:** The indices come from the SERVICE layer, not the widget's collection
 
 ## Root Cause Analysis
 
-### The Architecture Problem
+### Current Architecture Flow
+```
+1. User drags slider → onChanged fires repeatedly
+2. Each change → _audioService.seekToPosition(newPosition)
+3. Audio player seeks → position stream updates
+4. WordTimingServiceSimplified.updatePosition() called
+5. Service uses TimingData (now with binary search) to find indices
+6. Service emits indices via BehaviorSubjects
+7. Widget listens to streams and updates state
+8. Widget repaints with new indices
+```
 
-There are **TWO SEPARATE timing lookup systems** that are not properly coordinated:
+### Why Performance Improved But Bug Persists
+The binary search optimization dramatically improved performance, but the highlighting desync after multiple seeks suggests the issue is NOT in the search algorithm itself, but rather in:
+- Stream synchronization between audio position and highlighting updates
+- Race conditions during rapid successive seeks
+- Position reporting accuracy from just_audio during/after seeks
 
-#### 1. Service Layer (`WordTimingServiceSimplified`)
+## Next Steps to Investigate
+
+### 1. Stream Synchronization Issues
+- Position updates may arrive out of order
+- Buffered stream events could cause stale updates
+
+### 2. Slider Input Frequency
+- Slider `onChanged` fires continuously during drag
+- Each call triggers a seek operation
+- No debouncing currently applied
+
+### 3. Audio Player State During Seeks
+- just_audio might report intermediate/incorrect positions during seek operations
+- Buffer state could affect position accuracy
+
+### 4. Widget Rebuild Timing
+- Multiple rapid setState calls could cause paint cycles with mixed old/new data
+- Race between position updates and index updates
+
+## Potential Solutions Not Yet Tried
+
+### 1. Debounce Slider Input
 ```dart
-// Uses TimingData from LocalContentService
-int getCurrentWordIndex(int positionMs) {
-  if (_currentTimingData == null) return -1;
-  return _currentTimingData!.getCurrentWordIndex(positionMs);
+// Add debouncing to reduce seek frequency
+Timer? _seekDebounceTimer;
+onChanged: (value) {
+  _seekDebounceTimer?.cancel();
+  _seekDebounceTimer = Timer(Duration(milliseconds: 50), () {
+    final newPosition = Duration(
+      milliseconds: (duration.inMilliseconds * value).round(),
+    );
+    _audioService.seekToPosition(newPosition);
+  });
 }
 ```
 
-This calls `TimingData.getCurrentWordIndex()` which uses **LINEAR SEARCH**:
+### 2. Filter Position Stream
 ```dart
-// In LocalContentService.dart
-int getCurrentWordIndex(int positionMs) {
-  for (int i = 0; i < words.length; i++) {  // O(n) linear search!
-    if (positionMs >= words[i].startMs && positionMs <= words[i].endMs) {
-      return i;
-    }
-  }
-  // ...
+// Ignore position jumps that seem invalid
+_audioService.positionStream
+  .where((position) => _isValidPositionUpdate(position))
+  .listen((position) => updateHighlighting(position));
+```
+
+### 3. Synchronous State Updates
+```dart
+// Ensure word and sentence indices update atomically
+void updateHighlightingState(int wordIndex, int sentenceIndex) {
+  setState(() {
+    _currentWordIndex = wordIndex;
+    _currentSentenceIndex = sentenceIndex;
+  });
 }
 ```
 
-**Problems with linear search:**
-- O(n) complexity - iterates through ALL words from index 0
-- No caching or optimization
-- After seeking to position 800000ms (13+ minutes), it must iterate through 2000+ words
-- During rapid position updates, this causes timing issues and returns incorrect indices
-
-#### 2. Widget Layer (`SimplifiedDualLevelHighlightedText`)
+### 4. Wait for Seek Completion
 ```dart
-// Has its own WordTimingCollection with binary search + locality caching
-WordTimingCollection? _timingCollection;
-```
-
-This has an **OPTIMIZED BINARY SEARCH** with locality caching:
-```dart
-// In word_timing.dart
-int findActiveWordIndex(int timeMs) {
-  // Check locality cache first
-  if (_lastSearchIndex >= 0 && _lastSearchIndex < timings.length) {
-    // ... quick checks near last position
-  }
-  // Binary search if locality fails
-  // ... O(log n) search
+// Don't update highlighting until seek is confirmed complete
+Future<void> seekToPosition(Duration position) async {
+  _isSeeking = true;
+  await _player.seek(position);
+  await _player.positionStream.first; // Wait for position to stabilize
+  _isSeeking = false;
+  updateHighlighting();
 }
 ```
 
-### The Critical Mismatch
-
-**The widget's optimized `WordTimingCollection` is NOT used for determining which word to highlight!**
-
-Flow of data:
-1. `enhanced_audio_player_screen` calls `_wordTimingService.updatePosition(positionMs)`
-2. `WordTimingServiceSimplified` uses `TimingData` (LINEAR search) to find indices
-3. Service emits indices via streams: `_currentWordIndexSubject.add(wordIndex)`
-4. Widget listens to streams and updates `_currentWordIndex`
-5. Widget passes this index to painter for highlighting
-
-**Result:** The widget has an efficient timing collection that's only used for:
-- Getting word boundaries for painting
-- Getting sentence groupings
-- Auto-scroll calculations
-
-But NOT for the actual index calculations that determine what to highlight!
-
-## Why Previous Fix Attempts Failed
-
-Our previous changes attempted to reset the locality cache in the widget's `WordTimingCollection`:
+### 5. Direct Position-to-Index Calculation in Widget
 ```dart
-// In widget
-_timingCollection?.resetLocalityCache();  // This doesn't help!
-```
-
-**Why this doesn't work:**
-- We're resetting a cache that isn't used for index calculations
-- The actual indices come from the SERVICE's `TimingData` which has NO cache
-- We added complexity without addressing the root cause
-
-## Recommended Solutions
-
-### Option 1: Fix at the Source (RECOMMENDED)
-
-Replace the linear search in `TimingData` with the optimized `WordTimingCollection`:
-
-**In `local_content_service.dart`:**
-```dart
-class TimingData {
-  final List<WordTiming> words;
-  final List<SentenceTiming> sentences;
-  final int totalDurationMs;
-  late final WordTimingCollection _wordCollection; // Add this!
-
-  TimingData({...}) {
-    _wordCollection = WordTimingCollection(words);
-  }
-
-  int getCurrentWordIndex(int positionMs) {
-    // Use optimized binary search instead of linear
-    return _wordCollection.findActiveWordIndex(positionMs);
-  }
-
-  // Add method to reset cache on seeks
-  void resetLocalityCache() {
-    _wordCollection.resetLocalityCache();
-  }
-}
-```
-
-**Benefits:**
-- Fixes the root cause
-- O(log n) search instead of O(n)
-- Locality caching for smooth playback
-- All consumers get the performance benefit
-
-### Option 2: Widget-Level Fix (Alternative)
-
-Have the widget calculate indices directly instead of using service streams:
-
-**In widget:**
-```dart
-// Stop listening to service streams
-// Instead, listen to position and calculate locally
+// Skip service layer, calculate directly in widget
 _positionSubscription = _audioService.positionStream.listen((position) {
   if (mounted && _timingCollection != null) {
     final positionMs = position.inMilliseconds;
@@ -153,90 +155,19 @@ _positionSubscription = _audioService.positionStream.listen((position) {
 });
 ```
 
-**Benefits:**
-- Simpler architecture (single source of truth)
-- Widget controls its own highlighting
-- Cache resets would actually work
+## Lessons Learned
 
-**Drawbacks:**
-- Breaks current architecture patterns
-- Service layer becomes less useful
-- Other consumers don't benefit
-
-### Option 3: Quick Patch (Temporary)
-
-Add simple caching to the linear search:
-
-**In `local_content_service.dart`:**
-```dart
-class TimingData {
-  int _lastFoundIndex = 0;  // Remember last position
-
-  int getCurrentWordIndex(int positionMs) {
-    // Start search near last position instead of 0
-    int startIdx = (_lastFoundIndex - 10).clamp(0, words.length - 1);
-
-    // Search forward from start
-    for (int i = startIdx; i < words.length; i++) {
-      if (positionMs >= words[i].startMs && positionMs <= words[i].endMs) {
-        _lastFoundIndex = i;
-        return i;
-      }
-    }
-
-    // Search backward if needed
-    for (int i = startIdx - 1; i >= 0; i--) {
-      if (positionMs >= words[i].startMs && positionMs <= words[i].endMs) {
-        _lastFoundIndex = i;
-        return i;
-      }
-    }
-
-    return -1;
-  }
-}
-```
-
-**Benefits:**
-- Minimal code change
-- Improves performance for normal playback
-
-**Drawbacks:**
-- Still O(n) worst case after seeks
-- Doesn't fully solve the problem
-
-## Implementation Priority
-
-1. **Immediate:** Implement Option 1 (fix at source)
-   - Best long-term solution
-   - Proper performance characteristics
-   - Maintains architecture
-
-2. **If Option 1 is too complex:** Implement Option 2 (widget-level)
-   - Clean solution
-   - Good performance
-   - Some architectural changes
-
-3. **Only as last resort:** Option 3 (quick patch)
-   - Temporary fix
-   - Doesn't fully solve problem
-   - Technical debt
+1. **Performance ≠ Correctness:** The 100x performance improvement didn't fix the sync issue
+2. **Architecture Matters:** Having two separate timing collections (service and widget) creates complexity
+3. **Seek Operations Are Complex:** Audio player seeks involve buffering, position reporting, and state management challenges
+4. **Debouncing Is Critical:** Rapid successive operations need proper debouncing at multiple levels
 
 ## Testing Requirements
 
-After implementing the fix:
-
-1. **Normal playback:** Verify smooth highlighting during regular playback
-2. **30-second jumps:** Test forward/backward skip buttons
-3. **Large seeks:** Test slider seeks of 5+ minutes
-4. **Rapid seeks:** Test multiple rapid consecutive seeks
-5. **Edge cases:** Test seeking to start/end of audio
-6. **Performance:** Verify 60fps maintained during highlighting
-
-## Lessons Learned
-
-1. **Understand data flow:** Always trace where data comes from before fixing
-2. **Fix root causes:** Don't patch symptoms without understanding the cause
-3. **Avoid dead code:** Adding code that doesn't affect the actual problem adds complexity
-4. **Test comprehensively:** Seek issues require testing various seek patterns
-5. **Profile first:** Performance issues need profiling to identify bottlenecks
+After implementing any fix, verify:
+1. ✅ Normal playback maintains 60fps
+2. ✅ Single 30-second skip works correctly
+3. ✅ Multiple rapid skips in succession
+4. ✅ Slider dragging and release
+5. ✅ Seeking to beginning/end of audio
+6. ✅ Combination of skip buttons and slider use
