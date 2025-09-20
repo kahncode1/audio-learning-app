@@ -234,7 +234,10 @@ class _EnhancedAudioPlayerScreenState
       _isFullscreen = false;
     });
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    _cancelFullscreenTimer();
+    // Restart the timer when exiting fullscreen if still playing
+    if (_audioService.isPlayingStream.value) {
+      _startFullscreenTimer();
+    }
   }
 
   void _handleKeyEvent(KeyEvent event) {
@@ -364,9 +367,11 @@ class _EnhancedAudioPlayerScreenState
                 child: GestureDetector(
                   onTap: _isFullscreen ? _exitFullscreen : null,
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: _isFullscreen ? 24 : 20,
-                      vertical: _isFullscreen ? 20 : 12,
+                    padding: EdgeInsets.only(
+                      left: _isFullscreen ? 24 : 20,
+                      right: _isFullscreen ? 24 : 20,
+                      top: _isFullscreen ? 50 : 12,  // Extra padding for notch
+                      bottom: _isFullscreen ? 20 : 12,
                     ),
                     child: SingleChildScrollView(
                       controller: _scrollController,
