@@ -18,7 +18,6 @@ class CourseDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(courseTitle),
-        backgroundColor: Theme.of(context).primaryColor,
       ),
       body: Center(
         child: Column(
@@ -38,12 +37,9 @@ class CourseDetailScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Assignments will be loaded here',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
         ),

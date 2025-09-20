@@ -67,9 +67,9 @@ class MiniAudioPlayer extends ConsumerWidget {
               LinearProgressIndicator(
                 value: progress,
                 minHeight: 2,
-                backgroundColor: Colors.grey.shade200,
+                backgroundColor: Theme.of(context).dividerColor.withOpacity(0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).primaryColor,
+                  Theme.of(context).colorScheme.primary,
                 ),
               ),
 
@@ -89,12 +89,12 @@ class MiniAudioPlayer extends ConsumerWidget {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE8F1F9),
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.headphones,
-                            color: Color(0xFF6B9AC4),
+                            color: Theme.of(context).colorScheme.primary,
                             size: 22,
                           ),
                         ),
@@ -112,10 +112,9 @@ class MiniAudioPlayer extends ConsumerWidget {
                           children: [
                             Text(
                               currentObject.title,
-                              style: const TextStyle(
+                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF212121),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -123,9 +122,8 @@ class MiniAudioPlayer extends ConsumerWidget {
                             const SizedBox(height: 2),
                             Text(
                               subtitle,
-                              style: TextStyle(
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 fontSize: 12,
-                                color: Colors.grey.shade600,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -147,7 +145,7 @@ class MiniAudioPlayer extends ConsumerWidget {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor,
+                              color: Theme.of(context).colorScheme.primary,
                               shape: BoxShape.circle,
                             ),
                             child: Icon(

@@ -13,6 +13,7 @@ import 'models/learning_object.dart';
 
 // Providers
 import 'providers/audio_providers.dart';
+import 'providers/theme_provider.dart';
 
 // Screens
 import 'screens/assignments_screen.dart';
@@ -22,6 +23,9 @@ import 'screens/enhanced_audio_player_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/local_content_test_screen.dart';
 import 'screens/settings_screen.dart';
+
+// Theme
+import 'theme/app_theme.dart';
 
 // Widgets
 import 'widgets/mini_audio_player.dart';
@@ -49,19 +53,18 @@ void main() async {
   );
 }
 
-class AudioLearningApp extends StatelessWidget {
+class AudioLearningApp extends ConsumerWidget {
   const AudioLearningApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+
     return MaterialApp(
       title: 'The Institutes',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        primaryColor: const Color(0xFF2196F3),
-        useMaterial3: false, // Using Material 2 as per requirements
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       home: const SplashScreen(),
       routes: {
         '/main': (context) => const MainNavigationScreen(),

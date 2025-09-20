@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../theme/app_theme.dart';
 import '../services/audio_player_service_local.dart';
 import '../services/progress_service.dart';
 import '../services/word_timing_service_simplified.dart';
@@ -224,7 +224,6 @@ class _EnhancedAudioPlayerScreenState
       return Scaffold(
         appBar: AppBar(
           title: Text(widget.learningObject.title),
-          backgroundColor: Theme.of(context).primaryColor,
           actions: [
             IconButton(
               icon: const Icon(Icons.settings),
@@ -280,7 +279,6 @@ class _EnhancedAudioPlayerScreenState
       return Scaffold(
         appBar: AppBar(
           title: Text(widget.learningObject.title),
-          backgroundColor: Theme.of(context).primaryColor,
           actions: [
             IconButton(
               icon: const Icon(Icons.settings),
@@ -307,7 +305,6 @@ class _EnhancedAudioPlayerScreenState
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.learningObject.title),
-          backgroundColor: Theme.of(context).primaryColor,
           actions: [
             IconButton(
               icon: const Icon(Icons.settings),
@@ -315,57 +312,49 @@ class _EnhancedAudioPlayerScreenState
             ),
           ],
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+        body: Column(
             children: [
               // Content area for highlighted text
               Expanded(
                 child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   child: SingleChildScrollView(
                     controller: _scrollController,
                     child: _displayText != null && _displayText!.isNotEmpty
                         ? SimplifiedDualLevelHighlightedText(
                             text: _displayText!,
                             contentId: widget.learningObject.id,
-                            baseStyle: GoogleFonts.inter(
+                            baseStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
                               fontSize:
-                                  _progressService?.currentFontSize ?? 16.0,
-                              height: 1.5,
-                              color: Colors.black87,
+                                  _progressService?.currentFontSize ?? 18.0,
                             ),
                             sentenceHighlightColor:
-                                const Color(0xFFE3F2FD), // Light blue
+                                Theme.of(context).sentenceHighlight,
                             wordHighlightColor:
-                                const Color(0xFFFFF59D), // Yellow
+                                Theme.of(context).wordHighlight,
                             scrollController: _scrollController,
                           )
                         : Center(
                             child: Text(
                               'No content available',
-                              style: GoogleFonts.inter(
+                              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                                 fontSize:
-                                    _progressService?.currentFontSize ?? 16.0,
-                                color: Colors.grey,
+                                    _progressService?.currentFontSize ?? 18.0,
+                                color: Theme.of(context).textTheme.bodySmall?.color,
                               ),
                             ),
                           ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              // Subtle divider
+              Container(
+                height: 1,
+                color: Theme.of(context).dividerColor.withOpacity(0.15),
+              ),
               // Player controls
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
                 child: Column(
                   children: [
                     // Seek bar and time display
@@ -428,11 +417,11 @@ class _EnhancedAudioPlayerScreenState
                                     children: [
                                       Text(
                                         _formatDuration(position),
-                                        style: const TextStyle(fontSize: 11),
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
                                       ),
                                       Text(
                                         _formatDuration(duration - position),
-                                        style: const TextStyle(fontSize: 11),
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
                                       ),
                                     ],
                                   ),
@@ -453,20 +442,24 @@ class _EnhancedAudioPlayerScreenState
                           stream: _audioService.speedStream,
                           builder: (context, snapshot) {
                             final speed = snapshot.data ?? 1.0;
-                            return SizedBox(
-                              height: 32,
+                            return Container(
+                              width: 50, // Optimized for content
+                              height: 28,
                               child: TextButton(
                                 onPressed: _audioService.cycleSpeed,
                                 style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                                  minimumSize: const Size(50, 32),
-                                  backgroundColor: Theme.of(context)
-                                      .primaryColor
-                                      .withValues(alpha: 0.1),
+                                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                                  minimumSize: const Size(50, 28),
+                                  backgroundColor: Theme.of(context).brightness == Brightness.light
+                                      ? Colors.grey.shade200
+                                      : Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                                  foregroundColor: Theme.of(context).brightness == Brightness.dark
+                                      ? Theme.of(context).colorScheme.primary
+                                      : null,
                                 ),
                                 child: Text(
                                   '${speed}x',
-                                  style: const TextStyle(fontSize: 11),
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
                                 ),
                               ),
                             );
@@ -523,31 +516,26 @@ class _EnhancedAudioPlayerScreenState
                                 _progressService?.currentFontSizeName ??
                                     'Medium';
                             return Container(
-                              width: 85, // Fixed width to prevent layout shift
-                              height: 32,
+                              width: 50, // Optimized for content
+                              height: 28,
                               child: TextButton(
                                 onPressed: () async {
                                   await _progressService?.cycleFontSize();
                                   setState(() {}); // Refresh UI
                                 },
                                 style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                                  minimumSize: const Size(85, 32),
-                                  backgroundColor: Theme.of(context)
-                                      .primaryColor
-                                      .withValues(alpha: 0.1),
+                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                  minimumSize: const Size(50, 28),
+                                  backgroundColor: Theme.of(context).brightness == Brightness.light
+                                      ? Colors.grey.shade200
+                                      : Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                                  foregroundColor: Theme.of(context).brightness == Brightness.dark
+                                      ? Theme.of(context).colorScheme.primary
+                                      : null,
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.text_fields, size: 14),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      fontSizeName,
-                                      style: const TextStyle(fontSize: 11),
-                                    ),
-                                  ],
+                                child: Text(
+                                  fontSizeName,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
                                 ),
                               ),
                             );
@@ -559,7 +547,6 @@ class _EnhancedAudioPlayerScreenState
                 ),
               ),
             ],
-          ),
         ),
       ),
     );

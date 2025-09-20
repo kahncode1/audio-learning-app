@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/env_config.dart';
+import '../providers/theme_provider.dart';
 
 /// SettingsScreen provides app configuration options
 /// This is a placeholder implementation for Milestone 1
@@ -12,7 +13,6 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
-        backgroundColor: Theme.of(context).primaryColor,
       ),
       body: ListView(
         children: [
@@ -25,6 +25,13 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () {},
           ),
           const Divider(),
+          ListTile(
+            leading: Icon(ref.watch(themeProvider.notifier).themeIcon),
+            title: const Text('Theme'),
+            subtitle: Text(ref.watch(themeProvider.notifier).themeName),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _showThemeDialog(context, ref),
+          ),
           ListTile(
             leading: const Icon(Icons.text_fields),
             title: const Text('Default Font Size'),
@@ -95,6 +102,58 @@ class SettingsScreen extends ConsumerWidget {
           ],
         ],
       ),
+    );
+  }
+
+  void _showThemeDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('Choose Theme'),
+          children: [
+            SimpleDialogOption(
+              onPressed: () {
+                ref.read(themeProvider.notifier).setTheme(ThemeMode.light);
+                Navigator.pop(context);
+              },
+              child: const Row(
+                children: [
+                  Icon(Icons.light_mode),
+                  SizedBox(width: 16),
+                  Text('Light'),
+                ],
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                ref.read(themeProvider.notifier).setTheme(ThemeMode.dark);
+                Navigator.pop(context);
+              },
+              child: const Row(
+                children: [
+                  Icon(Icons.dark_mode),
+                  SizedBox(width: 16),
+                  Text('Dark'),
+                ],
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                ref.read(themeProvider.notifier).setTheme(ThemeMode.system);
+                Navigator.pop(context);
+              },
+              child: const Row(
+                children: [
+                  Icon(Icons.brightness_auto),
+                  SizedBox(width: 16),
+                  Text('Auto (Follow System)'),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

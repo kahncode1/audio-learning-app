@@ -26,14 +26,15 @@ import 'dart:async';
 import '../services/word_timing_service_simplified.dart';
 import '../models/word_timing.dart';
 import '../utils/app_logger.dart';
+import '../theme/app_theme.dart';
 
 /// Simplified widget for dual-level highlighting with optimal performance
 class SimplifiedDualLevelHighlightedText extends ConsumerStatefulWidget {
   final String text;
   final String contentId;
   final TextStyle baseStyle;
-  final Color sentenceHighlightColor;
-  final Color wordHighlightColor;
+  final Color? sentenceHighlightColor;
+  final Color? wordHighlightColor;
   final ScrollController? scrollController;
 
   /// Average number of characters per line for scroll estimation
@@ -45,8 +46,8 @@ class SimplifiedDualLevelHighlightedText extends ConsumerStatefulWidget {
     required this.text,
     required this.contentId,
     required this.baseStyle,
-    this.sentenceHighlightColor = const Color(0xFFE3F2FD), // Light blue
-    this.wordHighlightColor = const Color(0xFFFFF59D), // Yellow
+    this.sentenceHighlightColor,
+    this.wordHighlightColor,
     this.scrollController,
   });
 
@@ -305,6 +306,10 @@ class _SimplifiedDualLevelHighlightedTextState
           _updateTextPainter(constraints.maxWidth);
         }
 
+        final theme = Theme.of(context);
+        final sentenceColor = widget.sentenceHighlightColor ?? theme.sentenceHighlight;
+        final wordColor = widget.wordHighlightColor ?? theme.wordHighlight;
+
         return CustomPaint(
           size: Size(constraints.maxWidth, _textPainter.height),
           painter: OptimizedHighlightPainter(
@@ -314,8 +319,8 @@ class _SimplifiedDualLevelHighlightedTextState
             currentWordIndex: _currentWordIndex,
             currentSentenceIndex: _currentSentenceIndex,
             baseStyle: widget.baseStyle,
-            sentenceHighlightColor: widget.sentenceHighlightColor,
-            wordHighlightColor: widget.wordHighlightColor,
+            sentenceHighlightColor: sentenceColor,
+            wordHighlightColor: wordColor,
           ),
         );
       },

@@ -37,8 +37,6 @@ class AssignmentsScreen extends ConsumerWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(courseNumber),
-            backgroundColor: const Color(0xFF2196F3),
-            foregroundColor: Colors.white,
             actions: [
               IconButton(
                 icon: const Icon(Icons.settings),
@@ -46,7 +44,6 @@ class AssignmentsScreen extends ConsumerWidget {
               ),
             ],
           ),
-          backgroundColor: const Color(0xFFF5F5F5),
           body: Stack(
             children: [
               ListView.builder(
@@ -90,8 +87,6 @@ class AssignmentsScreen extends ConsumerWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(courseNumber),
-            backgroundColor: const Color(0xFF2196F3),
-            foregroundColor: Colors.white,
             actions: [
               IconButton(
                 icon: const Icon(Icons.settings),
@@ -99,7 +94,6 @@ class AssignmentsScreen extends ConsumerWidget {
               ),
             ],
           ),
-          backgroundColor: const Color(0xFFF5F5F5),
           body: Stack(
             children: [
               ListView.builder(
@@ -201,11 +195,11 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
         childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
         leading: CircleAvatar(
           backgroundColor: isActiveAssignment || isExpanded
-              ? const Color(0xFFE3F2FD)
-              : const Color(0xFFF5F5F5),
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
+              : Theme.of(context).dividerColor.withOpacity(0.2),
           foregroundColor: isActiveAssignment || isExpanded
-              ? const Color(0xFF2196F3)
-              : Colors.grey.shade600,
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).textTheme.bodyLarge?.color,
           child: Text(
             assignment.assignmentNumber.toString(),
             style: const TextStyle(fontWeight: FontWeight.w600),
@@ -213,10 +207,9 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
         ),
         title: Text(
           assignment.title,
-          style: const TextStyle(
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF212121),
           ),
         ),
         subtitle: Text(

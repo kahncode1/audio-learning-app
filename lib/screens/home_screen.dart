@@ -24,8 +24,6 @@ class HomePage extends ConsumerWidget {
             Text('My Courses ✨'),
           ],
         ),
-        backgroundColor: const Color(0xFF2196F3),
-        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -33,7 +31,6 @@ class HomePage extends ConsumerWidget {
           ),
         ],
       ),
-      backgroundColor: const Color(0xFFF5F5F5),
       body: courses.isEmpty
           ? const Center(
               child: Text('No courses available'),
@@ -108,33 +105,29 @@ class CourseCard extends ConsumerWidget {
                 children: [
                   Text(
                     course.courseNumber,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF2196F3),
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     course.title,
-                    style: const TextStyle(
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF212121),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     '${ref.watch(mockAssignmentCountProvider)} Assignments • ${ref.watch(mockLearningObjectCountProvider)} Learning Objects',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 12),
                   Text(
                     progressLabel,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
                   ),
                   const SizedBox(height: 4),
                   ClipRRect(
@@ -143,9 +136,9 @@ class CourseCard extends ConsumerWidget {
                       value: completionPercentage / 100,
                       minHeight: 4,
                       color: completionPercentage == 0
-                          ? Colors.grey.shade300
+                          ? Theme.of(context).dividerColor.withOpacity(0.3)
                           : Colors.green,
-                      backgroundColor: Colors.grey.shade300,
+                      backgroundColor: Theme.of(context).dividerColor.withOpacity(0.3),
                     ),
                   ),
                 ],

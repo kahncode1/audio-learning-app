@@ -131,8 +131,7 @@ class WordTimingCollection {
   // Caches for performance optimization
   Map<int, List<WordTiming>>? _sentenceCache;
   Map<int, (int startMs, int endMs)>? _sentenceBoundariesCache;
-  int _lastWordSearchIndex = 0; // Cache last word search position for locality
-  int _lastSentenceSearchIndex = 0; // Separate cache for sentence searches to prevent interference
+  int _lastSearchIndex = 0; // Cache last search position for locality
 
   WordTimingCollection(this.timings) {
     _buildSentenceCache();
@@ -169,26 +168,26 @@ class WordTimingCollection {
     if (timings.isEmpty) return -1;
 
     // Quick check: if time hasn't changed much, start near last position
-    if (_lastWordSearchIndex >= 0 && _lastWordSearchIndex < timings.length) {
-      final lastTiming = timings[_lastWordSearchIndex];
+    if (_lastSearchIndex >= 0 && _lastSearchIndex < timings.length) {
+      final lastTiming = timings[_lastSearchIndex];
       if (lastTiming.isActiveAt(timeMs)) {
-        return _lastWordSearchIndex;
+        return _lastSearchIndex;
       }
 
       // Check adjacent positions for temporal locality
-      if (_lastWordSearchIndex > 0) {
-        final prevTiming = timings[_lastWordSearchIndex - 1];
+      if (_lastSearchIndex > 0) {
+        final prevTiming = timings[_lastSearchIndex - 1];
         if (prevTiming.isActiveAt(timeMs)) {
-          _lastWordSearchIndex = _lastWordSearchIndex - 1;
-          return _lastWordSearchIndex;
+          _lastSearchIndex = _lastSearchIndex - 1;
+          return _lastSearchIndex;
         }
       }
 
-      if (_lastWordSearchIndex < timings.length - 1) {
-        final nextTiming = timings[_lastWordSearchIndex + 1];
+      if (_lastSearchIndex < timings.length - 1) {
+        final nextTiming = timings[_lastSearchIndex + 1];
         if (nextTiming.isActiveAt(timeMs)) {
-          _lastWordSearchIndex = _lastWordSearchIndex + 1;
-          return _lastWordSearchIndex;
+          _lastSearchIndex = _lastSearchIndex + 1;
+          return _lastSearchIndex;
         }
       }
     }
@@ -203,7 +202,7 @@ class WordTimingCollection {
       final timing = timings[mid];
 
       if (timing.isActiveAt(timeMs)) {
-        _lastWordSearchIndex = mid;
+        _lastSearchIndex = mid;
         return mid;
       } else if (timeMs < timing.startMs) {
         right = mid - 1;
@@ -221,55 +220,11 @@ class WordTimingCollection {
     return -1;
   }
 
-  /// Find the active sentence index with optimized lookup
+  /// Find the active sentence index using the word index
   int findActiveSentenceIndex(int timeMs) {
-    if (timings.isEmpty) return -1;
-
-    // Use separate cache for sentence lookups to prevent interference
-    // Quick check: if time hasn't changed much, start near last position
-    if (_lastSentenceSearchIndex >= 0 && _lastSentenceSearchIndex < timings.length) {
-      final lastTiming = timings[_lastSentenceSearchIndex];
-      if (lastTiming.isActiveAt(timeMs)) {
-        return lastTiming.sentenceIndex;
-      }
-
-      // Check adjacent positions for temporal locality
-      if (_lastSentenceSearchIndex > 0) {
-        final prevTiming = timings[_lastSentenceSearchIndex - 1];
-        if (prevTiming.isActiveAt(timeMs)) {
-          _lastSentenceSearchIndex = _lastSentenceSearchIndex - 1;
-          return prevTiming.sentenceIndex;
-        }
-      }
-
-      if (_lastSentenceSearchIndex < timings.length - 1) {
-        final nextTiming = timings[_lastSentenceSearchIndex + 1];
-        if (nextTiming.isActiveAt(timeMs)) {
-          _lastSentenceSearchIndex = _lastSentenceSearchIndex + 1;
-          return nextTiming.sentenceIndex;
-        }
-      }
-    }
-
-    // Full binary search if locality check fails
-    int left = 0;
-    int right = timings.length - 1;
-
-    while (left <= right) {
-      final mid = left + ((right - left) >> 1);
-      final timing = timings[mid];
-
-      if (timing.isActiveAt(timeMs)) {
-        _lastSentenceSearchIndex = mid;
-        return timing.sentenceIndex;
-      } else if (timeMs < timing.startMs) {
-        right = mid - 1;
-      } else {
-        left = mid + 1;
-      }
-    }
-
-    return -1;
+    final activeWordIndex = findActiveWordIndex(timeMs);
+    if (activeWordIndex == -1) return -1;
+    return timings[activeWordIndex].sentenceIndex;
   }
 
   /// Get all words in a specific sentence using cached results
@@ -329,8 +284,7 @@ class WordTimingCollection {
 
   /// Reset locality cache (call when seeking to distant position)
   void resetLocalityCache() {
-    _lastWordSearchIndex = 0;
-    _lastSentenceSearchIndex = 0;
+    _lastSearchIndex = 0;
   }
 
   /// Dispose of the collection and clear all caches
@@ -339,8 +293,7 @@ class WordTimingCollection {
     _sentenceBoundariesCache?.clear();
     _sentenceCache = null;
     _sentenceBoundariesCache = null;
-    _lastWordSearchIndex = 0;
-    _lastSentenceSearchIndex = 0;
+    _lastSearchIndex = 0;
   }
 
   /// Validate collection integrity (useful for testing)
