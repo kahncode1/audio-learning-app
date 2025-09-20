@@ -18,7 +18,7 @@ import 'cache_service.dart';
 ///
 /// Features:
 /// - Debounced progress saving (5-second intervals)
-/// - Font size index persistence (Small/Medium/Large/XLarge)
+/// - Font size index persistence (Sm/Med/Lg/XL)
 /// - Playback speed persistence
 /// - Progress sync between local and cloud
 /// - Conflict resolution (server wins)
@@ -36,13 +36,13 @@ class ProgressService {
 
   // Font size configuration
   static const List<String> fontSizeNames = [
-    'Small',
-    'Medium',
-    'Large',
-    'X-Large'
+    'Sm',
+    'Med',
+    'Lg',
+    'XL'
   ];
   static const List<double> fontSizeValues = [14.0, 16.0, 18.0, 20.0];
-  static const int defaultFontSizeIndex = 1; // Medium
+  static const int defaultFontSizeIndex = 1; // Med
 
   // Preference keys
   static const String _fontSizeKey = 'font_size_index';
@@ -541,7 +541,7 @@ Future<void> validateProgressService() async {
   assert(ProgressService.fontSizeNames.length == 4, 'Must have 4 font sizes');
   assert(ProgressService.fontSizeValues.length == 4,
       'Must have 4 font size values');
-  assert(ProgressService.defaultFontSizeIndex == 1, 'Default must be Medium');
+  assert(ProgressService.defaultFontSizeIndex == 1, 'Default must be Med');
   if (kDebugMode) {
     debugPrint('✓ Font size configuration verified');
   }

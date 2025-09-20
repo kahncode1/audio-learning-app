@@ -229,14 +229,25 @@ class _EnhancedAudioPlayerScreenState
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
-  void _exitFullscreen() {
+  void _exitFullscreen() async {
     setState(() {
       _isFullscreen = false;
     });
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     // Restart the timer when exiting fullscreen if still playing
-    if (_audioService.isPlayingStream.value) {
+    final isPlaying = await _audioService.isPlayingStream.first;
+    if (isPlaying) {
       _startFullscreenTimer();
+    }
+  }
+
+  // Restart the fullscreen timer when user interacts with controls
+  void _restartFullscreenTimerOnInteraction() async {
+    if (!_isFullscreen) {
+      final isPlaying = await _audioService.isPlayingStream.first;
+      if (isPlaying) {
+        _startFullscreenTimer();
+      }
     }
   }
 
@@ -371,7 +382,7 @@ class _EnhancedAudioPlayerScreenState
                       left: _isFullscreen ? 24 : 20,
                       right: _isFullscreen ? 24 : 20,
                       top: _isFullscreen ? 50 : 12,  // Extra padding for notch
-                      bottom: _isFullscreen ? 20 : 12,
+                      bottom: _isFullscreen ? 20 : 0,  // Remove bottom padding to get closer to progress bar
                     ),
                     child: SingleChildScrollView(
                       controller: _scrollController,
@@ -403,12 +414,6 @@ class _EnhancedAudioPlayerScreenState
                   ),
                 ),
               ),
-              // Subtle divider (hidden in fullscreen)
-              if (!_isFullscreen)
-                Container(
-                  height: 1,
-                  color: Theme.of(context).dividerColor.withOpacity(0.15),
-                ),
               // Player controls with animated opacity
               AnimatedOpacity(
                 opacity: _isFullscreen ? 0.0 : 1.0,
@@ -416,14 +421,11 @@ class _EnhancedAudioPlayerScreenState
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   height: _isFullscreen ? 0 : null,
-                  padding: _isFullscreen
-                      ? EdgeInsets.zero
-                      : const EdgeInsets.fromLTRB(16, 12, 16, 20),
                   child: _isFullscreen
                       ? const SizedBox.shrink()
                       : Column(
                           children: [
-                    // Seek bar and time display
+                    // Full-width progress bar as separator
                     StreamBuilder<Duration>(
                       stream: _audioService.positionStream,
                       builder: (context, positionSnapshot) {
@@ -447,36 +449,40 @@ class _EnhancedAudioPlayerScreenState
 
                             return Column(
                               children: [
-                                // Full-width seek bar
+                                // Full-width seek bar without horizontal padding
                                 SliderTheme(
                                   data: SliderTheme.of(context).copyWith(
-                                    trackHeight: 4.0,
+                                    trackHeight: 3.0,
                                     thumbShape: const RoundSliderThumbShape(
                                       enabledThumbRadius: 6.0,
                                     ),
                                     overlayShape: const RoundSliderOverlayShape(
                                       overlayRadius: 12.0,
                                     ),
+                                    trackShape: const RectangularSliderTrackShape(),
                                   ),
-                                  child: Slider(
-                                    value: duration.inMilliseconds > 0 &&
-                                           position.inMilliseconds <= duration.inMilliseconds
-                                        ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
-                                        : 0.0,
-                                    onChanged: (value) {
-                                      final newPosition = Duration(
-                                        milliseconds:
-                                            (duration.inMilliseconds * value)
-                                                .round(),
-                                      );
-                                      _audioService.seekToPosition(newPosition);
-                                    },
-                                    activeColor: Theme.of(context).primaryColor,
+                                  child: SizedBox(
+                                    height: 20,
+                                    child: Slider(
+                                      value: duration.inMilliseconds > 0 &&
+                                             position.inMilliseconds <= duration.inMilliseconds
+                                          ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
+                                          : 0.0,
+                                      onChanged: (value) {
+                                        final newPosition = Duration(
+                                          milliseconds:
+                                              (duration.inMilliseconds * value)
+                                                  .round(),
+                                        );
+                                        _audioService.seekToPosition(newPosition);
+                                      },
+                                      activeColor: Theme.of(context).primaryColor,
+                                    ),
                                   ),
                                 ),
-                                // Time labels below the bar
+                                // Time labels close to the bar
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                  padding: const EdgeInsets.fromLTRB(24, 2, 24, 8),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -498,9 +504,10 @@ class _EnhancedAudioPlayerScreenState
                         );
                       },
                     ),
-                    const SizedBox(height: 12),
-                    // All controls in single row
-                    Row(
+                    // All controls in single row with padding
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                      child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         // Speed control (smaller)
@@ -512,7 +519,10 @@ class _EnhancedAudioPlayerScreenState
                               width: 50, // Optimized for content
                               height: 28,
                               child: TextButton(
-                                onPressed: _audioService.cycleSpeed,
+                                onPressed: () {
+                                  _audioService.cycleSpeed();
+                                  _restartFullscreenTimerOnInteraction();
+                                },
                                 style: TextButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(horizontal: 6),
                                   minimumSize: const Size(50, 28),
@@ -539,7 +549,10 @@ class _EnhancedAudioPlayerScreenState
                             weight: 300,
                           ),
                           iconSize: 40,
-                          onPressed: _audioService.skipBackward,
+                          onPressed: () {
+                            _audioService.skipBackward();
+                            _restartFullscreenTimerOnInteraction();
+                          },
                           tooltip: 'Skip back 30s (←)',
                         ),
                         // Play/Pause with FloatingActionButton
@@ -570,7 +583,10 @@ class _EnhancedAudioPlayerScreenState
                             weight: 300,
                           ),
                           iconSize: 40,
-                          onPressed: _audioService.skipForward,
+                          onPressed: () {
+                            _audioService.skipForward();
+                            _restartFullscreenTimerOnInteraction();
+                          },
                           tooltip: 'Skip forward 30s (→)',
                         ),
                         // Font size control (smaller, fixed width)
@@ -588,6 +604,7 @@ class _EnhancedAudioPlayerScreenState
                                 onPressed: () async {
                                   await _progressService?.cycleFontSize();
                                   setState(() {}); // Refresh UI
+                                  _restartFullscreenTimerOnInteraction();
                                 },
                                 style: TextButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -608,6 +625,7 @@ class _EnhancedAudioPlayerScreenState
                           },
                         ),
                       ],
+                      ),
                     ),
                   ],
                         ),
