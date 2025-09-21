@@ -21,7 +21,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/audio_providers.dart';
 import '../providers/audio_context_provider.dart';
-import '../models/learning_object.dart';
 
 class MiniAudioPlayer extends ConsumerWidget {
   const MiniAudioPlayer({super.key});

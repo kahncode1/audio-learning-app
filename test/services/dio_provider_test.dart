@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dio/dio.dart';
 import 'package:audio_learning_app/services/dio_provider.dart';
-import 'package:audio_learning_app/config/app_config.dart';
 import 'package:audio_learning_app/config/env_config.dart';
 
 void main() {
@@ -120,18 +118,18 @@ void main() {
         final dio = DioProvider.dio;
 
         // Should accept status codes < 500
-        expect(dio.options.validateStatus!(200), isTrue);
-        expect(dio.options.validateStatus!(201), isTrue);
-        expect(dio.options.validateStatus!(400), isTrue);
-        expect(dio.options.validateStatus!(404), isTrue);
-        expect(dio.options.validateStatus!(499), isTrue);
+        expect(dio.options.validateStatus(200), isTrue);
+        expect(dio.options.validateStatus(201), isTrue);
+        expect(dio.options.validateStatus(400), isTrue);
+        expect(dio.options.validateStatus(404), isTrue);
+        expect(dio.options.validateStatus(499), isTrue);
 
         // Should reject status codes >= 500
-        expect(dio.options.validateStatus!(500), isFalse);
-        expect(dio.options.validateStatus!(503), isFalse);
+        expect(dio.options.validateStatus(500), isFalse);
+        expect(dio.options.validateStatus(503), isFalse);
 
         // Should reject null status
-        expect(dio.options.validateStatus!(null), isFalse);
+        expect(dio.options.validateStatus(null), isFalse);
       });
     });
 
@@ -144,8 +142,6 @@ void main() {
           final dio = DioProvider.dio;
 
           // Verify they exist
-          assert(provider != null);
-          assert(dio != null);
 
           // Verify singleton behavior
           assert(identical(DioProvider.dio, dio));

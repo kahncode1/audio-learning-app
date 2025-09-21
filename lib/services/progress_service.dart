@@ -291,8 +291,6 @@ class ProgressService {
           .eq('learning_object_id', learningObjectId)
           .single();
 
-      if (response == null) return null;
-
       return ProgressState(
         id: response['id'] ?? '',
         userId: userId,
@@ -532,7 +530,6 @@ Future<void> validateProgressService() async {
 
   // Test 1: Service initialization
   final service = await ProgressService.getInstance();
-  assert(service != null, 'Service must initialize');
   if (kDebugMode) {
     debugPrint('✓ Service initialization verified');
   }

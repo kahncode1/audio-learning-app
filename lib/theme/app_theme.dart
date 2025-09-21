@@ -48,11 +48,9 @@ class AppTheme {
         primary: lightPrimary,
         secondary: lightPrimary,
         surface: lightSurface,
-        background: lightBackground,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: lightTextPrimary,
-        onBackground: lightTextPrimary,
       ),
 
       textTheme: textTheme.copyWith(
@@ -156,11 +154,9 @@ class AppTheme {
         primary: darkPrimary,
         secondary: darkPrimary,
         surface: darkSurface,
-        background: darkBackground,
         onPrimary: darkBackground,
         onSecondary: darkBackground,
         onSurface: darkTextPrimary,
-        onBackground: darkTextPrimary,
       ),
 
       textTheme: textTheme.copyWith(

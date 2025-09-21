@@ -30,7 +30,7 @@ void main() {
     });
 
     tearDownAll(() async {
-      await downloadService.dispose();
+      downloadService.dispose();
       await localContentService.dispose();
     });
 

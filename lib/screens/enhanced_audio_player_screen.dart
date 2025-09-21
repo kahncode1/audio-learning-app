@@ -8,8 +8,6 @@ import '../services/progress_service.dart';
 import '../services/word_timing_service_simplified.dart';
 import '../models/learning_object.dart';
 import '../providers/providers.dart';
-import '../providers/audio_providers.dart';
-import '../providers/audio_context_provider.dart';
 import '../widgets/simplified_dual_level_highlighted_text.dart';
 import '../utils/app_logger.dart';
 
@@ -520,7 +518,7 @@ class _EnhancedAudioPlayerScreenState
                           stream: _audioService.speedStream,
                           builder: (context, snapshot) {
                             final speed = snapshot.data ?? 1.0;
-                            return Container(
+                            return SizedBox(
                               width: 50, // Optimized for content
                               height: 28,
                               child: TextButton(
@@ -602,7 +600,7 @@ class _EnhancedAudioPlayerScreenState
                             final fontSizeName =
                                 _progressService?.currentFontSizeName ??
                                     'Medium';
-                            return Container(
+                            return SizedBox(
                               width: 50, // Optimized for content
                               height: 28,
                               child: TextButton(

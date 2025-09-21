@@ -89,7 +89,7 @@ class _SimplifiedDualLevelHighlightedTextState
   void _setupListeners() {
     // Direct stream subscription - WordTimingService handles throttling
     _wordSubscription = _timingService.currentWordStream.listen((wordIndex) {
-      if (mounted && wordIndex != null && wordIndex != _currentWordIndex) {
+      if (mounted && wordIndex != _currentWordIndex) {
         AppLogger.info('🎨 WIDGET: Word index update received', {
           'oldIndex': _currentWordIndex,
           'newIndex': wordIndex,
@@ -100,7 +100,7 @@ class _SimplifiedDualLevelHighlightedTextState
     });
 
     _sentenceSubscription = _timingService.currentSentenceStream.listen((sentenceIndex) {
-      if (mounted && sentenceIndex != null && sentenceIndex != _currentSentenceIndex) {
+      if (mounted && sentenceIndex != _currentSentenceIndex) {
         AppLogger.info('🎨 WIDGET: Sentence index update received', {
           'oldIndex': _currentSentenceIndex,
           'newIndex': sentenceIndex,
@@ -118,7 +118,7 @@ class _SimplifiedDualLevelHighlightedTextState
         timings = await _timingService.fetchTimings(widget.contentId, widget.text);
       }
 
-      if (mounted && timings != null && timings.isNotEmpty) {
+      if (mounted && timings.isNotEmpty) {
         final nonNullTimings = timings;  // Create non-nullable local variable
         AppLogger.info('🎨 WIDGET: Timing data loaded', {
           'contentId': widget.contentId,
@@ -139,7 +139,9 @@ class _SimplifiedDualLevelHighlightedTextState
     if (widget.scrollController == null ||
         _currentWordIndex < 0 ||
         _timingCollection == null ||
-        _textPainter.text == null) return;
+        _textPainter.text == null) {
+      return;
+    }
 
     final scrollController = widget.scrollController!;
 
@@ -422,17 +424,17 @@ class OptimizedHighlightPainter extends CustomPainter {
       final (int s, int e) = _getWordSelection(
         timingCollection.timings.indexOf(w),
       );
-      startChar = startChar == null ? s : (s < startChar! ? s : startChar);
-      endExclusive = endExclusive == null ? e : (e > endExclusive! ? e : endExclusive);
+      startChar = startChar == null ? s : (s < startChar ? s : startChar);
+      endExclusive = endExclusive == null ? e : (e > endExclusive ? e : endExclusive);
     }
 
     final paint = Paint()
       ..color = sentenceHighlightColor
       ..style = PaintingStyle.fill;
 
-    if (startChar != null && endExclusive != null && endExclusive! >= startChar!) {
+    if (startChar != null && endExclusive != null && endExclusive >= startChar) {
       final boxes = textPainter.getBoxesForSelection(
-        TextSelection(baseOffset: startChar!, extentOffset: endExclusive!),
+        TextSelection(baseOffset: startChar, extentOffset: endExclusive),
       );
 
       for (final box in boxes) {

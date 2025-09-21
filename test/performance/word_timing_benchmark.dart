@@ -10,8 +10,8 @@
 /// - Locality caching: Significant speedup for sequential access
 
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/models/word_timing.dart';
-import '../../lib/services/word_timing_service.dart';
+import 'package:audio_learning_app/models/word_timing.dart';
+import 'package:audio_learning_app/services/word_timing_service.dart';
 import 'dart:math';
 
 void main() {

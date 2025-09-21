@@ -4,7 +4,6 @@
 /// and verifies the CDN URLs are accessible.
 
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -68,11 +67,11 @@ void main() {
       // Generate and display CDN URLs
       print('📍 CDN URLs for uploaded files:\n');
       print('Audio URL:');
-      print('  ${supabaseUrl}/storage/v1/object/public/course-audio/$courseId/$learningObjectId/audio.mp3');
+      print('  $supabaseUrl/storage/v1/object/public/course-audio/$courseId/$learningObjectId/audio.mp3');
       print('\nContent URL:');
-      print('  ${supabaseUrl}/storage/v1/object/public/course-content/$courseId/$learningObjectId/content.json');
+      print('  $supabaseUrl/storage/v1/object/public/course-content/$courseId/$learningObjectId/content.json');
       print('\nTiming URL:');
-      print('  ${supabaseUrl}/storage/v1/object/public/course-timing/$courseId/$learningObjectId/timing.json');
+      print('  $supabaseUrl/storage/v1/object/public/course-timing/$courseId/$learningObjectId/timing.json');
 
       print('\n📝 Next step: Update the database with these CDN URLs\n');
     });

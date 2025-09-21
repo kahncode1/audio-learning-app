@@ -431,7 +431,7 @@ void validateDownloadModels() {
   assert(info.formattedSize.contains('MB'), 'Size should be in MB');
 
   // Test DownloadSettings
-  final settings = DownloadSettings(wifiOnly: true);
+  const settings = DownloadSettings(wifiOnly: true);
   final settingsJson = settings.toJson();
   final settingsFromPrefs = DownloadSettings.fromPrefs(settingsJson);
   assert(settingsFromPrefs.wifiOnly == true, 'Settings should preserve wifiOnly');

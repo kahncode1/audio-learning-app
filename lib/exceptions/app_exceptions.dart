@@ -31,7 +31,7 @@ abstract class AppException implements Exception {
   @override
   String toString() {
     final buffer = StringBuffer();
-    buffer.write('${runtimeType}: $message');
+    buffer.write('$runtimeType: $message');
 
     if (errorCode != null) {
       buffer.write(' (Error Code: $errorCode)');

@@ -331,7 +331,7 @@ class CacheService {
     final now = DateTime.now().millisecondsSinceEpoch;
     final maxAgeMs = maxAge.inMilliseconds;
 
-    final keys = await getCachedKeys();
+    final keys = getCachedKeys();
     int removed = 0;
 
     for (final key in keys) {
@@ -357,7 +357,6 @@ Future<void> validateCacheService() async {
 
   // Test 1: Service initialization
   final service = await CacheService.getInstance();
-  assert(service != null, 'Service must initialize');
   debugPrint('✓ Service initialization verified');
 
   // Test 2: Cache operations

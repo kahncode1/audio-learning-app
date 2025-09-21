@@ -75,7 +75,7 @@ void main() {
 
         // Should be <1000μs (1ms), currently achieving ~549μs
         expect(avgMicroseconds, lessThan(1000),
-            reason: 'Binary search took ${avgMicroseconds}μs average, '
+            reason: 'Binary search took $avgMicrosecondsμs average, '
                    'should be <1000μs (target: 549μs)');
 
         // Log performance for tracking
@@ -281,7 +281,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Container(
+              body: SizedBox(
                 height: 600, // Fixed viewport height
                 child: SingleChildScrollView(
                   controller: scrollController,
@@ -380,7 +380,7 @@ void main() {
 
       testWidgets('should handle empty highlighting gracefully', (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: SimplifiedDualLevelHighlightedText(
                 text: testText,

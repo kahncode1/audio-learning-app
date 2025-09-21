@@ -290,29 +290,29 @@ class _CDNDownloadTestScreenState extends ConsumerState<CDNDownloadTestScreen> {
 
             // CDN Configuration Info
             const SizedBox(height: 16),
-            Card(
+            const Card(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'CDN Configuration',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8),
+                    Text(
                       'Bucket: course-audio, course-content, course-timing',
                       style: TextStyle(fontSize: 12),
                     ),
-                    const Text(
+                    Text(
                       'Project: cmjdciktvfxiyapdseqn',
                       style: TextStyle(fontSize: 12),
                     ),
-                    const Text(
+                    Text(
                       'Learning Object: 63ad7b78-0970-4265-a4fe-51f3fee39d5f',
                       style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
                     ),

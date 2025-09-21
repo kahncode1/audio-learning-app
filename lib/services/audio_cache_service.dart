@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -424,7 +423,6 @@ Future<void> validateAudioCacheService() async {
 
   // Test 1: Service initialization
   final service = await AudioCacheService.getInstance();
-  assert(service != null, 'Service must initialize');
   debugPrint('✓ Service initialization verified');
 
   // Test 2: Cache configuration
@@ -434,7 +432,6 @@ Future<void> validateAudioCacheService() async {
 
   // Test 3: Network state
   final isOnline = await service.isOnline();
-  assert(isOnline is bool, 'Network state must be boolean');
   debugPrint('✓ Network state detection verified');
 
   // Test 4: Cache statistics

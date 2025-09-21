@@ -149,7 +149,7 @@ class _RetryInterceptor extends Interceptor {
   _RetryInterceptor(
     this.dio, {
     this.maxRetries = 3,
-    this.retryDelays = const [1000, 2000, 4000], // Exponential backoff in ms
+    this.retryDelays = const [1000, 2000, 4000],
   });
 
   @override

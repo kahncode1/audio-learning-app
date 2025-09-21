@@ -704,7 +704,6 @@ Future<void> validateCourseDownloadService() async {
   final service = await CourseDownloadService.getInstance();
 
   // Test service initialization
-  assert(service != null, 'Service must initialize');
   debugPrint('✓ Service initialization verified');
 
   // Test settings
@@ -713,7 +712,6 @@ Future<void> validateCourseDownloadService() async {
 
   // Test course download check
   final isDownloaded = await service.isCourseDownloaded('test_course');
-  assert(isDownloaded is bool, 'Download check must return boolean');
   debugPrint('✓ Download check verified');
 
   debugPrint('=== All CourseDownloadService validations passed ===');

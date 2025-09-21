@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assignment.dart';
 import '../models/learning_object.dart';
-import '../providers/mock_data_provider.dart';
 import '../providers/providers.dart';
-import '../providers/audio_providers.dart';
-import '../providers/audio_context_provider.dart';
 import '../widgets/mini_audio_player.dart';
 
 /// AssignmentsScreen displays assignments with expandable tiles

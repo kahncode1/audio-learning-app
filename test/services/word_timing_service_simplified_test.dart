@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:audio_learning_app/services/word_timing_service_simplified.dart';
-import 'package:audio_learning_app/models/word_timing.dart';
 
 /// Unit tests for WordTimingServiceSimplified
 ///

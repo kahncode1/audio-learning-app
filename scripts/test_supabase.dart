@@ -120,7 +120,6 @@ Future<void> createSampleData(String supabaseUrl, String anonKey) async {
         final error = await response.transform(utf8.decoder).join();
       }
     }
-  } catch (e) {
   } finally {
     client.close();
   }
@@ -182,7 +181,6 @@ Future<void> createAssignments(
         final error = await response.transform(utf8.decoder).join();
       }
     }
-  } catch (e) {
   } finally {
     client.close();
   }
@@ -248,7 +246,6 @@ Future<void> createLearningObjects(
         final error = await response.transform(utf8.decoder).join();
       }
     }
-  } catch (e) {
   } finally {
     client.close();
   }

@@ -9,7 +9,7 @@
 /// - Range queries and text search
 
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/models/word_timing.dart';
+import 'package:audio_learning_app/models/word_timing.dart';
 
 void main() {
   group('WordTiming Model', () {

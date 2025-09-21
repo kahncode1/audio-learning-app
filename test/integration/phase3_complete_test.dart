@@ -11,7 +11,6 @@ import 'package:audio_learning_app/services/local_content_service.dart';
 import 'package:audio_learning_app/services/course_download_service.dart';
 import 'package:audio_learning_app/models/learning_object.dart';
 import 'package:audio_learning_app/models/download_models.dart';
-import 'dart:io';
 
 void main() {
   group('Phase 3 Complete Integration Tests', () {
@@ -242,7 +241,7 @@ void main() {
     });
 
     test('8. Summary - Phase 3 Complete', () {
-      print('\n' + '=' * 50);
+      print('\n${'=' * 50}');
       print('PHASE 3 COMPLETION SUMMARY');
       print('=' * 50);
       print('✅ Database migration applied successfully');

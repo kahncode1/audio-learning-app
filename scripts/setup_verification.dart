@@ -81,10 +81,11 @@ void main() async {
 
   results.forEach((check, result) {
     final icon = result ? '✅' : '❌';
-    if (result)
+    if (result) {
       passed++;
-    else
+    } else {
       failed++;
+    }
   });
 
   // Provide next steps
