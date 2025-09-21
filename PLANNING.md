@@ -169,9 +169,23 @@ The system implements a clean separation of concerns across four primary layers:
   - Simplified codebase (~40% reduction)
 - **Implementation Guides:**
   - **Architecture:** `/DOWNLOAD_ARCHITECTURE_PLAN.md`
-  - **Preprocessing:** `/DOWNLOAD_APP_DATA_CONFIGURATION.md`
+  - **Preprocessing Pipeline:** `/preprocessing_pipeline/` - Complete ElevenLabs to JSON conversion
   - **CDN Setup:** `/SUPABASE_CDN_SETUP.md`
   - **Service Implementation:** `/services/local_content_service.dart`
+
+#### Preprocessing Pipeline (New Approach)
+- **Location:** `/preprocessing_pipeline/`
+- **Purpose:** Convert ElevenLabs character-level timing to word/sentence format
+- **Key Components:**
+  - `process_elevenlabs_complete.py` - Main conversion script
+  - `README.md` - Complete overview and workflow
+  - `SCHEMA.md` - JSON schema documentation
+  - `USAGE.md` - Step-by-step usage guide
+- **Critical Requirements:**
+  - **Snake_case field naming** - All timing fields must use snake_case (not camelCase)
+  - **Continuous sentence coverage** - No gaps between sentences for smooth highlighting
+  - **Paragraph preservation** - Original content structure maintained in displayText
+- **Output Format:** Single `content.json` with all timing and display data
 
 ### HTTP & Network
 - **dio: ^5.4.0** - Advanced HTTP client with interceptors for streaming and retry logic

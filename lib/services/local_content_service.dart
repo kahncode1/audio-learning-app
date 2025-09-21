@@ -247,9 +247,23 @@ class LocalContentService {
   /// Get the timing data for a learning object
   ///
   /// Returns pre-processed word and sentence timing information
+  /// Supports both single JSON format (timing embedded in content) and separate timing files
   Future<TimingData> getTimingData(String learningObjectId) async {
     try {
-      // Check for downloaded file first
+      // First, try to get timing from the content file itself (single JSON format)
+      try {
+        final content = await getContent(learningObjectId);
+        if (content.containsKey('timing')) {
+          AppLogger.info('LocalContentService: Found embedded timing in content.json');
+          final timingJson = content['timing'] as Map<String, dynamic>;
+          return _parseTimingData(timingJson, learningObjectId);
+        }
+      } catch (e) {
+        // Content might not have timing, continue to check for separate file
+        AppLogger.debug('LocalContentService: No embedded timing, checking for separate file');
+      }
+
+      // Fall back to separate timing.json file (legacy format)
       final downloadedPath = await _getDownloadedFilePath(learningObjectId, 'timing.json');
       String jsonString;
       String? lookupJsonString;
@@ -281,81 +295,7 @@ class LocalContentService {
       }
 
       final timingJson = json.decode(jsonString) as Map<String, dynamic>;
-
-      // Parse word timings
-      final words = <WordTiming>[];
-      if (timingJson['words'] != null) {
-        for (final wordData in timingJson['words']) {
-          words.add(WordTiming(
-            word: wordData['word'] as String,
-            startMs: wordData['startMs'] as int,
-            endMs: wordData['endMs'] as int,
-            charStart: wordData['charStart'] as int,
-            charEnd: wordData['charEnd'] as int,
-            sentenceIndex: wordData['sentenceIndex'] as int? ?? 0, // Use sentenceIndex from JSON
-          ));
-        }
-      }
-
-      // Parse sentence data
-      final sentences = <SentenceTiming>[];
-      if (timingJson['sentences'] != null) {
-        int sentenceIndex = 0;
-        for (final sentData in timingJson['sentences']) {
-          final startIdx = sentData['wordStartIndex'] as int;
-          final endIdx = sentData['wordEndIndex'] as int;
-
-          // Note: We no longer need to update word sentence indices here
-          // since we're reading them directly from the JSON
-
-          sentences.add(SentenceTiming(
-            text: sentData['text'] as String,
-            startTime: sentData['startMs'] as int,
-            endTime: sentData['endMs'] as int,
-            sentenceIndex: sentenceIndex,
-            wordStartIndex: startIdx,
-            wordEndIndex: endIdx,
-          ));
-
-          sentenceIndex++;
-        }
-      }
-
-      final timingData = TimingData(
-        words: words,
-        sentences: sentences,
-        totalDurationMs: timingJson['totalDurationMs'] as int,
-      );
-
-      // Load and set position lookup table if available
-      if (lookupJsonString != null) {
-        try {
-          final lookupJson = json.decode(lookupJsonString) as Map<String, dynamic>;
-          final lookupTable = PositionLookupTable.fromJson(lookupJson);
-          timingData.setLookupTable(lookupTable);
-
-          AppLogger.info('LocalContentService: Loaded position lookup table', {
-            'learningObjectId': learningObjectId,
-            'entries': lookupTable.lookup.length,
-            'interval': '${lookupTable.interval}ms',
-          });
-        } catch (e) {
-          AppLogger.warning('LocalContentService: Failed to load position lookup table', {
-            'error': e.toString(),
-          });
-        }
-      }
-
-      AppLogger.info('LocalContentService: Loaded timing data', {
-        'learningObjectId': learningObjectId,
-        'wordCount': words.length,
-        'sentenceCount': sentences.length,
-        'duration': '${timingData.totalDurationMs / 1000}s',
-        'source': downloadedPath != null ? 'downloaded' : 'assets',
-        'hasLookupTable': lookupJsonString != null,
-      });
-
-      return timingData;
+      return _parseTimingData(timingJson, learningObjectId, lookupJsonString: lookupJsonString);
     } catch (e) {
       AppLogger.error(
         'LocalContentService: Failed to load timing data',
@@ -364,6 +304,87 @@ class LocalContentService {
       );
       rethrow;
     }
+  }
+
+  /// Parse timing data from JSON into TimingData object
+  TimingData _parseTimingData(
+    Map<String, dynamic> timingJson,
+    String learningObjectId, {
+    String? lookupJsonString,
+  }) {
+    // Parse word timings
+    final words = <WordTiming>[];
+    if (timingJson['words'] != null) {
+      for (final wordData in timingJson['words']) {
+        words.add(WordTiming(
+          word: wordData['word'] as String,
+          startMs: wordData['startMs'] as int,
+          endMs: wordData['endMs'] as int,
+          charStart: wordData['charStart'] as int,
+          charEnd: wordData['charEnd'] as int,
+          sentenceIndex: wordData['sentenceIndex'] as int? ?? 0, // Use sentenceIndex from JSON
+        ));
+      }
+    }
+
+    // Parse sentence data
+    final sentences = <SentenceTiming>[];
+    if (timingJson['sentences'] != null) {
+      int sentenceIndex = 0;
+      for (final sentData in timingJson['sentences']) {
+        final startIdx = sentData['wordStartIndex'] as int;
+        final endIdx = sentData['wordEndIndex'] as int;
+
+        // Note: We no longer need to update word sentence indices here
+        // since we're reading them directly from the JSON
+
+        sentences.add(SentenceTiming(
+          text: sentData['text'] as String,
+          startTime: sentData['startMs'] as int,
+          endTime: sentData['endMs'] as int,
+          sentenceIndex: sentenceIndex,
+          wordStartIndex: startIdx,
+          wordEndIndex: endIdx,
+        ));
+
+        sentenceIndex++;
+      }
+    }
+
+    final timingData = TimingData(
+      words: words,
+      sentences: sentences,
+      totalDurationMs: timingJson['totalDurationMs'] as int,
+    );
+
+    // Load and set position lookup table if available
+    if (lookupJsonString != null) {
+      try {
+        final lookupJson = json.decode(lookupJsonString) as Map<String, dynamic>;
+        final lookupTable = PositionLookupTable.fromJson(lookupJson);
+        timingData.setLookupTable(lookupTable);
+
+        AppLogger.info('LocalContentService: Loaded position lookup table', {
+          'learningObjectId': learningObjectId,
+          'entries': lookupTable.lookup.length,
+          'interval': '${lookupTable.interval}ms',
+        });
+      } catch (e) {
+        AppLogger.warning('LocalContentService: Failed to load position lookup table', {
+          'error': e.toString(),
+        });
+      }
+    }
+
+    AppLogger.info('LocalContentService: Parsed timing data', {
+      'learningObjectId': learningObjectId,
+      'wordCount': words.length,
+      'sentenceCount': sentences.length,
+      'duration': '${timingData.totalDurationMs / 1000}s',
+      'hasLookupTable': lookupJsonString != null,
+    });
+
+    return timingData;
   }
 
   /// Check if content is available locally

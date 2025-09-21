@@ -80,15 +80,24 @@ audio_learning_app/
 
 **Core components of the simplified architecture:**
 - **Local Content Service:** Loads pre-processed JSON files from device storage
-- **Pre-computed Timing:** Word and sentence boundaries already calculated
-- **Simplified Highlighting:** No runtime sentence detection needed
+- **Pre-computed Timing:** Word and sentence boundaries already calculated with snake_case field names
+- **Simplified Highlighting:** No runtime sentence detection needed - all timing pre-processed
 - **UI Widget:** SimplifiedDualLevelHighlightedText with 3-layer paint system
 - **Instant Playback:** Local MP3 files with no network dependency
+- **Preprocessing Pipeline:** ElevenLabs character timing → word/sentence timing with continuous coverage
 
 **Key Implementation Files:**
 - `LocalContentService` - Manages downloaded content
 - `AudioPlayerServiceLocal` - Plays local MP3 files
 - `WordTimingServiceSimplified` - Uses pre-processed timing data
+- `SimplifiedDualLevelHighlightedText` - Optimized highlighting widget
+- `/preprocessing_pipeline/process_elevenlabs_complete.py` - Content preprocessing
+
+**Preprocessing Documentation:**
+- **Pipeline Guide:** `/preprocessing_pipeline/README.md` - Complete preprocessing overview
+- **Schema Definition:** `/preprocessing_pipeline/SCHEMA.md` - JSON schema with snake_case fields
+- **Usage Guide:** `/preprocessing_pipeline/USAGE.md` - Step-by-step preprocessing instructions
+- **Architecture:** `/DOWNLOAD_ARCHITECTURE_PLAN.md` - System design documentation
 
 Full documentation: `/DOWNLOAD_ARCHITECTURE_PLAN.md`
 

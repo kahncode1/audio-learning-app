@@ -1,0 +1,220 @@
+{
+  "version": "1.0",
+  "source": "elevenlabs-complete",
+  "displayText": "The objective of this lesson is to illustrate how insurance facilitates key societal activities.\nLet's begin.\nInsurance is a vital component of risk management.",
+  "paragraphs": [
+    "The objective of this lesson is to illustrate how insurance facilitates key societal activities.",
+    "Let's begin.",
+    "Insurance is a vital component of risk management."
+  ],
+  "headers": [
+    "The Effect of Insurance"
+  ],
+  "formatting": {
+    "boldHeaders": false,
+    "paragraphSpacing": true
+  },
+  "metadata": {
+    "wordCount": 20,
+    "characterCount": 178,
+    "estimatedReadingTime": "1 minute",
+    "language": "en"
+  },
+  "timing": {
+    "words": [
+      {
+        "word": "The",
+        "start_ms": 0,
+        "end_ms": 116,
+        "char_start": 0,
+        "char_end": 3,
+        "sentence_index": 0
+      },
+      {
+        "word": "objective",
+        "start_ms": 116,
+        "end_ms": 627,
+        "char_start": 4,
+        "char_end": 13,
+        "sentence_index": 0
+      },
+      {
+        "word": "of",
+        "start_ms": 685,
+        "end_ms": 778,
+        "char_start": 14,
+        "char_end": 16,
+        "sentence_index": 0
+      },
+      {
+        "word": "this",
+        "start_ms": 813,
+        "end_ms": 975,
+        "char_start": 17,
+        "char_end": 21,
+        "sentence_index": 0
+      },
+      {
+        "word": "lesson",
+        "start_ms": 1033,
+        "end_ms": 1359,
+        "char_start": 22,
+        "char_end": 28,
+        "sentence_index": 0
+      },
+      {
+        "word": "is",
+        "start_ms": 1440,
+        "end_ms": 1533,
+        "char_start": 29,
+        "char_end": 31,
+        "sentence_index": 0
+      },
+      {
+        "word": "to",
+        "start_ms": 1591,
+        "end_ms": 1649,
+        "char_start": 32,
+        "char_end": 34,
+        "sentence_index": 0
+      },
+      {
+        "word": "illustrate",
+        "start_ms": 1707,
+        "end_ms": 2148,
+        "char_start": 35,
+        "char_end": 45,
+        "sentence_index": 0
+      },
+      {
+        "word": "how",
+        "start_ms": 2206,
+        "end_ms": 2357,
+        "char_start": 46,
+        "char_end": 49,
+        "sentence_index": 0
+      },
+      {
+        "word": "insurance",
+        "start_ms": 2415,
+        "end_ms": 2787,
+        "char_start": 50,
+        "char_end": 59,
+        "sentence_index": 0
+      },
+      {
+        "word": "facilitates",
+        "start_ms": 2868,
+        "end_ms": 3368,
+        "char_start": 60,
+        "char_end": 71,
+        "sentence_index": 0
+      },
+      {
+        "word": "key",
+        "start_ms": 3449,
+        "end_ms": 3589,
+        "char_start": 72,
+        "char_end": 75,
+        "sentence_index": 0
+      },
+      {
+        "word": "societal",
+        "start_ms": 3670,
+        "end_ms": 4088,
+        "char_start": 76,
+        "char_end": 84,
+        "sentence_index": 0
+      },
+      {
+        "word": "activities.",
+        "start_ms": 4146,
+        "end_ms": 4535,
+        "char_start": 85,
+        "char_end": 96,
+        "sentence_index": 0
+      },
+      {
+        "word": "Let's",
+        "start_ms": 5093,
+        "end_ms": 5279,
+        "char_start": 97,
+        "char_end": 102,
+        "sentence_index": 1
+      },
+      {
+        "word": "begin.",
+        "start_ms": 5337,
+        "end_ms": 5592,
+        "char_start": 103,
+        "char_end": 109,
+        "sentence_index": 1
+      },
+      {
+        "word": "Insurance",
+        "start_ms": 6150,
+        "end_ms": 6604,
+        "char_start": 110,
+        "char_end": 119,
+        "sentence_index": 2
+      },
+      {
+        "word": "is",
+        "start_ms": 6685,
+        "end_ms": 6778,
+        "char_start": 120,
+        "char_end": 122,
+        "sentence_index": 2
+      },
+      {
+        "word": "a",
+        "start_ms": 6813,
+        "end_ms": 6859,
+        "char_start": 123,
+        "char_end": 124,
+        "sentence_index": 2
+      },
+      {
+        "word": "vital",
+        "start_ms": 6917,
+        "end_ms": 7161,
+        "char_start": 125,
+        "char_end": 130,
+        "sentence_index": 2
+      }
+    ],
+    "sentences": [
+      {
+        "text": "The objective of this lesson is to illustrate how insurance facilitates key societal activities.",
+        "start_ms": 0,
+        "end_ms": 4814,
+        "sentence_index": 0,
+        "wordStartIndex": 0,
+        "wordEndIndex": 13,
+        "char_start": 0,
+        "char_end": 96
+      },
+      {
+        "text": "Let's begin.",
+        "start_ms": 4814,
+        "end_ms": 5871,
+        "sentence_index": 1,
+        "wordStartIndex": 14,
+        "wordEndIndex": 15,
+        "char_start": 97,
+        "char_end": 109
+      },
+      {
+        "text": "Insurance is a vital component of risk management.",
+        "start_ms": 5871,
+        "end_ms": 8000,
+        "sentence_index": 2,
+        "wordStartIndex": 16,
+        "wordEndIndex": 19,
+        "char_start": 110,
+        "char_end": 178
+      }
+    ],
+    "totalDurationMs": 8000
+  }
+}

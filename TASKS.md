@@ -627,6 +627,17 @@ Mark tasks complete by adding the date in parentheses after the task. Add new ta
 
 **Architecture Guide:** 📋 See `DOWNLOAD_ARCHITECTURE_PLAN.md` for complete specifications
 
+### Preprocessing Pipeline ✅ COMPLETE (2025-09-21)
+- [x] 12.0 Create preprocessing pipeline for ElevenLabs to JSON conversion (2025-09-21)
+  - [x] Implement word/sentence timing extraction from character-level data
+  - [x] Fix field naming to use snake_case (critical for Flutter compatibility)
+  - [x] Add continuous sentence coverage to prevent highlighting gaps
+  - [x] Preserve paragraph structure from original content
+  - [x] Create comprehensive documentation (README, SCHEMA, USAGE)
+  📁 Implementation: `/preprocessing_pipeline/`
+  📝 Key fix: Changed all timing fields from camelCase to snake_case
+  🎯 Result: Sentence highlighting no longer flashes, paragraphs preserved
+
 ### Phase 1: Test Data & Local Implementation ✅ COMPLETE (2025-09-18)
 - [x] 12.1 Create test JSON files following schemas defined in 📋 `DOWNLOAD_ARCHITECTURE_PLAN.md` (2025-09-18)
   - [x] Sample content.json with displayText and paragraphs - Created with 63 words, 4 paragraphs
