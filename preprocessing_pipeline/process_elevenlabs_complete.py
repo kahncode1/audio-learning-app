@@ -3,28 +3,37 @@
 Process complete ElevenLabs character-level timing data to word-level timing
 
 This script handles the full ElevenLabs JSON format with character-level timing
-and converts it to word-level timing with sentence detection.
+and converts it to word-level timing with enhanced sentence detection that properly
+handles edge cases like lists, abbreviations, quotations, and mathematical expressions.
+
+Version: 2.0 - Now includes comprehensive edge case handling
 """
 
 import json
 import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
+from edge_case_handlers import EdgeCaseHandlers, StructureType
 
 
 class ElevenLabsCompleteProcessor:
     """Process complete ElevenLabs character-level timing to word-level"""
 
-    def __init__(self, elevenlabs_path: str, original_content_path: Optional[str] = None):
+    def __init__(self, elevenlabs_path: str, original_content_path: Optional[str] = None, config: Dict = None):
         """
         Initialize processor
 
         Args:
             elevenlabs_path: Path to ElevenLabs JSON with character timing
             original_content_path: Optional path to original content for verification
+            config: Optional configuration for edge case handling
         """
         self.elevenlabs_path = elevenlabs_path
         self.original_content_path = original_content_path
+        self.config = config or {}
+
+        # Initialize edge case handlers
+        self.edge_handlers = EdgeCaseHandlers(config)
 
         # Load ElevenLabs data
         with open(elevenlabs_path, 'r', encoding='utf-8') as f:
@@ -102,7 +111,24 @@ class ElevenLabsCompleteProcessor:
         return words
 
     def detect_sentences(self, words: List[Dict], text: str) -> List[Dict]:
-        """Detect sentence boundaries and create sentence timing"""
+        """Detect sentence boundaries and create sentence timing with edge case handling"""
+        # Use enhanced detection if enabled
+        if self.config.get('use_enhanced_detection', True):
+            # Detect special structures in the text
+            structures = self.edge_handlers.detect_structures(text)
+
+            # Apply enhanced sentence detection
+            sentences = self.edge_handlers.apply_enhanced_sentence_detection(
+                words, text, structures
+            )
+        else:
+            # Fallback to original simple detection
+            sentences = self._simple_sentence_detection(words, text)
+
+        return sentences
+
+    def _simple_sentence_detection(self, words: List[Dict], text: str) -> List[Dict]:
+        """Original simple sentence detection logic"""
         sentences = []
         current_sentence_words = []
         current_sentence_start = 0
@@ -356,7 +382,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='Process complete ElevenLabs character-level timing data'
+        description='Process complete ElevenLabs character-level timing data with enhanced edge case handling'
     )
     parser.add_argument(
         'elevenlabs_json',
@@ -364,11 +390,16 @@ def main():
     )
     parser.add_argument(
         '-o', '--output',
-        help='Output path for enhanced JSON'
+        help='Output path for enhanced JSON (default: *_complete.json)'
     )
     parser.add_argument(
         '-c', '--original-content',
-        help='Path to original content JSON for verification'
+        help='Path to original content JSON for formatting preservation'
+    )
+    parser.add_argument(
+        '--config',
+        default='config.json',
+        help='Path to configuration file for edge case handling (default: config.json)'
     )
 
     args = parser.parse_args()
@@ -380,10 +411,18 @@ def main():
         input_path = Path(args.elevenlabs_json)
         output_path = input_path.parent / f"{input_path.stem}_enhanced.json"
 
+    # Load configuration if provided
+    config = {}
+    if args.config and Path(args.config).exists():
+        with open(args.config, 'r') as f:
+            config = json.load(f)
+            print(f"📋 Loaded configuration from: {args.config}")
+
     # Process
     processor = ElevenLabsCompleteProcessor(
         args.elevenlabs_json,
-        args.original_content
+        args.original_content,
+        config
     )
     processor.save(str(output_path))
 

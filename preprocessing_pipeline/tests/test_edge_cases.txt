@@ -1,0 +1,72 @@
+Edge Case Test Corpus for Audio Learning App
+
+Chapter 1: Common Abbreviations
+Dr. Smith works at the U.S. headquarters. He arrived at 3:30 p.m. The company, Example Inc., is located on 123 Main St. Mr. Jones said, "We need to meet Mrs. Davis at the U.K. office."
+
+Section 2: Lists and Enumerations
+
+The insurance industry faces several challenges:
+• Rising costs
+• Regulatory changes
+• Customer expectations
+• Digital transformation
+
+Examples of technology used to predict and prevent losses include:
+Telematics
+Wearables
+IoT sensors
+Smartphones
+Cloud storage
+Predictive models
+Artificial intelligence
+
+The process involves three steps:
+1. Data collection
+2. Analysis and modeling
+3. Implementation of solutions
+
+Benefits of our approach:
+a) Cost reduction
+b) Improved accuracy
+c) Better customer experience
+d) Faster processing times
+
+Part 3: Mathematical and Technical Content
+
+The formula is E = mc². The calculation shows 2 + 2 = 4. Our success rate is 95.5%. The ratio of claims to premiums is 3:1. Temperature increased by 25°C.
+
+if (claimAmount > deductible) {
+    paymentAmount = claimAmount - deductible;
+}
+
+The algorithm runs in O(n log n) time complexity.
+
+Section 4: Quotations and Dialog
+
+She said, "This is important." John replied, "I understand completely."
+
+The report states: "Insurance penetration has increased significantly. The market has grown by 15% annually. This trend is expected to continue."
+
+Manager: "What's our current status?"
+Analyst: "We're on track to meet Q4 targets."
+Manager: "Excellent! Keep up the good work."
+
+Part 5: Special Punctuation
+
+Well... I'm not sure about this. The solution—if there is one—requires careful thought. The results were unexpected; however, they were still valuable.
+
+Really?! That's amazing! What...? I can't believe it!
+
+Section 6: URLs and Contact Information
+
+For more information, visit www.example.com or https://docs.example.com/guide. Contact us at info@example.com or call (555) 123-4567.
+
+Chapter 7: Complex Sentences
+
+The U.S.A., which has the largest insurance market, represents 40% of global premiums; meanwhile, emerging markets in Asia (particularly China, India, and Indonesia) are growing at 15% annually—a rate that's expected to continue through 2025.
+
+Dr. Johnson's research (published in the Journal of Insurance Studies, Vol. 23, pp. 145-167) demonstrates that companies using AI-driven risk assessment achieve 30% better loss ratios vs. traditional methods.
+
+Conclusion
+
+This test corpus includes various edge cases: abbreviations (e.g., Dr., U.S., etc.), lists (numbered, bulleted, and colon-introduced), mathematical expressions (2 + 2 = 4), quotations ("like this"), and special punctuation (ellipses... em dashes—semicolons; and more). Each case should be handled appropriately by the enhanced sentence detection system.

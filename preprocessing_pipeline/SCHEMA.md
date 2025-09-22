@@ -1,6 +1,6 @@
 # Content JSON Schema Documentation
 
-## Version 1.0
+## Version 2.0
 
 This document defines the JSON schema for preprocessed audio learning content with synchronized timing data.
 
@@ -66,36 +66,36 @@ interface SentenceTiming {
 }
 ```
 
-## Field Details
+## Field Specifications
 
 ### Root Level
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `version` | string | Yes | Schema version identifier, currently "1.0" |
-| `source` | string | Yes | Pipeline identifier, "elevenlabs-complete" for this processor |
-| `displayText` | string | Yes | Complete text with newline characters preserving paragraph breaks |
-| `paragraphs` | string[] | Yes | Array of paragraph strings for structured display |
-| `headers` | string[] | Yes | Detected section headers (may be empty array) |
-| `formatting` | object | Yes | Display preferences object |
-| `metadata` | object | Yes | Content statistics and information |
+| `source` | string | Yes | Pipeline identifier, "elevenlabs-complete" |
+| `displayText` | string | Yes | Complete text with newline characters for paragraphs |
+| `paragraphs` | string[] | Yes | Array of paragraph strings |
+| `headers` | string[] | Yes | Detected section headers (may be empty) |
+| `formatting` | object | Yes | Display preferences |
+| `metadata` | object | Yes | Content statistics |
 | `timing` | object | Yes | Audio synchronization data |
 
 ### Formatting Object
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `boldHeaders` | boolean | false | Whether to bold detected headers |
-| `paragraphSpacing` | boolean | true | Whether to add spacing between paragraphs |
+| `boldHeaders` | boolean | false | Whether to bold headers |
+| `paragraphSpacing` | boolean | true | Add spacing between paragraphs |
 
 ### Metadata Object
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `wordCount` | number | Total number of words in content |
-| `characterCount` | number | Total character count including spaces |
-| `estimatedReadingTime` | string | Human-readable duration (e.g., "11 minutes") |
-| `language` | string | ISO 639-1 language code (e.g., "en") |
+| `wordCount` | number | Total number of words |
+| `characterCount` | number | Total characters including spaces |
+| `estimatedReadingTime` | string | Human-readable duration |
+| `language` | string | ISO 639-1 language code |
 
 ### Timing Object
 
@@ -109,56 +109,61 @@ interface SentenceTiming {
 
 | Field | Type | Range | Description |
 |-------|------|-------|-------------|
-| `word` | string | - | The word text (no leading/trailing spaces) |
-| `start_ms` | number | ≥ 0 | Word start time in milliseconds |
-| `end_ms` | number | > start_ms | Word end time in milliseconds |
-| `char_start` | number | ≥ 0 | Starting character index in original text |
-| `char_end` | number | ≥ char_start | Ending character index in original text |
-| `sentence_index` | number | ≥ 0 | Index of sentence containing this word |
+| `word` | string | - | Word text (no whitespace) |
+| `start_ms` | number | ≥ 0 | Start time in milliseconds |
+| `end_ms` | number | > start_ms | End time in milliseconds |
+| `char_start` | number | ≥ 0 | Starting character index |
+| `char_end` | number | ≥ char_start | Ending character index |
+| `sentence_index` | number | ≥ 0 | Parent sentence index |
 
 ### SentenceTiming Object
 
 | Field | Type | Range | Description |
 |-------|------|-------|-------------|
 | `text` | string | - | Complete sentence text |
-| `start_ms` | number | ≥ 0 | Sentence start (may extend before first word) |
-| `end_ms` | number | > start_ms | Sentence end (may extend after last word) |
+| `start_ms` | number | ≥ 0 | Start time (extended for coverage) |
+| `end_ms` | number | > start_ms | End time (extended for coverage) |
 | `sentence_index` | number | ≥ 0 | Unique sentence identifier |
-| `wordStartIndex` | number | ≥ 0 | Index of first word in words array |
-| `wordEndIndex` | number | ≥ wordStartIndex | Index of last word in words array |
+| `wordStartIndex` | number | ≥ 0 | First word index |
+| `wordEndIndex` | number | ≥ wordStartIndex | Last word index |
 | `char_start` | number | ≥ 0 | Starting character index |
 | `char_end` | number | ≥ char_start | Ending character index |
 
-## Important Constraints
+## Validation Rules
 
-### Timing Continuity
-- Sentences MUST have continuous coverage with no gaps
-- Adjacent sentences share boundaries at their midpoint
-- Every millisecond from 0 to totalDurationMs is covered by exactly one sentence
+1. **Timing Constraints**
+   - All `*_ms` fields must be non-negative
+   - `end_ms` must be greater than `start_ms`
+   - Words and sentences ordered chronologically
 
-### Word-Sentence Relationship
-- Every word MUST have a valid sentence_index
-- Words are ordered chronologically by start_ms
-- Words within a sentence are contiguous in the array
+2. **Continuous Coverage**
+   - No gaps between adjacent sentences
+   - Every millisecond covered by exactly one sentence
+   - Sentence boundaries meet at midpoints
 
-### Field Naming Convention
-- ALL timing fields use snake_case (not camelCase)
-- This matches Flutter app's JSON parsing expectations
+3. **Index Constraints**
+   - All array indices must be within bounds
+   - Every word must have valid `sentence_index`
+   - Words within sentence must be contiguous
 
-### Character Indices
-- Character indices refer to positions in the reconstructed text
-- Indices are 0-based
-- Include all characters (letters, spaces, punctuation)
+4. **Field Naming**
+   - ALL timing fields use snake_case
+   - Matches Flutter app JSON parsing
 
-## Example Snippet
+5. **Content Rules**
+   - No empty text fields
+   - `wordCount` matches words array length
+   - Character indices are 0-based
+
+## Example
 
 ```json
 {
   "version": "1.0",
   "source": "elevenlabs-complete",
-  "displayText": "The objective of this lesson is to illustrate.\nLet's begin.",
+  "displayText": "The objective is clear.\nLet's begin.",
   "paragraphs": [
-    "The objective of this lesson is to illustrate.",
+    "The objective is clear.",
     "Let's begin."
   ],
   "headers": [],
@@ -167,8 +172,8 @@ interface SentenceTiming {
     "paragraphSpacing": true
   },
   "metadata": {
-    "wordCount": 10,
-    "characterCount": 60,
+    "wordCount": 6,
+    "characterCount": 36,
     "estimatedReadingTime": "1 minute",
     "language": "en"
   },
@@ -181,48 +186,44 @@ interface SentenceTiming {
         "char_start": 0,
         "char_end": 3,
         "sentence_index": 0
-      },
-      {
-        "word": "objective",
-        "start_ms": 116,
-        "end_ms": 627,
-        "char_start": 4,
-        "char_end": 13,
-        "sentence_index": 0
       }
     ],
     "sentences": [
       {
-        "text": "The objective of this lesson is to illustrate.",
+        "text": "The objective is clear.",
         "start_ms": 0,
-        "end_ms": 2500,
+        "end_ms": 1500,
         "sentence_index": 0,
         "wordStartIndex": 0,
-        "wordEndIndex": 7,
+        "wordEndIndex": 3,
         "char_start": 0,
-        "char_end": 47
-      },
-      {
-        "text": "Let's begin.",
-        "start_ms": 2500,
-        "end_ms": 4000,
-        "sentence_index": 1,
-        "wordStartIndex": 8,
-        "wordEndIndex": 9,
-        "char_start": 48,
-        "char_end": 60
+        "char_end": 23
       }
     ],
-    "totalDurationMs": 4000
+    "totalDurationMs": 3000
   }
 }
 ```
 
-## Validation Rules
+## Flutter Integration
 
-1. **No negative times**: All _ms fields must be ≥ 0
-2. **Chronological order**: Words and sentences must be ordered by start_ms
-3. **Valid indices**: All array indices must be within bounds
-4. **Complete coverage**: No timing gaps between sentences
-5. **Non-empty text**: All text fields must contain content
-6. **Consistent counts**: wordCount must match actual word array length
+The schema matches Flutter's JSON parsing expectations:
+
+```dart
+factory WordTiming.fromJson(Map<String, dynamic> json) {
+  return WordTiming(
+    word: json['word'] as String,
+    startMs: json['start_ms'] as int,        // snake_case
+    endMs: json['end_ms'] as int,            // snake_case
+    sentenceIndex: json['sentence_index'] as int? ?? 0,
+    charStart: json['char_start'] as int?,
+    charEnd: json['char_end'] as int?,
+  );
+}
+```
+
+## Notes
+
+- The preprocessing handles complex text formatting including lists, abbreviations, quotations, and mathematical expressions
+- Sentence detection is configurable via `config.json`
+- See [Usage Guide](USAGE.md) for configuration options

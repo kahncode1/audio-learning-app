@@ -1,188 +1,345 @@
 # Preprocessing Pipeline Usage Guide
 
-## Quick Start
+## Installation & Requirements
 
-### 1. Prerequisites
+### Prerequisites
 - Python 3.7+
-- ElevenLabs TTS output JSON file
+- No external dependencies (uses standard library only)
+- ElevenLabs TTS output JSON file with character timing
 - (Optional) Original content JSON for formatting preservation
 
-### 2. Basic Usage
+### File Setup
+Ensure these files are in the `preprocessing_pipeline` directory:
+- `process_elevenlabs_complete.py` - Main script
+- `edge_case_handlers.py` - Edge case detection module
+- `config.json` - Configuration settings
+- `abbreviations.json` - Abbreviation database
 
-Process a single ElevenLabs file:
+## Basic Usage
+
+### Simple Processing
 ```bash
-cd preprocessing_pipeline
-python process_elevenlabs_complete.py ../path/to/elevenlabs_output.json
+python process_elevenlabs_complete.py input.json
 ```
+Creates `input_enhanced.json` in the same directory.
 
-### 3. With Original Content
-
-Preserve paragraph formatting from original:
+### Custom Output Path
 ```bash
-python process_elevenlabs_complete.py \
-  ../Test_LO_Content/elevenlabs_output.json \
-  -c ../Test_LO_Content/original_content.json \
-  -o ../assets/test_content/learning_objects/{id}/content.json
+python process_elevenlabs_complete.py input.json -o output.json
 ```
 
-## File Locations
-
-### Input Files
-- **ElevenLabs JSON**: Output from ElevenLabs API with character timing
-- **Original Content**: Source text with paragraph structure
-
-### Output Location
-Place the generated `content.json` in:
-```
-assets/test_content/learning_objects/{learning_object_id}/content.json
-```
-
-Where `{learning_object_id}` matches the database ID (e.g., `63ad7b78-0970-4265-a4fe-51f3fee39d5f`)
-
-## Step-by-Step Workflow
-
-### Step 1: Generate Audio with ElevenLabs
-Use ElevenLabs API to generate audio with character-level timing:
-```python
-# Example ElevenLabs API call (not part of this pipeline)
-response = elevenlabs.generate(
-    text=content,
-    voice="voice_id",
-    model="eleven_monolingual_v1",
-    output_format="mp3_44100_128",
-    with_timestamps=True  # Critical for timing data
-)
-```
-
-### Step 2: Save ElevenLabs Output
-Save the API response JSON containing:
-- Audio file URL/data
-- Character alignment arrays
-- Timing information
-
-### Step 3: Run Preprocessing
+### With Original Content
+Preserves paragraph formatting from source:
 ```bash
-python process_elevenlabs_complete.py elevenlabs_output.json
+python process_elevenlabs_complete.py input.json \
+  -c original_content.json \
+  -o final.json
 ```
-
-This generates `content_complete.json` with:
-- Word-level timing
-- Sentence boundaries
-- Preserved paragraphs
-- Snake_case field names
-
-### Step 4: Deploy to App
-Copy the generated content to the app's assets:
-```bash
-cp content_complete.json ../assets/test_content/learning_objects/{id}/content.json
-```
-
-### Step 5: Verify in App
-The Flutter app will:
-1. Load the JSON from assets
-2. Parse using snake_case field names
-3. Display with proper paragraph breaks
-4. Synchronize highlighting without flashing
 
 ## Command-Line Options
 
 ```
-python process_elevenlabs_complete.py <elevenlabs_json> [options]
+python process_elevenlabs_complete.py <input> [options]
 
-Arguments:
-  elevenlabs_json    Path to ElevenLabs JSON file with character timing
+Required:
+  input                Path to ElevenLabs JSON with character timing
 
 Options:
-  -o, --output PATH          Output path for enhanced JSON (default: *_complete.json)
-  -c, --original-content PATH  Path to original content JSON for verification
-  -h, --help                Show help message
+  -o, --output PATH    Output path (default: input_enhanced.json)
+  -c, --original-content PATH  Original content for formatting
+  --config PATH        Configuration file (default: config.json)
+  -h, --help          Show help message
 ```
 
-## Examples
+## Edge Case Configuration
 
-### Example 1: Basic Processing
+### Overview
+The pipeline intelligently handles various text formatting edge cases that would otherwise break sentence detection. This is controlled via `config.json`.
+
+### Handled Edge Cases
+
+#### 1. Lists
+**Colon-introduced:**
+```
+Examples of technology include:
+Telematics
+Wearables
+IoT sensors
+```
+Each item becomes a separate sentence for clear highlighting.
+
+**Numbered/Bulleted:**
+- `1. First item` or `1) First item`
+- `• Bullet point` or `- List item`
+- `a) Option A` or `a. Option A`
+
+#### 2. Abbreviations
+Over 500 recognized abbreviations prevent false sentence breaks:
+- **Titles**: Dr., Mr., Mrs., Prof., Rev.
+- **Academic**: Ph.D., M.D., B.A., MBA
+- **Organizations**: Inc., Corp., Ltd., LLC
+- **Locations**: St., Ave., Blvd.
+- **Time**: a.m., p.m., hr., min.
+- **Medical**: mg., ml., ICU, ER
+- **Legal**: v., vs., et al., i.e.
+- **Insurance**: ins., prem., ded., liab.
+
+#### 3. Mathematical & Technical
+- **Equations**: `E = mc²` preserved as single unit
+- **Calculations**: `2 + 2 = 4` not broken at equals
+- **Ratios**: `3:1` colon not treated as list
+- **Percentages**: `95.5%` kept intact
+- **URLs**: `www.example.com` dots don't break sentences
+- **Emails**: `info@example.com` preserved
+
+#### 4. Quotations & Dialog
+- **Direct quotes**: `She said, "Hello."`
+- **Dialog format**: `Manager: "Status?"`
+- **Nested quotes**: Properly handled
+
+#### 5. Special Punctuation
+- **Ellipses**: `Well...` doesn't break
+- **Em dashes**: `The solution—if any—is clear`
+- **Semicolons**: Configurable breaking
+- **Multiple**: `Really?!` treated as single
+
+### Configuration File
+
+Edit `config.json` to control edge case handling:
+
+```json
+{
+  "sentence_detection": {
+    "use_enhanced_detection": true,  // Master switch
+    "handle_lists": true,            // Process list items separately
+    "split_long_quotes": true,       // Break very long quotations
+    "preserve_equations": true,      // Keep math expressions intact
+    "max_sentence_length_ms": 20000, // Maximum sentence duration
+
+    "edge_case_handling": {
+      "colon_lists": {
+        "enabled": true,
+        "split_items": true,
+        "min_items_for_list": 2
+      },
+      "numbered_lists": {
+        "enabled": true
+      },
+      "bulleted_lists": {
+        "enabled": true
+      },
+      "quotations": {
+        "enabled": true,
+        "max_quote_length_ms": 10000
+      },
+      "abbreviations": {
+        "enabled": true,
+        "use_external_database": true
+      }
+    }
+  },
+
+  "output": {
+    "include_debug_info": false,     // Add debug fields
+    "include_break_reasons": false   // Show why sentences broke
+  }
+}
+```
+
+### Adding Custom Abbreviations
+
+Add to `abbreviations.json` under the appropriate category:
+```json
+{
+  "custom": ["Your", "Custom", "Abbrev"],
+  "insurance_terms": ["Add", "More", "Here"]
+}
+```
+
+### Disabling Edge Case Detection
+
+For simple punctuation-based breaking:
+```json
+{
+  "sentence_detection": {
+    "use_enhanced_detection": false
+  }
+}
+```
+
+## Flutter App Integration
+
+### File Placement
+Place generated content in the Flutter app's assets:
 ```bash
-python process_elevenlabs_complete.py audio_data.json
+cp output.json ../assets/test_content/learning_objects/{id}/content.json
 ```
-Output: `audio_data_complete.json`
 
-### Example 2: Custom Output Path
+Where `{id}` is the learning object ID (e.g., `63ad7b78-0970-4265-a4fe-51f3fee39d5f`)
+
+### Field Name Compatibility
+The pipeline outputs snake_case fields matching Flutter's expectations:
+```dart
+// Flutter expects:
+json['start_ms']       // NOT startMs
+json['end_ms']         // NOT endMs
+json['sentence_index'] // NOT sentenceIndex
+```
+
+### App Loading Process
+1. App loads JSON from assets directory
+2. Parses using snake_case field names
+3. Displays with paragraph formatting preserved
+4. Synchronizes highlighting with continuous coverage
+
+## Step-by-Step Workflow
+
+### 1. Generate Audio with ElevenLabs
+```python
+# Use ElevenLabs API with timing enabled
+response = elevenlabs.generate(
+    text=content,
+    voice="voice_id",
+    with_timestamps=True  # Critical for timing
+)
+```
+
+### 2. Save ElevenLabs Output
+Save the complete JSON response containing:
+- Character array
+- Start/end time arrays
+- Audio file reference
+
+### 3. Run Preprocessing
 ```bash
-python process_elevenlabs_complete.py audio_data.json -o processed/content.json
+python process_elevenlabs_complete.py elevenlabs_output.json
 ```
-Output: `processed/content.json`
 
-### Example 3: With Original Content Verification
-```bash
-python process_elevenlabs_complete.py \
-  elevenlabs.json \
-  -c original.json \
-  -o final.json
+### 4. Verify Output
+Check the summary:
 ```
-Output: `final.json` with preserved formatting from `original.json`
-
-## Validation Output
-
-The script provides validation feedback:
-```
-📊 Loaded ElevenLabs data:
-   Characters: 15407
-   Start times: 15407
-   End times: 15407
-
-✅ Saved enhanced content to: content_complete.json
+✅ Saved enhanced content to: content_enhanced.json
 
 📊 Summary:
    Text: 15407 characters
    Words: 2347
    Sentences: 116
    Paragraphs: 78
-   Duration: 957.6 seconds
    Duration: 16.0 minutes
+```
 
-✅ Text matches original content perfectly!
+### 5. Deploy to App
+```bash
+cp content_enhanced.json ../assets/test_content/learning_objects/{id}/content.json
 ```
 
 ## Troubleshooting
 
-### Issue: Sentence highlighting flashes
-**Solution**: Ensure field names use snake_case (not camelCase)
+### Common Issues
 
-### Issue: No paragraph breaks in display
-**Solution**: Provide original content with `-c` option to preserve formatting
+**Sentence highlighting flashes**
+- Ensure snake_case field names (not camelCase)
+- Verify continuous coverage algorithm is applied
 
-### Issue: Words have sentence_index = -1
-**Solution**: Script automatically fixes this with continuous coverage algorithm
+**No paragraph breaks in display**
+- Provide original content with `-c` option
+- Check that `displayText` contains `\n` characters
 
-### Issue: Field name mismatch errors in Flutter
-**Solution**: Verify all timing fields use snake_case:
-- ✅ `start_ms` (not `startMs`)
-- ✅ `end_ms` (not `endMs`)
-- ✅ `sentence_index` (not `sentenceIndex`)
+**Lists appear as single sentence**
+- Enable `"use_enhanced_detection": true` in config
+- Verify `"handle_lists": true` is set
 
-## Integration with Flutter App
+**Breaks at abbreviations (Dr., Inc.)**
+- Check `abbreviations.json` exists
+- Add missing abbreviations to database
+- Ensure `"use_enhanced_detection": true`
 
-The Flutter app expects the content.json at:
-```dart
-final contentPath = 'assets/test_content/learning_objects/$learningObjectId/content.json';
-```
+**Mathematical expressions broken**
+- Set `"preserve_equations": true` in config
+- Check edge case handling is enabled
 
-The app's `WordTiming.fromJson()` expects snake_case fields:
-```dart
-factory WordTiming.fromJson(Map<String, dynamic> json) {
-  return WordTiming(
-    word: json['word'] as String,
-    startMs: json['start_ms'] as int,        // snake_case
-    endMs: json['end_ms'] as int,            // snake_case
-    sentenceIndex: json['sentence_index'] as int? ?? 0,  // snake_case
-  );
+**Words with sentence_index = -1**
+- Script auto-fixes this with continuous coverage
+- Check for warnings in output
+
+### Validation Checks
+
+The script performs automatic validation:
+- ✅ No invalid sentence indices
+- ✅ Continuous timing coverage
+- ✅ Text matches original (if provided)
+- ✅ Snake_case field names
+- ✅ Chronological ordering
+
+### Debug Mode
+
+Enable debug output in config.json:
+```json
+{
+  "output": {
+    "include_debug_info": true,
+    "include_break_reasons": true
+  }
 }
 ```
 
+This adds:
+- `break_reason` field to sentences (why they ended)
+- Additional validation output
+- Character position tracking
+
+## Testing
+
+### Run Test Suite
+```bash
+python test_edge_case_handling.py
+```
+
+### Test Corpus
+Use files in `tests/` directory to verify edge case handling.
+
+### Manual Testing
+1. Process a test file with known edge cases
+2. Check sentence boundaries in output JSON
+3. Verify in Flutter app for proper highlighting
+
+## Examples
+
+### Example 1: Insurance Content
+```bash
+python process_elevenlabs_complete.py \
+  insurance_lesson.json \
+  -c original_lesson.json \
+  -o processed_lesson.json
+```
+
+### Example 2: Custom Config
+```bash
+python process_elevenlabs_complete.py \
+  content.json \
+  --config custom_config.json \
+  -o output.json
+```
+
+### Example 3: Debug Mode
+```bash
+# Enable debug in config.json first
+python process_elevenlabs_complete.py debug_test.json
+```
+
+## Performance Notes
+
+- Processing time: ~1-2 seconds per minute of audio
+- Edge case detection adds ~5-10% overhead
+- Output file size similar to input
+- No impact on app performance (preprocessing only)
+
 ## Best Practices
 
-1. **Always verify** the output summary shows correct counts
-2. **Use original content** when available for best formatting
-3. **Check for warnings** about invalid sentence indices
-4. **Test in app** after preprocessing to verify highlighting works
-5. **Keep backups** of working content.json files
+1. **Always verify** output summary for correct counts
+2. **Use original content** when available for formatting
+3. **Test edge cases** with sample content first
+4. **Keep backups** of working configurations
+5. **Update abbreviations** as needed for your domain
+6. **Monitor warnings** in script output
+7. **Validate in app** after preprocessing
