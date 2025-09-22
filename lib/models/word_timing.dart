@@ -12,6 +12,8 @@
 ///   - Groups words by sentence for dual-level highlighting
 ///   - Enables tap-to-seek functionality
 
+import '../utils/app_logger.dart';
+
 class WordTiming {
   final String word;
   final int startMs;
@@ -341,7 +343,7 @@ class WordTimingCollection {
 
 /// Validation function to verify WordTiming model implementation
 void validateWordTimingModel() {
-  print('WordTiming: Starting validation...');
+  AppLogger.info('WordTiming: Starting validation...');
 
   // Test JSON parsing
   final testJson = {
@@ -357,13 +359,13 @@ void validateWordTimingModel() {
   assert(timing.endMs == 1500);
   assert(timing.sentenceIndex == 0);
   assert(timing.durationMs == 500);
-  print('✅ JSON serialization working');
+  AppLogger.info('✅ JSON serialization working');
 
   // Test active checking
   assert(timing.isActiveAt(1250) == true);
   assert(timing.isActiveAt(500) == false);
   assert(timing.isActiveAt(2000) == false);
-  print('✅ Active time checking working');
+  AppLogger.info('✅ Active time checking working');
 
   // Test collection functionality with optimizations
   final timings = [
@@ -376,7 +378,7 @@ void validateWordTimingModel() {
 
   final collection = WordTimingCollection(timings);
   assert(collection.validateIntegrity() == true);
-  print('✅ Collection integrity validation working');
+  AppLogger.info('✅ Collection integrity validation working');
 
   // Test optimized binary search
   final stopwatch = Stopwatch()..start();
@@ -385,7 +387,7 @@ void validateWordTimingModel() {
   }
   stopwatch.stop();
   assert(stopwatch.elapsedMicroseconds < 5000); // Should be very fast
-  print('✅ Optimized binary search: ${stopwatch.elapsedMicroseconds}μs for 1000 searches');
+  AppLogger.info('✅ Optimized binary search: ${stopwatch.elapsedMicroseconds}μs for 1000 searches');
 
   // Test specific searches
   assert(collection.findActiveWordIndex(250) == 0);
@@ -396,38 +398,38 @@ void validateWordTimingModel() {
   // instead of -1 for better user experience, so we test for both cases
   final farFutureResult = collection.findActiveWordIndex(5000);
   assert(farFutureResult == -1 || farFutureResult == timings.length - 1);
-  print('✅ Binary search accuracy working');
+  AppLogger.info('✅ Binary search accuracy working');
 
   // Test sentence operations with caching
   assert(collection.findActiveSentenceIndex(750) == 0);
   assert(collection.findActiveSentenceIndex(2250) == 1);
   assert(collection.sentenceCount == 2);
   assert(collection.totalDurationMs == 3000);
-  print('✅ Sentence operations working');
+  AppLogger.info('✅ Sentence operations working');
 
   final sentence1Words = collection.getWordsInSentence(1);
   assert(sentence1Words.length == 3);
   assert(sentence1Words.first.word == 'How');
-  print('✅ Sentence word lookup working');
+  AppLogger.info('✅ Sentence word lookup working');
 
   final boundaries = collection.getSentenceBoundaries(1);
   assert(boundaries != null);
   assert(boundaries!.$1 == 1500);
   assert(boundaries!.$2 == 3000);
-  print('✅ Cached sentence boundaries working');
+  AppLogger.info('✅ Cached sentence boundaries working');
 
   // Test word finding by text
   assert(collection.findWordIndexByText('Hello') == 0);
   assert(collection.findWordIndexByText('are') == 3);
   assert(collection.findWordIndexByText('nonexistent') == -1);
-  print('✅ Word finding by text working');
+  AppLogger.info('✅ Word finding by text working');
 
   // Test range queries
   final rangeIndices = collection.getWordIndicesInRange(1000, 2500);
   assert(rangeIndices.isNotEmpty);
   assert(rangeIndices.contains(2)); // 'How' word
   assert(rangeIndices.contains(3)); // 'are' word
-  print('✅ Range queries working');
+  AppLogger.info('✅ Range queries working');
 
   // Test locality caching performance
   collection.resetLocalityCache();
@@ -440,7 +442,7 @@ void validateWordTimingModel() {
   localityStopwatch.stop();
 
   assert(localityStopwatch.elapsedMicroseconds < 1000); // Should be extremely fast
-  print('✅ Locality caching: ${localityStopwatch.elapsedMicroseconds}μs for sequential access');
+  AppLogger.info('✅ Locality caching: ${localityStopwatch.elapsedMicroseconds}μs for sequential access');
 
-  print('✅ WordTiming validation complete - all optimizations working');
+  AppLogger.info('✅ WordTiming validation complete - all optimizations working');
 }

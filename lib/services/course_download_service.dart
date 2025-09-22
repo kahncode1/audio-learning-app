@@ -597,13 +597,17 @@ class CourseDownloadService {
 
   /// Check if connected to WiFi
   Future<bool> _isWiFiConnected() async {
-    final result = await _connectivity.checkConnectivity();
-    return result == ConnectivityResult.wifi;
+    final results = await _connectivity.checkConnectivity();
+    // Check if WiFi is in the list of available connections
+    return results.contains(ConnectivityResult.wifi);
   }
 
   /// Handle connectivity changes
-  void _onConnectivityChanged(ConnectivityResult result) {
-    if (_settings.wifiOnly && _isDownloading && result != ConnectivityResult.wifi) {
+  void _onConnectivityChanged(List<ConnectivityResult> results) {
+    // Check if WiFi is available in the list of connectivity results
+    final hasWifi = results.contains(ConnectivityResult.wifi);
+
+    if (_settings.wifiOnly && _isDownloading && !hasWifi) {
       AppLogger.warning('Lost WiFi connection, pausing download');
       pauseDownload();
     }

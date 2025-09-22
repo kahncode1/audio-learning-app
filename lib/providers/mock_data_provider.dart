@@ -25,6 +25,7 @@ import '../models/course.dart';
 import '../models/assignment.dart';
 import '../models/learning_object.dart';
 import '../services/mock_data_service.dart';
+import '../utils/app_logger.dart';
 
 /// Provider for test course data
 final mockCourseProvider = Provider<Course>((ref) {
@@ -60,39 +61,39 @@ final mockLearningObjectCountProvider = Provider<int>((ref) {
 
 /// Validation function for mock data providers
 void validateMockDataProviders(WidgetRef ref) {
-  print('=== Mock Data Providers Validation ===');
+  AppLogger.info('=== Mock Data Providers Validation ===');
 
   // Test course provider
   final course = ref.read(mockCourseProvider);
   assert(course.id == '14350bfb-5e84-4479-b7a2-09ce7a2fdd48', 'Course provider should return correct ID');
-  print('✓ Course provider valid');
+  AppLogger.info('✓ Course provider valid');
 
   // Test assignments provider
   final assignments = ref.read(mockAssignmentsProvider);
   assert(assignments.length == 3, 'Assignments provider should return 3 items');
-  print('✓ Assignments provider valid');
+  AppLogger.info('✓ Assignments provider valid');
 
   // Test learning objects provider for different assignments
   final lo1 = ref.read(mockLearningObjectsProvider('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'));
   assert(lo1.length == 1, 'Assignment 1 should have 1 learning object');
-  print('✓ Learning objects provider valid for assignment 1');
+  AppLogger.info('✓ Learning objects provider valid for assignment 1');
 
   final lo2 = ref.read(mockLearningObjectsProvider('test-assignment-002'));
   assert(lo2.isEmpty, 'Assignment 2 should have no learning objects');
-  print('✓ Learning objects provider valid for assignment 2');
+  AppLogger.info('✓ Learning objects provider valid for assignment 2');
 
   // Test statistic providers
   final completion = ref.read(mockCourseCompletionProvider);
   assert(completion == 0.0, 'Completion should be 0%');
-  print('✓ Completion provider valid');
+  AppLogger.info('✓ Completion provider valid');
 
   final assignmentCount = ref.read(mockAssignmentCountProvider);
   assert(assignmentCount == 3, 'Assignment count should be 3');
-  print('✓ Assignment count provider valid');
+  AppLogger.info('✓ Assignment count provider valid');
 
   final loCount = ref.read(mockLearningObjectCountProvider);
   assert(loCount == 1, 'Learning object count should be 1');
-  print('✓ Learning object count provider valid');
+  AppLogger.info('✓ Learning object count provider valid');
 
-  print('=== All Mock Data Providers validations passed ===');
+  AppLogger.info('=== All Mock Data Providers validations passed ===');
 }

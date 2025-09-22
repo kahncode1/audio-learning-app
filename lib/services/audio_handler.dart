@@ -2,6 +2,8 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/learning_object.dart';
 
+import '../utils/app_logger.dart';
+
 /// AudioHandler - Manages background audio and lock screen controls
 ///
 /// Purpose: Provides system-level audio controls and notifications
@@ -175,11 +177,11 @@ Future<AudioLearningHandler> initAudioService(AudioPlayer player) async {
 
 /// Validation function for AudioHandler
 void validateAudioHandler() {
-  print('=== AudioHandler Validation ===');
+  AppLogger.info('=== AudioHandler Validation ===');
 
   // Test 1: Class exists
   // AudioLearningHandler class exists
-  print('✓ AudioLearningHandler class verified');
+  AppLogger.info('✓ AudioLearningHandler class verified');
 
   // Test 2: Media controls defined
   final testControls = [
@@ -192,7 +194,7 @@ void validateAudioHandler() {
     testControls.length == 4,
     'Media controls must be defined',
   );
-  print('✓ Media controls verified');
+  AppLogger.info('✓ Media controls verified');
 
   // Test 3: Audio service config
   const config = AudioServiceConfig(
@@ -203,7 +205,7 @@ void validateAudioHandler() {
     config.androidNotificationChannelId == 'com.audiolearning.app.audio',
     'Audio service must be configured',
   );
-  print('✓ Audio service configuration verified');
+  AppLogger.info('✓ Audio service configuration verified');
 
-  print('=== All AudioHandler validations passed ===');
+  AppLogger.info('=== All AudioHandler validations passed ===');
 }

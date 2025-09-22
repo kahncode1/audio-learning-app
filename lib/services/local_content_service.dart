@@ -559,7 +559,7 @@ class SentenceTiming {
 /// Validation function for LocalContentService
 Future<void> validateLocalContentService() async {
   if (kDebugMode) {
-    print('=== LocalContentService Validation ===');
+    AppLogger.info('=== LocalContentService Validation ===');
 
     final service = LocalContentService();
     const testId = '63ad7b78-0970-4265-a4fe-51f3fee39d5f';
@@ -568,36 +568,36 @@ Future<void> validateLocalContentService() async {
       // Test 1: Check content availability
       final isAvailable = await service.isContentAvailable(testId);
       assert(isAvailable, 'Test content must be available');
-      print('✓ Content availability check passed');
+      AppLogger.info('✓ Content availability check passed');
 
       // Test 2: Load audio path
       final audioPath = await service.getAudioPath(testId);
       assert(audioPath.isNotEmpty, 'Audio path must not be empty');
       assert(audioPath.contains('audio.mp3'), 'Audio path must point to MP3 file');
-      print('✓ Audio path loading passed: $audioPath');
+      AppLogger.info('✓ Audio path loading passed: $audioPath');
 
       // Test 3: Load content
       final content = await service.getContent(testId);
       assert(content['version'] == '1.0', 'Content version must be 1.0');
       assert(content['displayText'] != null, 'Display text must exist');
       assert(content['paragraphs'] != null, 'Paragraphs must exist');
-      print('✓ Content loading passed');
+      AppLogger.info('✓ Content loading passed');
 
       // Test 4: Load timing data
       final timing = await service.getTimingData(testId);
       assert(timing.words.isNotEmpty, 'Words must not be empty');
       assert(timing.sentences.isNotEmpty, 'Sentences must not be empty');
       assert(timing.totalDurationMs > 0, 'Duration must be positive');
-      print('✓ Timing data loading passed');
-      print('  - Words: ${timing.words.length}');
-      print('  - Sentences: ${timing.sentences.length}');
-      print('  - Duration: ${timing.totalDurationMs}ms');
+      AppLogger.info('✓ Timing data loading passed');
+      AppLogger.info('  - Words: ${timing.words.length}');
+      AppLogger.info('  - Sentences: ${timing.sentences.length}');
+      AppLogger.info('  - Duration: ${timing.totalDurationMs}ms');
 
       // Test 5: Validate sentence indices
       for (final word in timing.words) {
         assert(word.sentenceIndex >= 0, 'Word must have valid sentence index');
       }
-      print('✓ Sentence index assignment passed');
+      AppLogger.info('✓ Sentence index assignment passed');
 
       // Test 6: Test timing lookups
       final midPoint = timing.totalDurationMs ~/ 2;
@@ -605,11 +605,11 @@ Future<void> validateLocalContentService() async {
       final sentIdx = timing.getCurrentSentenceIndex(midPoint);
       assert(wordIdx >= 0, 'Should find word at midpoint');
       assert(sentIdx >= 0, 'Should find sentence at midpoint');
-      print('✓ Timing lookup functions passed');
+      AppLogger.info('✓ Timing lookup functions passed');
 
-      print('=== All LocalContentService validations passed ===');
+      AppLogger.info('=== All LocalContentService validations passed ===');
     } catch (e) {
-      print('✗ Validation failed: $e');
+      AppLogger.info('✗ Validation failed: $e');
       rethrow;
     }
   }

@@ -55,7 +55,9 @@
       "Bash(node:*)",
       "Read(//Users/kahnja/**)",
       "Bash(tree:*)",
-      "Bash(open:*)"
+      "Bash(open:*)",
+      "Bash(xcrun simctl launch:*)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []

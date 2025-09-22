@@ -8,6 +8,8 @@
 ///   try { ... } on CacheException catch (e) { ... }
 ///   throw AudioException.invalidFormat('Unsupported audio format');
 ///
+
+import '../utils/app_logger.dart';
 /// Expected behavior:
 ///   - Clear exception categorization for better error handling
 ///   - Rich context information for debugging
@@ -413,48 +415,48 @@ class ConfigurationException extends AppException {
 
 /// Validation function to test exception hierarchy
 void validateAppExceptions() {
-  print('=== AppException Validation ===');
+  AppLogger.info('=== AppException Validation ===');
 
   // Test NetworkException
   final networkEx = NetworkException.fromStatusCode(404, url: 'https://api.example.com');
   assert(networkEx.statusCode == 404);
   assert(networkEx.userMessage.contains('not found'));
-  print('✓ NetworkException working');
+  AppLogger.info('✓ NetworkException working');
 
   // Test CacheException
   final cacheEx = CacheException.readFailed('test-key');
   assert(cacheEx.cacheKey == 'test-key');
   assert(cacheEx.operation == 'read');
-  print('✓ CacheException working');
+  AppLogger.info('✓ CacheException working');
 
   // Test AudioException
   final audioEx = AudioException.invalidFormat('mp3');
   assert(audioEx.audioFormat == 'mp3');
   assert(audioEx.userMessage.contains('not supported'));
-  print('✓ AudioException working');
+  AppLogger.info('✓ AudioException working');
 
   // Test TimingException
   final timingEx = TimingException.processingFailed('content-123');
   assert(timingEx.contentId == 'content-123');
   assert(timingEx.operation == 'processing');
-  print('✓ TimingException working');
+  AppLogger.info('✓ TimingException working');
 
   // Test AuthException
   final authEx = AuthException.tokenExpired(userId: 'user-123');
   assert(authEx.userId == 'user-123');
   assert(authEx.errorCode == 401);
-  print('✓ AuthException working');
+  AppLogger.info('✓ AuthException working');
 
   // Test ConfigurationException
   final configEx = ConfigurationException.missingKey('api_key');
   assert(configEx.configKey == 'api_key');
-  print('✓ ConfigurationException working');
+  AppLogger.info('✓ ConfigurationException working');
 
   // Test logContext
   final logContext = networkEx.logContext;
   assert(logContext.containsKey('type'));
   assert(logContext.containsKey('statusCode'));
-  print('✓ Log context generation working');
+  AppLogger.info('✓ Log context generation working');
 
-  print('=== All AppException validations passed ===');
+  AppLogger.info('=== All AppException validations passed ===');
 }

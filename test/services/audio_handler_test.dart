@@ -1,23 +1,63 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:mocktail/mocktail.dart';
+import 'dart:async';
 
 import 'package:audio_learning_app/services/audio_handler.dart';
 import 'package:audio_learning_app/models/learning_object.dart';
+
+// Create mock for AudioPlayer
+class MockAudioPlayer extends Mock implements AudioPlayer {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('AudioLearningHandler', () {
-    late AudioPlayer audioPlayer;
+    late MockAudioPlayer audioPlayer;
     late AudioLearningHandler handler;
+    late StreamController<PlaybackEvent> playbackEventController;
+    late StreamController<PlayerState> playerStateController;
+    late StreamController<Duration> positionController;
 
     setUp(() {
-      audioPlayer = AudioPlayer();
+      audioPlayer = MockAudioPlayer();
+
+      // Create stream controllers for the streams
+      playbackEventController = StreamController<PlaybackEvent>.broadcast();
+      playerStateController = StreamController<PlayerState>.broadcast();
+      positionController = StreamController<Duration>.broadcast();
+
+      // Mock the stream getters
+      when(() => audioPlayer.playbackEventStream)
+          .thenAnswer((_) => playbackEventController.stream);
+      when(() => audioPlayer.playerStateStream)
+          .thenAnswer((_) => playerStateController.stream);
+      when(() => audioPlayer.positionStream)
+          .thenAnswer((_) => positionController.stream);
+
+      // Mock playing getter
+      when(() => audioPlayer.playing).thenReturn(false);
+
+      // Mock processingState getter
+      when(() => audioPlayer.processingState).thenReturn(ProcessingState.idle);
+
+      // Mock duration getter
+      when(() => audioPlayer.duration).thenReturn(null);
+
+      // Mock position getter
+      when(() => audioPlayer.position).thenReturn(Duration.zero);
+
+      // Mock dispose method for tearDown
+      when(() => audioPlayer.dispose()).thenAnswer((_) async {});
+
       handler = AudioLearningHandler(audioPlayer);
     });
 
     tearDown(() {
+      playbackEventController.close();
+      playerStateController.close();
+      positionController.close();
       handler.dispose();
     });
 
@@ -78,9 +118,10 @@ void main() {
 
         // ~150 words per minute, so 300 words = ~2 minutes
         handler.updateMediaItemForLearning(learningObject);
-        
+
         // Verify estimation logic
-        final wordCount = learningObject.plainText!.split(' ').length;
+        final text = learningObject.plainText ?? '';
+        final wordCount = text.split(' ').where((word) => word.isNotEmpty).length;
         final estimatedMinutes = (wordCount / 150).ceil();
         expect(estimatedMinutes, 2);
       });
@@ -88,52 +129,96 @@ void main() {
 
     group('Playback Controls', () {
       test('play() should call player.play()', () async {
-        // Test the play method exists and can be called
+        // Mock the play method
+        when(() => audioPlayer.play()).thenAnswer((_) async {});
+
         await handler.play();
-        // In a real test with mocking, we'd verify _player.play() was called
+
+        // Verify play was called
+        verify(() => audioPlayer.play()).called(1);
       });
 
       test('pause() should call player.pause()', () async {
+        // Mock the pause method
+        when(() => audioPlayer.pause()).thenAnswer((_) async {});
+
         await handler.pause();
-        // In a real test with mocking, we'd verify _player.pause() was called
+
+        // Verify pause was called
+        verify(() => audioPlayer.pause()).called(1);
       });
 
       test('stop() should call player.stop()', () async {
+        // Mock the stop method
+        when(() => audioPlayer.stop()).thenAnswer((_) async {});
+
         await handler.stop();
-        // In a real test with mocking, we'd verify _player.stop() was called
+
+        // Verify stop was called
+        verify(() => audioPlayer.stop()).called(1);
       });
 
       test('seek() should seek to position', () async {
         const targetPosition = Duration(seconds: 30);
+        // Mock the seek method
+        when(() => audioPlayer.seek(targetPosition)).thenAnswer((_) async {});
+
         await handler.seek(targetPosition);
-        // In a real test with mocking, we'd verify _player.seek() was called
+
+        // Verify seek was called with correct position
+        verify(() => audioPlayer.seek(targetPosition)).called(1);
       });
 
       test('setSpeed() should set playback speed', () async {
         const speed = 1.5;
+
+        // Mock the setSpeed method
+        when(() => audioPlayer.setSpeed(speed)).thenAnswer((_) async {});
+
         await handler.setSpeed(speed);
-        // In a real test with mocking, we'd verify _player.setSpeed() was called
+
+        // Verify setSpeed was called with correct speed
+        verify(() => audioPlayer.setSpeed(speed)).called(1);
       });
     });
 
     group('Skip Controls', () {
       test('skipToNext() should skip forward 30 seconds', () async {
+        const currentPosition = Duration(seconds: 60);
+        const expectedPosition = Duration(seconds: 90); // 60 + 30
+        const totalDuration = Duration(seconds: 120); // Must be longer than expected position
+
+        when(() => audioPlayer.position).thenReturn(currentPosition);
+        when(() => audioPlayer.duration).thenReturn(totalDuration);
+        when(() => audioPlayer.seek(expectedPosition)).thenAnswer((_) async {});
+
         await handler.skipToNext();
-        // Should skip forward by 30 seconds
-        // In a real test, we'd verify the new position
+
+        verify(() => audioPlayer.seek(expectedPosition)).called(1);
       });
 
       test('skipToPrevious() should skip backward 30 seconds', () async {
+        const currentPosition = Duration(seconds: 60);
+        const expectedPosition = Duration(seconds: 30); // 60 - 30
+
+        when(() => audioPlayer.position).thenReturn(currentPosition);
+        when(() => audioPlayer.seek(expectedPosition)).thenAnswer((_) async {});
+
         await handler.skipToPrevious();
-        // Should skip backward by 30 seconds
-        // In a real test, we'd verify the new position
+
+        verify(() => audioPlayer.seek(expectedPosition)).called(1);
       });
 
       test('skipToPrevious() should not go negative', () async {
-        // When at the beginning
-        await handler.seek(Duration.zero);
+        const currentPosition = Duration(seconds: 10); // Less than 30 seconds
+
+        when(() => audioPlayer.position).thenReturn(currentPosition);
+        when(() => audioPlayer.seek(Duration.zero)).thenAnswer((_) async {});
+
         await handler.skipToPrevious();
-        // Should stay at zero, not go negative
+
+        // Should seek to zero, not negative
+        verify(() => audioPlayer.seek(Duration.zero)).called(1);
       });
     });
 
@@ -187,10 +272,14 @@ void main() {
     });
 
     group('Resource Management', () {
-      test('dispose() should clean up resources', () {
+      test('dispose() should clean up resources', () async {
+        // Mock the dispose method
+        when(() => audioPlayer.dispose()).thenAnswer((_) async {});
+
         handler.dispose();
-        // Handler should dispose of the audio player
-        expect(handler, isNotNull); // Handler still exists but resources freed
+
+        // Verify dispose was called on the player
+        verify(() => audioPlayer.dispose()).called(1);
       });
     });
   });
