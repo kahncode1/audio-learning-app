@@ -1,28 +1,18 @@
 import 'auth/auth_service_interface.dart';
-import 'auth/mock_auth_service.dart';
-import 'auth_service.dart';
+import 'auth/cognito_auth_service.dart';
 
-/// Factory for creating the appropriate authentication service.
-/// This allows easy switching between mock and real implementations.
+/// Factory for creating the authentication service.
+/// ONLY uses Cognito authentication - no more mock auth!
 class AuthFactory {
   static AuthServiceInterface? _instance;
 
   /// Get the authentication service instance.
-  /// Uses environment variable to determine which implementation.
+  /// Always returns CognitoAuthService.
   static AuthServiceInterface get instance {
     if (_instance != null) return _instance!;
 
-    // Check environment variable or app config
-    const useMockAuth = bool.fromEnvironment(
-      'USE_MOCK_AUTH',
-      defaultValue: true, // Default to mock until Cognito is ready
-    );
-
-    if (useMockAuth) {
-      _instance = MockAuthService();
-    } else {
-      _instance = AuthService();
-    }
+    _instance = CognitoAuthService();
+    print('🔐 Using AWS Cognito Authentication Service');
 
     return _instance!;
   }

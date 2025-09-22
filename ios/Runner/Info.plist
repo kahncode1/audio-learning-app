@@ -53,5 +53,16 @@
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app does not use the microphone.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.industria.audiocourses</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>audiocourses</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

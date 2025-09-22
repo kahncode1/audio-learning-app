@@ -1,0 +1,27 @@
+{
+  "cognito_redirects": {
+    "callback_uris": [
+      "audiocourses://oauth/callback"
+    ],
+    "logout_uris": [
+      "audiocourses://oauth/logout"
+    ]
+  },
+  "platform_notes": {
+    "ios": {
+      "bundle_id": "com.industria.audiocourses",
+      "url_scheme": "audiocourses",
+      "plist_configured": true,
+      "universal_links_enabled": false
+    },
+    "android": {
+      "package_name": "com.industria.audiocourses",
+      "manifest_intent_filters_added": true,
+      "app_links_enabled": false
+    }
+  },
+  "cognito_info": {
+    "test_app_client_id": "7n2o5r6em0latepiui4rfg6vmi",
+    "test_hosted_ui_domain": "users.login-test.theinstitutes.org"
+  }
+}

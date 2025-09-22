@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/env_config.dart';
 import '../providers/theme_provider.dart';
+import 'auth_test_screen.dart';
 
 /// SettingsScreen provides app configuration options
 /// This is a placeholder implementation for Milestone 1
@@ -97,6 +98,20 @@ class SettingsScreen extends ConsumerWidget {
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.pushNamed(context, '/cdn-download-test');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.security, color: Colors.orange),
+              title: const Text('Cognito OAuth Test'),
+              subtitle: const Text('Test AWS Cognito authentication flow'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AuthTestScreen(),
+                  ),
+                );
               },
             ),
           ],
