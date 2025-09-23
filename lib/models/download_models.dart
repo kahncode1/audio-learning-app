@@ -35,12 +35,16 @@ enum FileType {
   timing,
 }
 
+/// Alias for FileType to match usage in download services
+typedef DownloadFileType = FileType;
+
 /// Individual download task for a single file
 class DownloadTask {
   final String id;
   final String url;
   final String localPath;
   final String learningObjectId;
+  final String? courseId;
   final FileType fileType;
   final int expectedSize;
   int downloadedBytes;
@@ -48,12 +52,16 @@ class DownloadTask {
   int retryCount;
   String? errorMessage;
   DateTime? lastModified;
+  DateTime? lastAttemptAt;
+  final int? version; // File version for cache invalidation
+  final dynamic jsonData; // For saving JSON directly from memory
 
   DownloadTask({
     required this.id,
     required this.url,
     required this.localPath,
     required this.learningObjectId,
+    this.courseId,
     required this.fileType,
     required this.expectedSize,
     this.downloadedBytes = 0,
@@ -61,6 +69,9 @@ class DownloadTask {
     this.retryCount = 0,
     this.errorMessage,
     this.lastModified,
+    this.lastAttemptAt,
+    this.version,
+    this.jsonData,
   });
 
   /// Progress as a percentage (0.0 to 1.0)
@@ -82,12 +93,14 @@ class DownloadTask {
     int? retryCount,
     String? errorMessage,
     DateTime? lastModified,
+    DateTime? lastAttemptAt,
   }) {
     return DownloadTask(
       id: id,
       url: url,
       localPath: localPath,
       learningObjectId: learningObjectId,
+      courseId: courseId,
       fileType: fileType,
       expectedSize: expectedSize,
       downloadedBytes: downloadedBytes ?? this.downloadedBytes,
@@ -95,6 +108,9 @@ class DownloadTask {
       retryCount: retryCount ?? this.retryCount,
       errorMessage: errorMessage ?? this.errorMessage,
       lastModified: lastModified ?? this.lastModified,
+      lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
+      version: version,
+      jsonData: jsonData,
     );
   }
 
@@ -105,6 +121,7 @@ class DownloadTask {
       'url': url,
       'localPath': localPath,
       'learningObjectId': learningObjectId,
+      'courseId': courseId,
       'fileType': fileType.name,
       'expectedSize': expectedSize,
       'downloadedBytes': downloadedBytes,
@@ -112,6 +129,9 @@ class DownloadTask {
       'retryCount': retryCount,
       'errorMessage': errorMessage,
       'lastModified': lastModified?.toIso8601String(),
+      'lastAttemptAt': lastAttemptAt?.toIso8601String(),
+      'version': version,
+      'jsonData': jsonData,
     };
   }
 
@@ -119,9 +139,10 @@ class DownloadTask {
   factory DownloadTask.fromJson(Map<String, dynamic> json) {
     return DownloadTask(
       id: json['id'] as String,
-      url: json['url'] as String,
+      url: json['url'] as String? ?? '',
       localPath: json['localPath'] as String,
       learningObjectId: json['learningObjectId'] as String,
+      courseId: json['courseId'] as String?,
       fileType: FileType.values.byName(json['fileType'] as String),
       expectedSize: json['expectedSize'] as int,
       downloadedBytes: json['downloadedBytes'] as int? ?? 0,
@@ -131,6 +152,11 @@ class DownloadTask {
       lastModified: json['lastModified'] != null
           ? DateTime.parse(json['lastModified'] as String)
           : null,
+      lastAttemptAt: json['lastAttemptAt'] != null
+          ? DateTime.parse(json['lastAttemptAt'] as String)
+          : null,
+      version: json['version'] as int?,
+      jsonData: json['jsonData'],
     );
   }
 }

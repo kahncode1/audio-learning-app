@@ -58,7 +58,7 @@ The Audio Learning Platform delivers a Flutter-based mobile application that pla
 
 ## Architecture Decisions
 
-### Three-Tier Architecture
+### Four-Tier Architecture (Updated 2025-09-23)
 
 The system implements a clean separation of concerns across four primary layers:
 
@@ -70,14 +70,22 @@ The system implements a clean separation of concerns across four primary layers:
    - **Reference Implementation:** `/implementations/auth-service.dart`
    - **Technical Details:** `/references/technical-requirements.md`
 
-2. **Backend Layer (Supabase)**
-   - PostgreSQL database with Row Level Security (RLS)
-   - Automatic filtering of expired course enrollments
-   - Real-time subscriptions via WebSocket
-   - JWT validation for Cognito tokens
-   - Storage of user preferences (font size, playback speed)
-   - Hosted on Supabase Cloud for scalability
-   - **Reference Models:** `/implementations/models.dart`
+2. **Data Layer Architecture (Offline-First)**
+   - **Remote:** Supabase PostgreSQL with Row Level Security
+   - **Local:** SQLite database with schema matching Supabase
+     - 6 core tables: courses, assignments, learning_objects, user_progress, user_course_progress, download_cache
+     - All fields use snake_case naming convention
+     - JSONB support for complex timing data
+   - **Sync Layer:** Bidirectional synchronization with conflict resolution
+   - **Service Layer:** Abstracted data access through services
+     - LocalDatabaseService for offline data
+     - CourseDownloadApiService for downloading content
+     - DataSyncService for synchronization
+   - **Provider Layer:** Riverpod providers for UI consumption
+     - Database service providers
+     - Data flow providers (courses, assignments, learning objects)
+     - User settings and progress providers
+   - **Reference:** `/lib/services/database/`, `/lib/providers/database_providers.dart`
 
 3. **Content Delivery (Pre-processed Files)**
    - Pre-generated MP3 audio files
@@ -100,13 +108,15 @@ The system implements a clean separation of concerns across four primary layers:
    - **Reference Implementations:** All files in `/implementations/`
    - **Code Patterns:** `/references/code-patterns.md`
 
-### Data Flow
+### Data Flow (Updated with Offline-First Architecture)
 
 1. **Authentication:** User logs in via AWS Cognito SSO → Flutter receives ID token → Creates Supabase session through JWT bridging
-2. **Content Loading:** Flutter fetches authorized courses/learning objects from Supabase (backend automatically filters expired content via RLS)
-3. **Content Loading:** Flutter loads pre-downloaded MP3 files and timing data from local storage → Instant playback with no buffering
-4. **Progress Tracking:** Flutter saves position, font size, and playback speed to Supabase every 5 seconds using debounced updates → Caches locally with SharedPreferences
-5. **Highlighting Sync:** Word timings with sentence indices enable dual-level highlighting → Binary search for current word → Sentence tracking for context
+2. **Initial Download:** On first login, CourseDownloadApiService downloads all course data from Supabase → Stores in local SQLite database
+3. **Offline Content Access:** UI requests data through database providers → Providers fetch from LocalDatabaseService → Returns data from SQLite (no network required)
+4. **Content Playback:** Flutter loads pre-downloaded MP3 files and timing data from local storage → Instant playback with no buffering
+5. **Progress Tracking:** Progress saved to local SQLite immediately → DataSyncService syncs to Supabase when online using debounced updates
+6. **Data Synchronization:** On network reconnect, DataSyncService performs bidirectional sync → Conflict resolution using last-write-wins → Updates both local and remote databases
+7. **Highlighting Sync:** Word timings with sentence indices loaded from local database → Binary search for current word → Sentence tracking for context
 
 ### Critical Architectural Decisions
 
@@ -127,12 +137,17 @@ The system implements a clean separation of concerns across four primary layers:
 - **riverpod: ^2.4.9** - Reactive caching and data-binding framework with compile-time safety
 - **flutter_riverpod: ^2.4.9** - Flutter integration providing widget rebuilding and provider composition
 - **Package Guide:** `/documentation/apis/flutter-packages.md`
-- **Reference Implementation:** `/lib/providers/` - Modularized architecture (Sept 2025)
+- **Reference Implementation:** `/lib/providers/` - Modularized architecture
+  - **providers.dart** - Barrel export for backward compatibility
   - **auth_providers.dart** - Authentication and user state
   - **course_providers.dart** - Course, assignment, learning object data
   - **audio_providers.dart** - Audio playback and highlighting state (CRITICAL)
   - **ui_providers.dart** - Font size and playback speed preferences (CRITICAL)
   - **progress_providers.dart** - Progress tracking and synchronization
+  - **database_providers.dart** - Database service and data flow providers (NEW)
+    - Service providers for LocalDatabaseService, CourseService, etc.
+    - Data providers like localCoursesProvider, courseAssignmentsProvider
+    - User settings provider with StateNotifier
 - **Patterns:** `/references/code-patterns.md` - State Management with Riverpod
 
 ### Audio Core
@@ -281,14 +296,15 @@ Key technology selections with current implementations:
 
 ## Data Model Architecture
 
-### Core Entities
+### Core Entities (Updated with LearningObjectV2)
 
-**Course** (see `/implementations/models.dart`)
+**Course** (see `/lib/models/course.dart`)
 - Represents educational content packages
 - Contains course number, title, and assignments
-- Tracks overall completion percentage
-- Links to user enrollments with expiration dates
+- Tracks total learning objects and assignments
+- Stores estimated duration in milliseconds
 - Includes gradient configuration for visual design
+- All fields use snake_case in database
 
 **Assignment** (see `/implementations/models.dart`)
 - Organizational units within courses
@@ -297,12 +313,14 @@ Key technology selections with current implementations:
 - Groups related learning objects
 - Tracks completion at assignment level
 
-**LearningObject** (see `/implementations/models.dart`)
+**LearningObjectV2** (see `/lib/models/learning_object_v2.dart`)
 - Individual content pieces (chapters, sections)
 - References pre-downloaded audio and timing files
-- Stores cached word timings with sentence indices
-- Tracks user progress (isCompleted, isInProgress)
-- Stores last playback position
+- Stores word_timings and sentence_timings as JSONB
+- Includes total_duration_ms for accurate time display
+- Tracks completion and current position
+- Supports both streaming and local content
+- All timing data uses snake_case fields
 
 **WordTiming** (see `/implementations/models.dart`)
 - Synchronization data for dual-level highlighting

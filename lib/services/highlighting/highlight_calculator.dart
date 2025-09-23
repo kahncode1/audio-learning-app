@@ -10,7 +10,9 @@
 /// - Validate character positions
 ///
 import '../../models/word_timing.dart';
+import '../../models/sentence_timing.dart';
 import '../../services/word_timing_service_simplified.dart';
+import '../../services/local_content_service.dart'; // For TimingData
 import '../../utils/app_logger.dart';
 
 class HighlightCalculator {
@@ -108,9 +110,10 @@ class HighlightCalculator {
       int mid = (left + right) ~/ 2;
       final sentence = sentences[mid];
 
-      if (positionMs >= sentence.startMs && positionMs <= sentence.endMs) {
+      // Use startTime and endTime for local_content_service.SentenceTiming
+      if (positionMs >= sentence.startTime && positionMs <= sentence.endTime) {
         return mid;
-      } else if (positionMs < sentence.startMs) {
+      } else if (positionMs < sentence.startTime) {
         right = mid - 1;
       } else {
         result = mid; // Keep track of last sentence before position
@@ -134,8 +137,8 @@ class HighlightCalculator {
 
     final word = words[_currentWordIndex];
     return CharacterBoundaries(
-      start: word.charStart,
-      end: word.charEnd,
+      start: word.charStart ?? 0,
+      end: word.charEnd ?? 0,
     );
   }
 
@@ -150,11 +153,21 @@ class HighlightCalculator {
       return null;
     }
 
+    // Note: local_content_service.SentenceTiming doesn't have charStart/charEnd
+    // We'd need to calculate this from word boundaries if needed
     final sentence = sentences[_currentSentenceIndex];
-    return CharacterBoundaries(
-      start: sentence.charStart,
-      end: sentence.charEnd,
-    );
+    if (_timingData!.words != null &&
+        sentence.wordStartIndex >= 0 &&
+        sentence.wordEndIndex < _timingData!.words!.length) {
+      final startWord = _timingData!.words![sentence.wordStartIndex];
+      final endWord = _timingData!.words![sentence.wordEndIndex];
+      return CharacterBoundaries(
+        start: startWord.charStart ?? 0,
+        end: endWord.charEnd ?? 0,
+      );
+    }
+
+    return null;
   }
 
   /// Check if timing data has valid character positions
@@ -164,20 +177,17 @@ class HighlightCalculator {
     // Check words
     if (_timingData!.words != null) {
       for (final word in _timingData!.words!) {
-        if (word.charStart < 0 || word.charEnd < 0) {
+        // Handle nullable charStart and charEnd
+        final charStart = word.charStart ?? -1;
+        final charEnd = word.charEnd ?? -1;
+        if (charStart < 0 || charEnd < 0) {
           return false;
         }
       }
     }
 
-    // Check sentences
-    if (_timingData!.sentences != null) {
-      for (final sentence in _timingData!.sentences!) {
-        if (sentence.charStart < 0 || sentence.charEnd < 0) {
-          return false;
-        }
-      }
-    }
+    // Note: local_content_service.SentenceTiming doesn't have char positions
+    // So we only validate word positions
 
     return true;
   }

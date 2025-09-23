@@ -22,13 +22,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/download_models.dart';
-import '../models/learning_object.dart';
+import '../models/learning_object_v2.dart';
 import '../services/supabase_service.dart';
 import '../utils/app_logger.dart';
 import 'download/download_queue_manager.dart';
 import 'download/download_progress_tracker.dart';
 import 'download/file_system_manager.dart';
 import 'download/network_downloader.dart';
+import 'download/course_download_api_service.dart';
+import 'database/local_database_service.dart';
+import 'sync/data_sync_service.dart';
 
 class CourseDownloadService {
   static CourseDownloadService? _instance;
@@ -38,6 +41,11 @@ class CourseDownloadService {
   final DownloadProgressTracker _progressTracker = DownloadProgressTracker();
   final FileSystemManager _fileSystemManager = FileSystemManager();
   final NetworkDownloader _networkDownloader = NetworkDownloader();
+
+  // Phase 5 database services
+  final CourseDownloadApiService _apiService = CourseDownloadApiService();
+  final LocalDatabaseService _localDb = LocalDatabaseService.instance;
+  final DataSyncService _syncService = DataSyncService();
 
   // State
   DownloadSettings _settings = const DownloadSettings();
@@ -93,11 +101,11 @@ class CourseDownloadService {
   /// Check if paused
   bool get isPaused => _isPaused;
 
-  /// Main download method for a course
+  /// Main download method for a course (updated for new architecture)
   Future<void> downloadCourse(
     String courseId,
     String courseName,
-    List<LearningObject> learningObjects,
+    String userId,
   ) async {
     if (_isDownloading) {
       AppLogger.warning('Download already in progress');
@@ -108,33 +116,30 @@ class CourseDownloadService {
       _isDownloading = true;
       _isPaused = false;
 
-      // Check for existing progress
-      var progress = await _progressTracker.loadProgress(courseId);
+      // Use the new CourseDownloadApiService to download course
+      // This handles all the database operations and queue building
+      await _apiService.downloadCourse(
+        courseId: courseId,
+        userId: userId,
+      );
 
-      if (progress == null) {
-        // Build new queue
-        await _queueManager.buildQueue(courseId, learningObjects);
+      // Listen to progress from API service
+      _apiService.progressStream.listen((apiProgress) {
+        AppLogger.info('Download progress', {
+          'courseId': apiProgress.courseId,
+          'status': apiProgress.status,
+          'percentage': apiProgress.percentage,
+          'message': apiProgress.message,
+        });
+      });
 
-        // Create new progress
-        progress = _progressTracker.createProgress(
-          courseId: courseId,
-          courseName: courseName,
-          totalFiles: _queueManager.queue.length,
-          totalBytes: _queueManager.calculateTotalBytes(),
-          tasks: _queueManager.queue,
-        );
-      } else {
-        // Resume from saved progress
-        _queueManager.restoreQueue(progress.tasks);
-      }
+      // After download completes, sync with local database
+      await _syncService.performFullSync(userId);
 
-      // Check network if WiFi-only
-      if (_settings.wifiOnly && !(await _networkDownloader.isWiFiConnected())) {
-        throw Exception('WiFi-only mode enabled but not connected to WiFi');
-      }
-
-      // Start processing queue
-      await _processQueue();
+      AppLogger.info('Course download completed and synced', {
+        'courseId': courseId,
+        'userId': userId,
+      });
 
     } catch (e) {
       AppLogger.error('Download failed', error: e);

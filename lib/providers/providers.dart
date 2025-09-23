@@ -27,10 +27,10 @@ export 'course_providers.dart';
 export 'audio_providers.dart';
 export 'ui_providers.dart';
 export 'progress_providers.dart';
+export 'database_providers.dart';  // New database service providers
 
 // Re-export existing specialized providers (if needed by other parts of the app)
 export 'audio_context_provider.dart';
-export 'mock_data_provider.dart';
 
 /// Validation function to verify providers implementation
 /// This function tests critical provider functionality through the provider system

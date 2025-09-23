@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/course.dart';
-import '../providers/mock_data_provider.dart';
+import '../providers/database_providers.dart';
 import '../providers/audio_providers.dart';
 
 /// HomePage displays the list of available courses with gradient cards
@@ -10,9 +10,8 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Get the test course from mock data provider
-    final testCourse = ref.watch(mockCourseProvider);
-    final courses = [testCourse]; // List with our test course
+    // Get courses from local database
+    final coursesAsync = ref.watch(localCoursesProvider);
     final shouldShowMiniPlayer = ref.watch(shouldShowMiniPlayerProvider);
 
     return Scaffold(
@@ -31,11 +30,12 @@ class HomePage extends ConsumerWidget {
           ),
         ],
       ),
-      body: courses.isEmpty
-          ? const Center(
-              child: Text('No courses available'),
-            )
-          : ListView.builder(
+      body: coursesAsync.when(
+        data: (courses) => courses.isEmpty
+            ? const Center(
+                child: Text('No courses available'),
+              )
+            : ListView.builder(
               padding: EdgeInsets.only(
                 left: 16,
                 right: 16,
@@ -62,6 +62,13 @@ class HomePage extends ConsumerWidget {
                 );
               },
             ),
+        loading: () => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        error: (error, stack) => Center(
+          child: Text('Error loading courses: $error'),
+        ),
+      ),
     );
   }
 }
@@ -78,7 +85,9 @@ class CourseCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final completionPercentage = ref.watch(mockCourseCompletionProvider);
+    // Get course completion percentage from database
+    final completionAsync = ref.watch(courseCompletionProvider(course.id));
+    final completionPercentage = completionAsync.value ?? 0.0;
     final String progressLabel = completionPercentage == 0
         ? 'Not Started'
         : '${completionPercentage.round()}% Complete';

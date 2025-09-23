@@ -11,19 +11,19 @@
 
 **This guide supersedes any conflicting instructions. All development must follow these standards.**
 
-## ✅ DOWNLOAD-FIRST ARCHITECTURE COMPLETED
+## ✅ OFFLINE-FIRST DATA ARCHITECTURE COMPLETED
 
-**Status:** Successfully transitioned from streaming TTS to download-first architecture (September 18, 2025)
-- **Architecture Guide:** See `DOWNLOAD_ARCHITECTURE_PLAN.md` for system design
-- **Setup Guide:** See `DOWNLOAD_APP_DATA_CONFIGURATION.md` for preprocessing pipeline
-- **Backend Config:** See `SUPABASE_CDN_SETUP.md` for CDN configuration
-- **Approach:** Pre-processed audio, text, and timing files downloaded on first login
-- **Benefits Achieved:** 100% cost reduction, offline capability, 40% simpler codebase
+**Status:** Successfully implemented offline-first architecture with local SQLite database (September 23, 2025)
+- **Phase 5-7 Complete:** Local database, sync services, and UI integration fully implemented
+- **Architecture:** Local SQLite with schema matching Supabase, bidirectional sync
+- **Key Services:** LocalDatabaseService, CourseDownloadApiService, DataSyncService
+- **UI Integration:** All screens use database-backed providers, mock services removed
+- **Benefits:** Complete offline capability, instant data access, seamless synchronization
 
 ## Project Overview
 
 ### Vision
-A Flutter-based mobile application that plays pre-downloaded educational audio content with synchronized dual-level word and sentence highlighting, enabling insurance professionals to learn offline during commutes and travel.
+A Flutter-based mobile application with offline-first architecture that enables insurance professionals to consume educational content during commutes and travel. Features synchronized dual-level word and sentence highlighting, complete offline capability through local SQLite database, and seamless synchronization when online.
 
 ### Core Technologies
 - **Framework:** Flutter 3.x with Dart 3.x
@@ -67,24 +67,29 @@ audio_learning_app/
 
 ## Key Architectural Decisions
 
-1. **Single Dio Instance** - Use DioProvider.instance singleton for all HTTP calls
-2. **Custom Dual-Level Highlighting** - No existing package provides this; requires 100% custom implementation
-3. **JWT Bridging** - Cognito tokens bridge to Supabase via federateToIdentityPool API
-4. **StreamAudioSource** - Custom implementation for Speechify streaming
-5. **Three-Tier Caching** - Memory → SharedPreferences → Supabase for word timings
-6. **Debounced Progress** - Save every 5 seconds to reduce database writes
-7. **Font Size Persistence** - User preferences stored locally and in cloud
-8. **Hybrid Environment Setup** - Core tools first, platform-specific tools just-in-time
+1. **Offline-First Architecture** - Local SQLite database with bidirectional sync to Supabase
+2. **Service-Based Data Access** - All data operations through service layer, not direct database access
+3. **Snake_case Field Naming** - Consistent snake_case for all database fields and JSON data
+4. **Database-Backed Providers** - Riverpod providers fetch from local database, enabling offline access
+5. **LearningObjectV2 Model** - Enhanced model with JSONB support for complex timing data
+6. **Conflict Resolution** - Last-write-wins strategy for sync conflicts
+7. **Download Queue Management** - CourseDownloadApiService manages sequential downloads with progress tracking
+8. **UI Layer Separation** - Complete removal of mock services, UI uses only database providers
 
-## Critical: Download-First Content System
+## Critical: Offline-First Data Architecture
 
-**Core components of the simplified architecture:**
-- **Local Content Service:** Loads pre-processed JSON files from device storage
-- **Pre-computed Timing:** Word and sentence boundaries already calculated with snake_case field names
-- **Simplified Highlighting:** No runtime sentence detection needed - all timing pre-processed
-- **UI Widget:** SimplifiedDualLevelHighlightedText with 3-layer paint system
-- **Instant Playback:** Local MP3 files with no network dependency
-- **Preprocessing Pipeline:** ElevenLabs character timing → word/sentence timing with continuous coverage
+**Core components of the offline-first system:**
+- **LocalDatabaseService:** SQLite database with 6 tables matching Supabase schema
+- **CourseDownloadApiService:** Downloads entire courses with progress tracking
+- **DataSyncService:** Bidirectional sync with conflict resolution
+- **Database Providers:** Service-based providers for all data access
+  - `localCoursesProvider`: Courses from local database
+  - `courseAssignmentsProvider`: Assignments for a course
+  - `assignmentLearningObjectsProvider`: Learning objects
+  - `userProgressProvider`: Progress tracking
+  - `userSettingsProvider`: User preferences with StateNotifier
+- **LearningObjectV2 Model:** Enhanced with JSONB timing data support
+- **Snake_case Convention:** All database fields and JSON use snake_case
 
 **Key Implementation Files:**
 - `LocalContentService` - Manages downloaded content
@@ -140,12 +145,13 @@ This project has access to specialized MCP (Model Context Protocol) servers that
 - **Mirror test structure** to lib structure
 - **Separate widgets** >100 lines into own files
 
-### Code Cleanup Status (September 21, 2025)
-- ✅ Removed ~2,000 lines of obsolete code
-- ✅ Applied 75 automatic dart fixes
-- ✅ Reduced analyzer issues by 20%
-- ✅ Deleted backup files and test skips
-- ✅ Improved import organization
+### Code Quality Status (September 23, 2025)
+- ✅ Removed all mock services and providers (~500 lines)
+- ✅ Implemented complete offline-first architecture
+- ✅ All database operations use service layer
+- ✅ UI fully integrated with database providers
+- ✅ Consistent snake_case naming throughout data pipeline
+- ✅ All Phase 7 validation tests passing (6/6)
 
 ### Documentation Requirements
 Every file must include a comprehensive header with:

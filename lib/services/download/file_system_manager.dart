@@ -272,4 +272,92 @@ class FileSystemManager {
 
     return courses;
   }
+
+  /// Save JSON data to file (for JSONB timing data)
+  Future<void> saveJsonData(String filePath, dynamic jsonData) async {
+    _ensureInitialized();
+
+    final file = File(filePath);
+    await ensureDirectoryExists(filePath);
+
+    final jsonString = const JsonEncoder.withIndent('  ').convert(jsonData);
+    await file.writeAsString(jsonString);
+
+    AppLogger.info('Saved JSON data', {
+      'path': filePath,
+      'size': jsonString.length,
+    });
+  }
+
+  /// Load JSON data from file
+  Future<dynamic> loadJsonData(String filePath) async {
+    _ensureInitialized();
+
+    final file = File(filePath);
+
+    if (!file.existsSync()) {
+      AppLogger.warning('JSON file not found', {'path': filePath});
+      return null;
+    }
+
+    try {
+      final jsonString = await file.readAsString();
+      return jsonDecode(jsonString);
+    } catch (e) {
+      AppLogger.error('Failed to load JSON data', error: e, data: {'path': filePath});
+      return null;
+    }
+  }
+
+  /// Save word timings for a learning object
+  Future<void> saveWordTimings(String courseId, String learningObjectId, List<Map<String, dynamic>> wordTimings) async {
+    final filePath = path.join(
+      getLearningObjectDirectory(courseId, learningObjectId),
+      'word_timings.json',
+    );
+    await saveJsonData(filePath, wordTimings);
+  }
+
+  /// Save sentence timings for a learning object
+  Future<void> saveSentenceTimings(String courseId, String learningObjectId, List<Map<String, dynamic>> sentenceTimings) async {
+    final filePath = path.join(
+      getLearningObjectDirectory(courseId, learningObjectId),
+      'sentence_timings.json',
+    );
+    await saveJsonData(filePath, sentenceTimings);
+  }
+
+  /// Save content metadata for a learning object
+  Future<void> saveContentMetadata(String courseId, String learningObjectId, Map<String, dynamic> metadata) async {
+    final filePath = path.join(
+      getLearningObjectDirectory(courseId, learningObjectId),
+      'content.json',
+    );
+    await saveJsonData(filePath, metadata);
+  }
+
+  /// Check file version for updates
+  Future<bool> needsUpdate(String filePath, int newVersion) async {
+    _ensureInitialized();
+
+    final versionFile = File('$filePath.version');
+
+    if (!versionFile.existsSync()) {
+      return true; // No version file means we need to download
+    }
+
+    try {
+      final currentVersion = int.parse(await versionFile.readAsString());
+      return newVersion > currentVersion;
+    } catch (e) {
+      AppLogger.error('Failed to check version', error: e);
+      return true; // Assume update needed on error
+    }
+  }
+
+  /// Save file version
+  Future<void> saveFileVersion(String filePath, int version) async {
+    final versionFile = File('$filePath.version');
+    await versionFile.writeAsString(version.toString());
+  }
 }

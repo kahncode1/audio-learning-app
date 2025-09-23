@@ -246,6 +246,31 @@ class WordTimingServiceSimplified {
   }
   }
 
+  /// Get timing data for a learning object (for HighlightCalculator)
+  Future<TimingData?> getTimingData(String learningObjectId) async {
+    try {
+      // Check memory cache first
+      if (_timingCache.containsKey(learningObjectId)) {
+        return _timingCache[learningObjectId];
+      }
+
+      // Load from local content service
+      final timingData = await _localContentService.getTimingData(learningObjectId);
+
+      // Cache in memory
+      _timingCache[learningObjectId] = timingData;
+
+      return timingData;
+    } catch (e) {
+      AppLogger.error(
+        'Failed to get timing data',
+        error: e,
+        data: {'learningObjectId': learningObjectId},
+      );
+      return null;
+    }
+  }
+
   // ============================================================================
   // Compatibility methods for original WordTimingService
   // ============================================================================

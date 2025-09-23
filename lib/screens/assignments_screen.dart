@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assignment.dart';
-import '../models/learning_object.dart';
+import '../models/learning_object_v2.dart';
 import '../providers/providers.dart';
 import '../widgets/mini_audio_player.dart';
 
@@ -20,14 +20,11 @@ class AssignmentsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Try to get real assignments from Supabase, fallback to mock
-    final assignmentsFuture = ref.watch(assignmentsProvider(courseId));
+    // Get assignments from local database
+    final assignmentsFuture = ref.watch(courseAssignmentsProvider(courseId));
 
     return assignmentsFuture.when(
-      data: (realAssignments) {
-        final assignments = realAssignments.isNotEmpty
-            ? realAssignments
-            : ref.watch(mockAssignmentsProvider);
+      data: (assignments) {
 
         final shouldShowMiniPlayer = ref.watch(shouldShowMiniPlayerProvider);
 
@@ -157,15 +154,13 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
   @override
   Widget build(BuildContext context) {
     final assignment = widget.assignment;
-    // Try to load real learning objects from Supabase, fallback to mock
-    final learningObjectsFuture = ref.watch(learningObjectsProvider(assignment.id));
+    // Load learning objects from local database
+    final learningObjectsFuture = ref.watch(assignmentLearningObjectsProvider(assignment.id));
 
     final learningObjects = learningObjectsFuture.when(
-      data: (realObjects) => realObjects.isNotEmpty
-          ? realObjects
-          : ref.watch(mockLearningObjectsProvider(assignment.id)),
-      loading: () => <LearningObject>[],
-      error: (_, __) => ref.watch(mockLearningObjectsProvider(assignment.id)),
+      data: (objects) => objects,
+      loading: () => <LearningObjectV2>[],
+      error: (_, __) => <LearningObjectV2>[],
     );
 
     // Check if this assignment has the currently playing learning object
@@ -234,7 +229,7 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
                 // Add divider at the top of learning objects list
                 const Divider(height: 1, thickness: 1),
                 ...learningObjects.map(
-                  (learningObject) => LearningObjectTile(
+                  (learningObject) => LearningObjectTileV2(
                     learningObject: learningObject,
                     isActive: audioContext?.learningObject.id == learningObject.id,
                     onTap: () async {
@@ -261,7 +256,7 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
 
                       // If the learning object was completed, refresh the list
                       if (result == true) {
-                        ref.invalidate(learningObjectsProvider(assignment.id));
+                        ref.invalidate(assignmentLearningObjectsProvider(assignment.id));
                       }
                     },
                   ),
@@ -272,12 +267,12 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
   }
 }
 
-class LearningObjectTile extends StatelessWidget {
-  final LearningObject learningObject;
+class LearningObjectTileV2 extends StatelessWidget {
+  final LearningObjectV2 learningObject;
   final bool isActive;
   final VoidCallback? onTap;
 
-  const LearningObjectTile({
+  const LearningObjectTileV2({
     super.key,
     required this.learningObject,
     this.isActive = false,
@@ -286,11 +281,11 @@ class LearningObjectTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompleted = learningObject.isCompleted;
-    final isInProgress = learningObject.currentPositionMs > 0 && !isCompleted;
+    final isCompleted = learningObject.isCompleted ?? false;
+    final isInProgress = (learningObject.currentPositionMs ?? 0) > 0 && !isCompleted;
 
-    // Estimate duration based on content length
-    final durationMinutes = ((learningObject.plainText?.length ?? 500) / 150).round();
+    // Use actual duration from the model
+    final durationMinutes = (learningObject.totalDurationMs / 60000).round();
 
     String statusText = '$durationMinutes min';
     if (isCompleted) {

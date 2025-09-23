@@ -11,7 +11,7 @@
 ///
 import 'dart:collection';
 import '../../models/download_models.dart';
-import '../../models/learning_object.dart';
+import '../../models/learning_object_v2.dart';
 import '../../utils/app_logger.dart';
 
 class DownloadQueueManager {
@@ -43,7 +43,7 @@ class DownloadQueueManager {
   }
 
   /// Build queue from learning objects
-  Future<void> buildQueue(String courseId, List<LearningObject> learningObjects) async {
+  Future<void> buildQueue(String courseId, List<LearningObjectV2> learningObjects) async {
     clearQueue();
 
     for (final lo in learningObjects) {
@@ -197,51 +197,72 @@ class DownloadQueueManager {
   /// Create download tasks for a learning object
   Future<List<DownloadTask>> _createDownloadTasksForLearningObject(
     String courseId,
-    LearningObject lo,
+    LearningObjectV2 lo,
   ) async {
     final tasks = <DownloadTask>[];
 
-    // Audio file task
-    if (lo.audioUrl != null && lo.audioUrl!.isNotEmpty) {
+    // Audio file task - using new audioUrl field
+    if (lo.audioUrl.isNotEmpty) {
       tasks.add(DownloadTask(
-        id: '${lo.id}_audio',
+        id: '${lo.id}_audio_v${lo.fileVersion}',
         courseId: courseId,
         learningObjectId: lo.id,
-        url: lo.audioUrl!,
-        localPath: 'courses/$courseId/learning_objects/${lo.id}/audio.mp3',
+        url: lo.audioUrl,
+        localPath: 'courses/$courseId/learning_objects/${lo.id}/audio.${lo.audioFormat}',
         fileType: DownloadFileType.audio,
-        expectedSize: 5 * 1024 * 1024, // Estimate 5MB
+        expectedSize: lo.audioSizeBytes, // Use actual size from database
         status: DownloadStatus.pending,
+        version: lo.fileVersion, // Track version for updates
       ));
     }
 
-    // Content JSON task
-    if (lo.contentUrl != null && lo.contentUrl!.isNotEmpty) {
-      tasks.add(DownloadTask(
-        id: '${lo.id}_content',
-        courseId: courseId,
-        learningObjectId: lo.id,
-        url: lo.contentUrl!,
-        localPath: 'courses/$courseId/learning_objects/${lo.id}/content.json',
-        fileType: DownloadFileType.content,
-        expectedSize: 50 * 1024, // Estimate 50KB
-        status: DownloadStatus.pending,
-      ));
-    }
+    // Word timings JSON task - save separately for offline access
+    tasks.add(DownloadTask(
+      id: '${lo.id}_word_timings_v${lo.fileVersion}',
+      courseId: courseId,
+      learningObjectId: lo.id,
+      url: '', // Will be saved directly from memory
+      localPath: 'courses/$courseId/learning_objects/${lo.id}/word_timings.json',
+      fileType: DownloadFileType.timing,
+      expectedSize: lo.wordTimings.length * 100, // Estimate based on word count
+      status: DownloadStatus.pending,
+      version: lo.fileVersion,
+      jsonData: lo.wordTimings.map((w) => w.toJson()).toList(), // Store timing data
+    ));
 
-    // Timing JSON task
-    if (lo.timingUrl != null && lo.timingUrl!.isNotEmpty) {
-      tasks.add(DownloadTask(
-        id: '${lo.id}_timing',
-        courseId: courseId,
-        learningObjectId: lo.id,
-        url: lo.timingUrl!,
-        localPath: 'courses/$courseId/learning_objects/${lo.id}/timing.json',
-        fileType: DownloadFileType.timing,
-        expectedSize: 100 * 1024, // Estimate 100KB
-        status: DownloadStatus.pending,
-      ));
-    }
+    // Sentence timings JSON task - save separately for offline access
+    tasks.add(DownloadTask(
+      id: '${lo.id}_sentence_timings_v${lo.fileVersion}',
+      courseId: courseId,
+      learningObjectId: lo.id,
+      url: '', // Will be saved directly from memory
+      localPath: 'courses/$courseId/learning_objects/${lo.id}/sentence_timings.json',
+      fileType: DownloadFileType.timing,
+      expectedSize: lo.sentenceTimings.length * 200, // Estimate based on sentence count
+      status: DownloadStatus.pending,
+      version: lo.fileVersion,
+      jsonData: lo.sentenceTimings.map((s) => s.toJson()).toList(), // Store timing data
+    ));
+
+    // Content metadata JSON task - save for offline access
+    tasks.add(DownloadTask(
+      id: '${lo.id}_content_v${lo.fileVersion}',
+      courseId: courseId,
+      learningObjectId: lo.id,
+      url: '', // Will be saved directly from memory
+      localPath: 'courses/$courseId/learning_objects/${lo.id}/content.json',
+      fileType: DownloadFileType.content,
+      expectedSize: 10 * 1024, // Estimate 10KB for metadata
+      status: DownloadStatus.pending,
+      version: lo.fileVersion,
+      jsonData: {
+        'display_text': lo.displayText,
+        'paragraphs': lo.paragraphs,
+        'headers': lo.headers,
+        'formatting': lo.formatting.toJson(),
+        'metadata': lo.metadata.toJson(),
+      },
+    ));
 
     return tasks;
   }
