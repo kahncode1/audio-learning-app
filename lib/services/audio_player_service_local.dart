@@ -20,6 +20,7 @@ import '../models/word_timing.dart';
 import 'audio_handler.dart';
 import 'local_content_service.dart';
 import 'word_timing_service_simplified.dart';
+import 'performance_monitor.dart';
 
 // Utils
 import '../utils/app_logger.dart';
@@ -277,88 +278,91 @@ class AudioPlayerServiceLocal {
   ///
   /// This method loads pre-downloaded content instead of generating TTS
   Future<void> loadLocalAudio(LearningObject learningObject) async {
-  try {
-    AppLogger.info('Loading local audio', {
-      'id': learningObject.id,
-      'title': learningObject.title,
+    // Track audio load performance
+    await PerformanceMonitor.trackAudioLoadTime(() async {
+      try {
+        AppLogger.info('Loading local audio', {
+          'id': learningObject.id,
+          'title': learningObject.title,
+        });
+
+        // Check if content is available
+        final isAvailable = await _localContentService.isContentAvailable(learningObject.id);
+        if (!isAvailable) {
+          throw Exception('Content not available locally for ${learningObject.id}');
+        }
+
+        // Load content and timing data in parallel
+        final results = await Future.wait([
+          _localContentService.getContent(learningObject.id),
+          _localContentService.getTimingData(learningObject.id),
+          _localContentService.getAudioPath(learningObject.id),
+        ]);
+
+        final content = results[0] as Map<String, dynamic>;
+        final timingData = results[1] as TimingData;
+        final audioPath = results[2] as String;
+
+        // Extract display text
+        _currentDisplayText = LocalContentService.getDisplayText(content);
+        _currentLearningObject = learningObject;
+        _currentLearningObjectId = learningObject.id;
+        _currentTimingData = timingData;
+        _currentWordTimings = timingData.words;
+
+        // Share timings with WordTimingService for highlighting
+        final wordTimingService = WordTimingServiceSimplified.instance;
+        wordTimingService.setCachedTimings(learningObject.id, timingData.words);
+
+        AppLogger.info('Loaded local content', {
+          'wordCount': timingData.words.length,
+          'sentenceCount': timingData.sentences.length,
+          'duration': '${timingData.totalDurationMs / 1000}s',
+          'audioPath': audioPath,
+        });
+
+        // Create audio source from local file
+        AudioSource audioSource;
+
+        // Check if it's an asset path or a file path
+        if (audioPath.startsWith('assets/')) {
+          // Load from assets (for test content)
+          audioSource = AudioSource.asset(audioPath);
+        } else {
+          // Load from file system (for downloaded content)
+          audioSource = AudioSource.file(audioPath);
+        }
+
+        // Set the audio source
+        await _player.setAudioSource(audioSource);
+
+        // Update media item for lock screen
+        final duration = _player.duration;
+        _audioHandler?.updateMediaItemForLearning(
+          learningObject,
+          audioDuration: duration,
+        );
+
+        // Restore previous position if available
+        if (learningObject.currentPositionMs > 0) {
+          await seekToPosition(
+            Duration(milliseconds: learningObject.currentPositionMs),
+          );
+        }
+
+        AppLogger.info('Local audio loaded successfully', {
+          'title': learningObject.title,
+          'duration': duration?.inSeconds,
+        });
+      } catch (e) {
+        AppLogger.error(
+          'Error loading local audio',
+          error: e,
+          data: {'learningObjectId': learningObject.id},
+        );
+        throw Exception('Failed to load local audio: $e');
+      }
     });
-
-    // Check if content is available
-    final isAvailable = await _localContentService.isContentAvailable(learningObject.id);
-    if (!isAvailable) {
-      throw Exception('Content not available locally for ${learningObject.id}');
-    }
-
-    // Load content and timing data in parallel
-    final results = await Future.wait([
-      _localContentService.getContent(learningObject.id),
-      _localContentService.getTimingData(learningObject.id),
-      _localContentService.getAudioPath(learningObject.id),
-    ]);
-
-    final content = results[0] as Map<String, dynamic>;
-    final timingData = results[1] as TimingData;
-    final audioPath = results[2] as String;
-
-    // Extract display text
-    _currentDisplayText = LocalContentService.getDisplayText(content);
-    _currentLearningObject = learningObject;
-    _currentLearningObjectId = learningObject.id;
-    _currentTimingData = timingData;
-    _currentWordTimings = timingData.words;
-
-    // Share timings with WordTimingService for highlighting
-    final wordTimingService = WordTimingServiceSimplified.instance;
-    wordTimingService.setCachedTimings(learningObject.id, timingData.words);
-
-    AppLogger.info('Loaded local content', {
-      'wordCount': timingData.words.length,
-      'sentenceCount': timingData.sentences.length,
-      'duration': '${timingData.totalDurationMs / 1000}s',
-      'audioPath': audioPath,
-    });
-
-    // Create audio source from local file
-    AudioSource audioSource;
-
-    // Check if it's an asset path or a file path
-    if (audioPath.startsWith('assets/')) {
-      // Load from assets (for test content)
-      audioSource = AudioSource.asset(audioPath);
-    } else {
-      // Load from file system (for downloaded content)
-      audioSource = AudioSource.file(audioPath);
-    }
-
-    // Set the audio source
-    await _player.setAudioSource(audioSource);
-
-    // Update media item for lock screen
-    final duration = _player.duration;
-    _audioHandler?.updateMediaItemForLearning(
-      learningObject,
-      audioDuration: duration,
-    );
-
-    // Restore previous position if available
-    if (learningObject.currentPositionMs > 0) {
-      await seekToPosition(
-        Duration(milliseconds: learningObject.currentPositionMs),
-      );
-    }
-
-    AppLogger.info('Local audio loaded successfully', {
-      'title': learningObject.title,
-      'duration': duration?.inSeconds,
-    });
-  } catch (e) {
-    AppLogger.error(
-      'Error loading local audio',
-      error: e,
-      data: {'learningObjectId': learningObject.id},
-    );
-    throw Exception('Failed to load local audio: $e');
-  }
   }
 
   /// Load audio (fallback to original method for compatibility)

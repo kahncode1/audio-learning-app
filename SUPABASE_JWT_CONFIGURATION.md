@@ -5,19 +5,17 @@ This guide explains how to configure Supabase to accept and validate JWT tokens 
 
 ## Configuration Steps
 
-### 1. Access Supabase Dashboard
+### 1. Option A: Third-Party Auth Integration (Recommended)
 Navigate to your Supabase project dashboard:
 - Go to `Authentication` → `Providers`
-- Look for "Custom Token (JWT)" section
+- Look for "Third-party Auth Integrations" section
+- Add AWS Cognito integration with:
+  - **Pool ID:** `us-east-1_vAMMFcpew`
+  - **Region:** `us-east-1`
 
-### 2. Configure JWT Settings
-
-#### JWT Secret Configuration
-Since Cognito uses RSA key pairs, you'll need to use the JWKS endpoint:
-
-```
-https://cognito-idp.us-east-1.amazonaws.com/us-east-1_vAMMFcpew/.well-known/jwks.json
-```
+### 2. Option B: Manual JWT Settings (Alternative)
+If third-party integration is not available, configure manual JWT settings:
+- Go to `Authentication` → `Settings` → `JWT Settings`
 
 #### JWT Configuration Fields:
 - **JWT Secret:** `https://cognito-idp.us-east-1.amazonaws.com/us-east-1_vAMMFcpew/.well-known/jwks.json`
@@ -75,16 +73,16 @@ CREATE POLICY "Users can only access their own progress"
   USING (user_id = (auth.jwt() ->> 'sub'));
 ```
 
-### 5. Lambda Function for Custom Claims
+### 5. Lambda Function for Custom Claims (Required)
 
-If you need to add custom claims to Cognito tokens for Supabase compatibility, create a Pre-Token Generation Lambda:
+You MUST create a Pre-Token Generation Lambda to add the required 'role' claim:
 
 ```javascript
 exports.handler = async (event) => {
-    // Add custom claims for Supabase
+    // Add required role claim for Supabase RLS
     event.response.claimsOverrideDetails = {
         claimsToAddOrOverride: {
-            'role': 'authenticated',
+            'role': 'authenticated', // Required for RLS policies
             'aud': 'authenticated',
             'app_metadata': JSON.stringify({
                 provider: 'cognito',
@@ -101,7 +99,22 @@ exports.handler = async (event) => {
 };
 ```
 
-### 6. Remove Temporary Test Policies
+### 6. Flutter Implementation Approach
+
+Due to limitations in the Supabase Flutter SDK, use the Authorization header approach:
+
+```dart
+// Set JWT in Authorization header
+final idToken = await getJwtToken();
+Supabase.instance.client.headers['Authorization'] = 'Bearer $idToken';
+
+// Clear on sign out
+Supabase.instance.client.headers.remove('Authorization');
+```
+
+**Important**: Do NOT use `setSession(idToken)` as it expects both access and refresh tokens.
+
+### 7. Remove Temporary Test Policies
 
 Remove the temporary public access policy that was created for testing:
 
@@ -117,7 +130,7 @@ ALTER TABLE enrollments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE progress ENABLE ROW LEVEL SECURITY;
 ```
 
-### 7. Test JWT Validation
+### 8. Test JWT Validation
 
 You can test JWT validation using Supabase's SQL editor:
 
@@ -150,20 +163,26 @@ SELECT auth.jwt() ->> 'sub' AS user_id,
 
 ### Common Issues:
 
-1. **"Invalid JWT" Error:**
-   - Verify JWKS URL is correct
-   - Check that token hasn't expired
+1. **"refresh_token_not_found" Error:**
+   - **Cause:** Using `setSession(idToken)` which expects access + refresh tokens
+   - **Solution:** Use Authorization header approach instead: `client.headers['Authorization'] = 'Bearer $idToken'`
+
+2. **"Invalid JWT" Error:**
+   - Verify JWKS URL is correct in Supabase settings
+   - Check that token hasn't expired (1 hour default)
    - Ensure issuer and audience match exactly
+   - Verify Lambda function is adding required 'role' claim
 
-2. **RLS Policy Violations:**
-   - Check that JWT contains expected claims
-   - Verify claim names match policy expectations
-   - Test with `auth.jwt()` function directly
+3. **RLS Policy Violations:**
+   - Check that JWT contains 'role': 'authenticated' claim
+   - Verify JWT contains 'sub' claim for user identification
+   - Test with `auth.jwt()` function directly in SQL editor
+   - Ensure Lambda Pre-Token Generation trigger is active
 
-3. **Token Refresh Issues:**
-   - Ensure Cognito refresh token is valid
-   - Check that new tokens are bridged to Supabase
-   - Monitor token expiration times
+4. **Token Refresh Issues:**
+   - Cognito refresh tokens expire after 30 days
+   - New ID tokens must be re-bridged to Supabase
+   - Monitor token expiration times and implement refresh logic
 
 ## Security Notes
 

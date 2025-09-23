@@ -140,29 +140,51 @@ Username: ${user?.username ?? 'Unknown'}
     try {
       final client = Supabase.instance.client;
 
-      // Check if Supabase session exists
-      final session = client.auth.currentSession;
-      if (session != null) {
+      // Check if Authorization header is set (new approach for external JWT)
+      final hasAuthHeader = client.headers.containsKey('Authorization');
+
+      if (hasAuthHeader) {
         setState(() {
-          _supabaseStatus = '''
-✅ Supabase Connected
-User ID: ${session.user.id}
-Expires: ${DateTime.fromMillisecondsSinceEpoch(session.expiresAt! * 1000).toLocal()}
+          _supabaseStatus = '✅ JWT Token set in Authorization header';
+        });
+
+        // Test a simple query with RLS to verify JWT is working
+        try {
+          final response = await client
+              .from('courses')
+              .select('id, title')
+              .limit(1);
+
+          setState(() {
+            _supabaseStatus = '''
+✅ Supabase Connected via JWT
+✅ Authorization header is set
+✅ RLS Test: Can access courses
+✅ JWT validation successful
 ''';
-        });
+          });
+        } catch (queryError) {
+          // If query fails, JWT might be invalid or RLS policies blocking
+          setState(() {
+            _supabaseStatus = '''
+⚠️ JWT Token set but query failed
+Authorization header: ${hasAuthHeader ? 'Set' : 'Not set'}
+Query error: $queryError
 
-        // Test a simple query with RLS
-        final response = await client
-            .from('courses')
-            .select('id, title')
-            .limit(1);
-
-        setState(() {
-          _supabaseStatus += '\n✅ RLS Test: Can access courses';
-        });
+Possible causes:
+- JWT expired (1 hour lifetime)
+- RLS policies need 'role' claim
+- Lambda function not adding claims
+''';
+          });
+        }
       } else {
         setState(() {
-          _supabaseStatus = '❌ No Supabase session';
+          _supabaseStatus = '''
+❌ No Supabase JWT bridge
+Authorization header not set
+Run _bridgeToSupabase() after auth
+''';
         });
       }
     } catch (e) {

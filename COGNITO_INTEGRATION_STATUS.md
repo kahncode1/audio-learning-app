@@ -50,8 +50,13 @@
 5. Verify:
    - App receives callback at `audiocourses://oauth/callback`
    - JWT token is received
-   - Supabase session is created
+   - Authorization header is set in Supabase client
    - RLS policies allow data access
+
+#### Updated Implementation:
+- **Fixed**: Changed from `setSession(idToken)` to Authorization header approach
+- **Reason**: `setSession` expects access + refresh tokens, but Cognito provides ID tokens
+- **Solution**: `client.headers['Authorization'] = 'Bearer $idToken'`
 
 #### Test Screen Location:
 ```dart
@@ -124,17 +129,24 @@ AuthTestScreen()
 
 ### Troubleshooting
 
+#### Recently Fixed Issues:
+1. **"refresh_token_not_found" Error (RESOLVED 2025-09-22):**
+   - **Problem**: Used `setSession(idToken)` which expects access + refresh tokens
+   - **Solution**: Switched to Authorization header: `client.headers['Authorization'] = 'Bearer $idToken'`
+   - **Status**: Fixed in `CognitoAuthService._bridgeToSupabase()`
+
 #### Common Issues:
 1. **"Invalid JWT" in Supabase:**
    - Verify JWKS URL is correct in Supabase settings
    - Check token hasn't expired (1 hour default)
+   - Ensure Lambda Pre-Token Generation is adding 'role' claim
 
 2. **Deep links not working:**
    - iOS: Verify bundle ID matches `com.industria.audiocourses`
    - Android: Check package name in manifest
 
 3. **RLS policy violations:**
-   - Ensure JWT contains `sub` claim
+   - Ensure JWT contains `sub` and `role` claims
    - Check user exists in `user_profiles` table
 
 4. **Token refresh fails:**

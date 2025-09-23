@@ -45,6 +45,9 @@ dependencies:
   # Environment Configuration
   flutter_dotenv: ^6.0.0
 
+  # Error Tracking & Monitoring
+  sentry_flutter: ^8.0.0
+
   flutter_cache_manager: any
 dev_dependencies:
   flutter_test:

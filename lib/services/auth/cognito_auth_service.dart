@@ -192,16 +192,29 @@ class CognitoAuthService implements AuthServiceInterface {
         return;
       }
 
-      // Create Supabase session using Cognito JWT
-      final response = await supa.Supabase.instance.client.auth.setSession(idToken);
+      // Set the Authorization header for Supabase client
+      // This approach works with Supabase's JWT settings configured for Cognito
+      // The JWT will be validated using the JWKS endpoint we configured
+      supa.Supabase.instance.client.headers['Authorization'] = 'Bearer $idToken';
 
-      if (response.session != null) {
-        print('✅ Successfully bridged to Supabase');
+      // Test the JWT by making a simple query to verify it works
+      try {
+        // Try to query user profile to verify JWT is working
+        final userTest = await supa.Supabase.instance.client
+            .from('user_profiles')
+            .select('id')
+            .limit(1)
+            .maybeSingle();
+
+        print('✅ Successfully bridged to Supabase with JWT');
 
         // Sync user profile data
         await _syncUserProfile();
-      } else {
-        print('❌ Failed to create Supabase session');
+      } catch (e) {
+        print('❌ JWT validation failed: $e');
+        // Clear the header if validation fails
+        supa.Supabase.instance.client.headers.remove('Authorization');
+        throw e;
       }
     } catch (e) {
       print('❌ Supabase bridge failed: $e');
@@ -212,7 +225,8 @@ class CognitoAuthService implements AuthServiceInterface {
   /// Clear Supabase session
   Future<void> _clearSupabaseSession() async {
     try {
-      await supa.Supabase.instance.client.auth.signOut();
+      // Remove the Authorization header when signing out
+      supa.Supabase.instance.client.headers.remove('Authorization');
       print('✅ Supabase session cleared');
     } catch (e) {
       print('❌ Failed to clear Supabase session: $e');

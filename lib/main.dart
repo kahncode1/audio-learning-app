@@ -1,12 +1,20 @@
 // Dart & Flutter
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // Third-party packages
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Configuration
 import 'config/env_config.dart';
+
+// Services
+import 'services/error_tracking_service.dart';
+import 'services/performance_monitor.dart';
+import 'utils/app_logger.dart';
 
 // Models
 import 'models/learning_object.dart';
@@ -31,25 +39,105 @@ import 'theme/app_theme.dart';
 import 'widgets/mini_audio_player.dart';
 
 void main() async {
-  // Ensure Flutter binding is initialized
-  WidgetsFlutterBinding.ensureInitialized();
+  // Run the app in a guarded zone to catch all errors
+  await runZonedGuarded(
+    () async {
+      // Ensure Flutter binding is initialized
+      WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables
-  await EnvConfig.load();
+      // Load environment variables
+      await EnvConfig.load();
 
-  // Initialize Supabase
-  await Supabase.initialize(
-    url: EnvConfig.supabaseUrl,
-    anonKey: EnvConfig.supabaseAnonKey,
-  );
+      // Initialize error tracking (Sentry)
+      // TODO: Replace with actual Sentry DSN from environment
+      final sentryDsn = ''; // TODO: Add SENTRY_DSN to .env file
+      if (sentryDsn.isNotEmpty) {
+        await ErrorTrackingService.initialize(
+          dsn: sentryDsn,
+          tracesSampleRate: kDebugMode ? 1.0 : 0.3,
+        );
+      } else {
+        AppLogger.warning('Sentry DSN not configured - error tracking disabled');
+      }
 
-  // Print configuration status for debugging
-  EnvConfig.printConfigurationStatus();
+      // Set up Flutter error handling
+      FlutterError.onError = (FlutterErrorDetails details) {
+        // Log to console in debug mode
+        if (kDebugMode) {
+          FlutterError.presentError(details);
+        }
 
-  runApp(
-    const ProviderScope(
-      child: AudioLearningApp(),
-    ),
+        // Report to error tracking service
+        ErrorTrackingService.reportError(
+          details.exception,
+          details.stack,
+          level: SentryLevel.error,
+          message: 'Flutter framework error',
+          context: {
+            'library': details.library ?? 'unknown',
+            'context': details.context?.toString() ?? 'unknown',
+          },
+        );
+
+        // Log locally
+        AppLogger.error(
+          'Flutter Error',
+          error: details.exception,
+          stackTrace: details.stack,
+        );
+      };
+
+      // Set up platform error handling
+      PlatformDispatcher.instance.onError = (error, stack) {
+        ErrorTrackingService.reportError(
+          error,
+          stack,
+          level: SentryLevel.fatal,
+          message: 'Platform error',
+        );
+        AppLogger.error('Platform Error', error: error, stackTrace: stack);
+        return true;
+      };
+
+      // Initialize Supabase
+      await Supabase.initialize(
+        url: EnvConfig.supabaseUrl,
+        anonKey: EnvConfig.supabaseAnonKey,
+      );
+
+      // Print configuration status for debugging
+      EnvConfig.printConfigurationStatus();
+
+      // Start performance monitoring
+      PerformanceMonitor.startTracking();
+      AppLogger.info('Performance monitoring started');
+
+      // Add initialization breadcrumb
+      ErrorTrackingService.addBreadcrumb(
+        message: 'App initialized',
+        category: 'lifecycle',
+        data: {
+          'supabase_url': EnvConfig.supabaseUrl,
+          'environment': kDebugMode ? 'development' : 'production',
+        },
+      );
+
+      runApp(
+        const ProviderScope(
+          child: AudioLearningApp(),
+        ),
+      );
+    },
+    (error, stack) {
+      // Handle errors that occur outside of Flutter framework
+      ErrorTrackingService.reportError(
+        error,
+        stack,
+        level: SentryLevel.fatal,
+        message: 'Uncaught error in guarded zone',
+      );
+      AppLogger.error('Uncaught Error', error: error, stackTrace: stack);
+    },
   );
 }
 

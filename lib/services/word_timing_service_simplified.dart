@@ -4,6 +4,7 @@ import 'package:rxdart/rxdart.dart';
 import '../models/word_timing.dart';
 import '../utils/app_logger.dart';
 import 'local_content_service.dart';
+import 'performance_monitor.dart';
 
 /// WordTimingServiceSimplified - Simplified word timing service for pre-processed data
 ///
@@ -127,8 +128,23 @@ class WordTimingServiceSimplified {
 
   /// Get the current word index based on playback position
   int getCurrentWordIndex(int positionMs) {
-  if (_currentTimingData == null) return -1;
-  return _currentTimingData!.getCurrentWordIndex(positionMs);
+    if (_currentTimingData == null) return -1;
+
+    // Track word lookup performance
+    final stopwatch = Stopwatch()..start();
+    final result = _currentTimingData!.getCurrentWordIndex(positionMs);
+    stopwatch.stop();
+
+    // Log if lookup exceeds target (1ms)
+    if (stopwatch.elapsedMicroseconds > 1000) {
+      AppLogger.debug('Word lookup exceeded target', {
+        'duration_us': stopwatch.elapsedMicroseconds,
+        'position_ms': positionMs,
+        'result': result,
+      });
+    }
+
+    return result;
   }
 
   /// Get the current sentence index based on playback position
