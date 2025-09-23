@@ -54,7 +54,7 @@ class ErrorTrackingService {
         options.beforeSend = (event, hint) {
           // Filter out certain errors in development
           if (kDebugMode) {
-            final error = hint.originalException;
+            final error = event.throwable;
             if (error is FlutterError &&
                 error.message.contains('setState() or markNeedsBuild()')) {
               return null; // Don't send setState errors in development
@@ -65,7 +65,6 @@ class ErrorTrackingService {
           AppLogger.error(
             'Sending to Sentry',
             error: event.throwable,
-            stackTrace: event.stackTrace as StackTrace?,
           );
 
           return event;
@@ -217,17 +216,19 @@ class ErrorTrackingService {
   }
 
   /// Show user feedback dialog after an error
-  static void showUserFeedbackDialog(SentryId sentryId) {
+  static Future<void> showUserFeedbackDialog(SentryId sentryId) async {
     if (!_initialized) return;
 
-    final userFeedback = SentryUserFeedback(
-      eventId: sentryId,
-      comments: 'Please describe what you were doing when this error occurred',
-      email: '',
-      name: '',
+    // In Sentry v9, user feedback is handled differently
+    // You would typically use the Sentry User Feedback widget or
+    // capture feedback as part of an event context
+    await Sentry.captureMessage(
+      'User feedback requested for event: $sentryId',
+      withScope: (scope) {
+        scope.setTag('feedback_event_id', sentryId.toString());
+        scope.setExtra('feedback_requested', true);
+      },
     );
-
-    Sentry.captureUserFeedback(userFeedback);
   }
 
   /// Check if error tracking is initialized

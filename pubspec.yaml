@@ -15,8 +15,8 @@ dependencies:
   flutter_riverpod: ^2.4.9
   
   # Audio
-  just_audio: ^0.9.36
-  audio_session: ^0.1.18
+  just_audio: ^0.10.5
+  audio_session: ^0.2.2
   audio_service: ^0.18.12
   
   # Authentication
@@ -46,10 +46,11 @@ dependencies:
   flutter_dotenv: ^6.0.0
 
   # Error Tracking & Monitoring
-  sentry_flutter: ^8.0.0
+  sentry_flutter: ^9.0.0
 
   flutter_cache_manager: any
 dev_dependencies:
+  sentry_dart_plugin: ^3.1.1
   flutter_test:
     sdk: flutter
   integration_test:
@@ -64,3 +65,9 @@ flutter:
     - .env
     - assets/images/
     - assets/test_content/learning_objects/63ad7b78-0970-4265-a4fe-51f3fee39d5f/
+
+sentry:
+  upload_debug_symbols: true
+  upload_source_maps: true
+  project: flutter
+  org: the-institutes

@@ -38,5 +38,5 @@ export 'mock_data_provider.dart';
 /// Direct instantiation is not needed in the barrel export file
 void validateProviders() {
   // Provider validation available through provider system and tests
-  print('✅ Provider validation available through provider system and tests');
+  // Validation is performed through unit tests and the provider system
 }
