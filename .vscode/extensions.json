@@ -2,9 +2,6 @@
   "recommendations": [
     // Essential Flutter/Dart
     "Dart-Code.dart-code",
-    "Dart-Code.flutter",
-
-    // Code quality
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
 

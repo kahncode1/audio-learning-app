@@ -1,0 +1,287 @@
+/// User Settings Service
+///
+/// Purpose: Manages user preferences and settings with Supabase
+/// Dependencies:
+///   - supabase_service.dart: Database client
+///   - models/user_settings.dart: UserSettings model
+///   - shared_preferences: Local storage
+///
+/// Status: ✅ Created for DATA_ARCHITECTURE_PLAN (Phase 4)
+///   - Manages user preferences with JSONB storage
+///   - Syncs settings between local and cloud storage
+///
+/// Usage:
+///   final settingsService = UserSettingsService();
+///   final settings = await settingsService.fetchSettings();
+///   await settingsService.updateFontSize(18.0);
+///
+/// Expected behavior:
+///   - Fetches and caches user settings
+///   - Updates settings both locally and in cloud
+///   - Provides default settings for new users
+
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'supabase_service.dart';
+import '../models/user_settings.dart';
+
+class UserSettingsService {
+  static final UserSettingsService _instance = UserSettingsService._internal();
+  factory UserSettingsService() => _instance;
+  UserSettingsService._internal();
+
+  final SupabaseService _supabaseService = SupabaseService();
+  UserSettings? _cachedSettings;
+
+  /// Fetch user settings (from cache or database)
+  Future<UserSettings> fetchSettings() async {
+    try {
+      // Return cached settings if available
+      if (_cachedSettings != null) {
+        return _cachedSettings!;
+      }
+
+      final userId = await _getCurrentUserId();
+      if (userId == null) {
+        // Return default settings for unauthenticated users
+        return _getDefaultSettings();
+      }
+
+      final response = await _supabaseService.client
+          .from('user_settings')
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (response != null) {
+        _cachedSettings = UserSettings.fromJson(response);
+        await _cacheSettingsLocally(_cachedSettings!);
+        return _cachedSettings!;
+      }
+
+      // Create default settings for new user
+      final defaultSettings = await _createDefaultSettings(userId);
+      _cachedSettings = defaultSettings;
+      return defaultSettings;
+    } catch (e) {
+      debugPrint('Error fetching settings: $e');
+      // Fall back to local settings or defaults
+      final localSettings = await _loadLocalSettings();
+      return localSettings ?? _getDefaultSettings();
+    }
+  }
+
+  /// Update font size
+  Future<void> updateFontSize(double fontSize) async {
+    await _updateSetting('font_size', fontSize);
+  }
+
+  /// Update auto-play setting
+  Future<void> updateAutoPlay(bool autoPlay) async {
+    await _updateSetting('auto_play', autoPlay);
+  }
+
+  /// Update default playback speed
+  Future<void> updatePlaybackSpeed(double speed) async {
+    await _updateSetting('default_playback_speed', speed);
+  }
+
+  /// Update word highlight color
+  Future<void> updateWordHighlightColor(String color) async {
+    await _updateSetting('word_highlight_color', color);
+  }
+
+  /// Update sentence highlight color
+  Future<void> updateSentenceHighlightColor(String color) async {
+    await _updateSetting('sentence_highlight_color', color);
+  }
+
+  /// Toggle theme between light and dark
+  Future<void> toggleTheme() async {
+    final settings = await fetchSettings();
+    final newTheme = settings.isDarkMode ? 'light' : 'dark';
+
+    try {
+      final userId = await _getCurrentUserId();
+      if (userId != null) {
+        await _supabaseService.client
+            .from('user_settings')
+            .update({'theme_name': newTheme})
+            .eq('user_id', userId);
+      }
+
+      // Update cache
+      _cachedSettings = settings.copyWith(themeName: newTheme);
+      await _cacheSettingsLocally(_cachedSettings!);
+
+      debugPrint('Theme toggled to: $newTheme');
+    } catch (e) {
+      debugPrint('Error toggling theme: $e');
+    }
+  }
+
+  /// Update a specific setting
+  Future<void> _updateSetting(String key, dynamic value) async {
+    try {
+      final settings = await fetchSettings();
+      final updatedSettings = settings.updatePreference(key, value);
+
+      final userId = await _getCurrentUserId();
+      if (userId != null) {
+        // Update in database
+        await _supabaseService.client
+            .from('user_settings')
+            .update({
+              'preferences': updatedSettings.preferences,
+              'updated_at': DateTime.now().toIso8601String(),
+            })
+            .eq('user_id', userId);
+      }
+
+      // Update cache
+      _cachedSettings = updatedSettings;
+      await _cacheSettingsLocally(updatedSettings);
+
+      debugPrint('Updated setting $key to $value');
+    } catch (e) {
+      debugPrint('Error updating setting $key: $e');
+    }
+  }
+
+  /// Create default settings for a new user
+  Future<UserSettings> _createDefaultSettings(String userId) async {
+    try {
+      final defaultSettings = UserSettings(
+        id: '', // Will be generated by database
+        userId: userId,
+        themeName: 'light',
+        themeSettings: {},
+        preferences: {
+          'font_size': 16.0,
+          'auto_play': true,
+          'default_playback_speed': 1.0,
+          'word_highlight_color': '#FFEB3B',
+          'sentence_highlight_color': '#FFE0B2',
+        },
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      final response = await _supabaseService.client
+          .from('user_settings')
+          .insert(defaultSettings.toJson())
+          .select()
+          .single();
+
+      final createdSettings = UserSettings.fromJson(response);
+      await _cacheSettingsLocally(createdSettings);
+
+      debugPrint('Created default settings for user: $userId');
+      return createdSettings;
+    } catch (e) {
+      debugPrint('Error creating default settings: $e');
+      return _getDefaultSettings();
+    }
+  }
+
+  /// Get default settings (not persisted)
+  UserSettings _getDefaultSettings() {
+    return UserSettings(
+      id: 'default',
+      userId: 'anonymous',
+      themeName: 'light',
+      themeSettings: {},
+      preferences: {
+        'font_size': 16.0,
+        'auto_play': true,
+        'default_playback_speed': 1.0,
+        'word_highlight_color': '#FFEB3B',
+        'sentence_highlight_color': '#FFE0B2',
+      },
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  /// Cache settings locally
+  Future<void> _cacheSettingsLocally(UserSettings settings) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('theme_name', settings.themeName);
+      await prefs.setDouble('font_size', settings.getFontSize());
+      await prefs.setBool('auto_play', settings.getAutoPlay());
+      await prefs.setDouble('playback_speed', settings.getDefaultPlaybackSpeed());
+      await prefs.setString('word_highlight_color', settings.getWordHighlightColor());
+      await prefs.setString('sentence_highlight_color', settings.getSentenceHighlightColor());
+    } catch (e) {
+      debugPrint('Error caching settings locally: $e');
+    }
+  }
+
+  /// Load settings from local storage
+  Future<UserSettings?> _loadLocalSettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final themeName = prefs.getString('theme_name') ?? 'light';
+      final fontSize = prefs.getDouble('font_size') ?? 16.0;
+      final autoPlay = prefs.getBool('auto_play') ?? true;
+      final playbackSpeed = prefs.getDouble('playback_speed') ?? 1.0;
+      final wordHighlightColor = prefs.getString('word_highlight_color') ?? '#FFEB3B';
+      final sentenceHighlightColor = prefs.getString('sentence_highlight_color') ?? '#FFE0B2';
+
+      return UserSettings(
+        id: 'local',
+        userId: 'anonymous',
+        themeName: themeName,
+        themeSettings: {},
+        preferences: {
+          'font_size': fontSize,
+          'auto_play': autoPlay,
+          'default_playback_speed': playbackSpeed,
+          'word_highlight_color': wordHighlightColor,
+          'sentence_highlight_color': sentenceHighlightColor,
+        },
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    } catch (e) {
+      debugPrint('Error loading local settings: $e');
+      return null;
+    }
+  }
+
+  /// Clear cached settings
+  void clearCache() {
+    _cachedSettings = null;
+  }
+
+  /// Get the current user ID from the auth service
+  Future<String?> _getCurrentUserId() async {
+    try {
+      final cognitoUser = await _supabaseService.authService.getCurrentUser();
+      if (cognitoUser == null) return null;
+
+      final response = await _supabaseService.client
+          .from('users')
+          .select('id')
+          .eq('cognito_sub', cognitoUser.userId)
+          .maybeSingle();
+
+      return response?['id'] as String?;
+    } catch (e) {
+      debugPrint('Error getting current user ID: $e');
+      return null;
+    }
+  }
+}
+
+/// Validation function to verify UserSettingsService implementation
+void validateUserSettingsService() {
+  final settingsService = UserSettingsService();
+
+  // Test singleton pattern
+  final settingsService2 = UserSettingsService();
+  assert(identical(settingsService, settingsService2));
+
+  debugPrint('UserSettingsService validation passed');
+}
