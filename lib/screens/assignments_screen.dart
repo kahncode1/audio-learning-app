@@ -237,7 +237,7 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
                   (learningObject) => LearningObjectTile(
                     learningObject: learningObject,
                     isActive: audioContext?.learningObject.id == learningObject.id,
-                    onTap: () {
+                    onTap: () async {
                       // Set the audio context before navigation
                       ref.read(audioContextProvider.notifier).state = AudioContext(
                         courseNumber: widget.courseNumber,
@@ -247,7 +247,7 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
                         learningObject: learningObject,
                       );
 
-                      Navigator.pushNamed(
+                      final result = await Navigator.pushNamed(
                         context,
                         '/player',
                         arguments: {
@@ -258,6 +258,11 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
                           'assignmentNumber': assignment.assignmentNumber,
                         },
                       );
+
+                      // If the learning object was completed, refresh the list
+                      if (result == true) {
+                        ref.invalidate(learningObjectsProvider(assignment.id));
+                      }
                     },
                   ),
                 ),
@@ -281,42 +286,102 @@ class LearningObjectTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Estimate duration based on content length
-    final durationMinutes = ((learningObject.plainText?.length ?? 500) / 150).round(); // Rough estimate
-    String durationText = '$durationMinutes min';
+    final isCompleted = learningObject.isCompleted;
+    final isInProgress = learningObject.currentPositionMs > 0 && !isCompleted;
 
-    if (learningObject.currentPositionMs > 0) {
-      durationText += ' • In Progress';
+    // Estimate duration based on content length
+    final durationMinutes = ((learningObject.plainText?.length ?? 500) / 150).round();
+
+    String statusText = '$durationMinutes min';
+    if (isCompleted) {
+      statusText = 'Completed • $durationMinutes min';
+    } else if (isInProgress) {
+      statusText = 'In Progress • $durationMinutes min';
     }
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-      leading: Container(
-        width: 40,
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 4),
-        child: Icon(
-          Icons.play_circle_fill,
-          color: isActive ? const Color(0xFF2196F3) : const Color(0xFFBDBDBD),
-          size: 32,
+    return Container(
+      decoration: BoxDecoration(
+        color: isCompleted
+            ? const Color(0xFF4CAF50).withOpacity(0.04)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+        leading: Container(
+          width: 40,
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 4),
+          child: Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              Icon(
+                Icons.play_circle_fill,
+                color: isCompleted
+                    ? const Color(0xFF4CAF50)
+                    : isActive
+                        ? const Color(0xFF2196F3)
+                        : const Color(0xFFBDBDBD),
+                size: 32,
+              ),
+              if (isCompleted)
+                Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_circle,
+                    color: Color(0xFF4CAF50),
+                    size: 14,
+                  ),
+                ),
+            ],
+          ),
         ),
-      ),
-      title: Text(
-        learningObject.title,
-        style: TextStyle(
-          fontSize: 15,
-          color: isActive ? const Color(0xFF2196F3) : const Color(0xFF424242),
-          fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+        title: Text(
+          learningObject.title,
+          style: TextStyle(
+            fontSize: 15,
+            color: isCompleted
+                ? const Color(0xFF388E3C)
+                : isActive
+                    ? const Color(0xFF2196F3)
+                    : const Color(0xFF424242),
+            fontWeight: isActive || isCompleted ? FontWeight.w600 : FontWeight.normal,
+          ),
         ),
+        subtitle: Text(
+          statusText,
+          style: TextStyle(
+            fontSize: 12,
+            color: isCompleted
+                ? const Color(0xFF4CAF50)
+                : Colors.grey.shade600,
+            fontWeight: isCompleted ? FontWeight.w500 : FontWeight.normal,
+          ),
+        ),
+        trailing: isCompleted
+            ? const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 24)
+            : isInProgress
+                ? Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2196F3).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Resume',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF2196F3),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  )
+                : null,
+        onTap: onTap,
       ),
-      subtitle: Text(
-        durationText,
-        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-      ),
-      trailing: learningObject.isCompleted
-          ? const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 20)
-          : null,
-      onTap: onTap,
     );
   }
 }

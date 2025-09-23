@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio/just_audio.dart';
 import '../theme/app_theme.dart';
 import '../services/audio_player_service_local.dart';
 import '../services/progress_service.dart';
@@ -54,6 +55,7 @@ class _EnhancedAudioPlayerScreenState
   final ScrollController _scrollController = ScrollController();
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<bool>? _playingStateSub;
+  StreamSubscription<ProcessingState>? _processingStateSub;
   Timer? _fullscreenTimer;
   bool _isInitialized = false;
   bool _isFullscreen = false;
@@ -68,6 +70,7 @@ class _EnhancedAudioPlayerScreenState
     _initializePlayer();
     _setupKeyboardShortcuts();
     _setupPlayingStateListener();
+    _setupCompletionListener();
   }
 
   Future<void> _initializePlayer() async {
@@ -209,6 +212,34 @@ class _EnhancedAudioPlayerScreenState
         _cancelFullscreenTimer();
       }
     });
+  }
+
+  void _setupCompletionListener() {
+    _processingStateSub = _audioService.processingStateStream.listen((state) {
+      if (state == ProcessingState.completed) {
+        _handleAudioCompletion();
+      }
+    });
+  }
+
+  void _handleAudioCompletion() async {
+    AppLogger.info('Audio playback completed for learning object', {
+      'learningObjectId': widget.learningObject.id,
+      'title': widget.learningObject.title,
+    });
+
+    // Mark as completed in progress tracking
+    _progressService?.saveProgress(
+      learningObjectId: widget.learningObject.id,
+      positionMs: _audioService.duration.inMilliseconds,
+      isCompleted: true,
+      isInProgress: false,
+    );
+
+    // Navigate back to assignment screen
+    if (mounted) {
+      Navigator.pop(context, true); // Pass true to indicate completion
+    }
   }
 
   void _startFullscreenTimer() {
@@ -647,6 +678,8 @@ class _EnhancedAudioPlayerScreenState
     _positionSub = null;
     _playingStateSub?.cancel();
     _playingStateSub = null;
+    _processingStateSub?.cancel();
+    _processingStateSub = null;
 
     // Cancel fullscreen timer and restore UI if needed
     _cancelFullscreenTimer();
