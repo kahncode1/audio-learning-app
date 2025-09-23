@@ -73,53 +73,48 @@ class AssignmentsScreen extends ConsumerWidget {
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       ),
-      error: (error, stack) {
-        // Fallback to mock data on error
-        final assignments = ref.watch(mockAssignmentsProvider);
-        final shouldShowMiniPlayer = ref.watch(shouldShowMiniPlayerProvider);
-
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(courseNumber),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () => Navigator.pushNamed(context, '/settings'),
-              ),
-            ],
-          ),
-          body: Stack(
+      error: (error, stack) => Scaffold(
+        appBar: AppBar(
+          title: Text(courseNumber),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () => Navigator.pushNamed(context, '/settings'),
+            ),
+          ],
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ListView.builder(
-                padding: EdgeInsets.only(
-                  bottom: shouldShowMiniPlayer ? 100 : 0,
-                ),
-                itemCount: assignments.length,
-                itemBuilder: (context, index) {
-                  final assignment = assignments[index];
-                  return AssignmentTile(
-                    assignment: assignment,
-                    courseNumber: courseNumber,
-                    courseTitle: courseTitle,
-                    initiallyExpanded: index == 0,
-                  );
-                },
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.red,
               ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: AnimatedSlide(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  offset: shouldShowMiniPlayer ? Offset.zero : const Offset(0, 1),
-                  child: const AnimatedMiniAudioPlayer(),
-                ),
+              const SizedBox(height: 16),
+              Text(
+                'Failed to load assignments',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error.toString(),
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  // Invalidate the provider to retry loading
+                  ref.invalidate(courseAssignmentsProvider(courseId));
+                },
+                child: const Text('Retry'),
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

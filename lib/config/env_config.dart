@@ -40,12 +40,10 @@ class EnvConfig {
   static void _validateEnvironment() {
     final missing = <String>[];
 
-    // Check Cognito (optional for now due to mock auth)
+    // Check Cognito (required)
     if (cognitoUserPoolId == 'your_user_pool_id_here' ||
         cognitoUserPoolId.isEmpty) {
-      if (kDebugMode) {
-        debugPrint('ℹ️ Cognito User Pool ID not configured (using mock auth)');
-      }
+      missing.add('COGNITO_USER_POOL_ID');
     }
 
     if (missing.isNotEmpty) {

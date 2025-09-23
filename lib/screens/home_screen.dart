@@ -130,7 +130,7 @@ class CourseCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${ref.watch(mockAssignmentCountProvider)} Assignments • ${ref.watch(mockLearningObjectCountProvider)} Learning Objects',
+                    '${course.totalAssignments} Assignments • ${course.totalLearningObjects} Learning Objects',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 12),

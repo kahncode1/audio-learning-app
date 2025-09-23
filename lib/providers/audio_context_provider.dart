@@ -12,7 +12,7 @@
 ///   - Preserves navigation context during playback
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/learning_object.dart';
+import '../models/learning_object_v2.dart';
 
 /// Audio playback context with full navigation information
 class AudioContext {
@@ -20,7 +20,7 @@ class AudioContext {
   final String? courseTitle;
   final String? assignmentTitle;
   final int? assignmentNumber;
-  final LearningObject learningObject;
+  final LearningObjectV2 learningObject;
 
   AudioContext({
     this.courseNumber,
@@ -61,7 +61,7 @@ class AudioContext {
     String? courseTitle,
     String? assignmentTitle,
     int? assignmentNumber,
-    LearningObject? learningObject,
+    LearningObjectV2? learningObject,
   }) {
     return AudioContext(
       courseNumber: courseNumber ?? this.courseNumber,
@@ -86,7 +86,7 @@ final miniPlayerSubtitleProvider = Provider<String>((ref) {
 class AudioContextHelper {
   static AudioContext fromNavigationArgs(
     Map<String, dynamic> args,
-    LearningObject learningObject,
+    LearningObjectV2 learningObject,
   ) {
     return AudioContext(
       courseNumber: args['courseNumber'] as String?,
@@ -98,7 +98,7 @@ class AudioContextHelper {
   }
 
   /// Create context from minimal information
-  static AudioContext fromLearningObject(LearningObject learningObject) {
+  static AudioContext fromLearningObject(LearningObjectV2 learningObject) {
     return AudioContext(
       learningObject: learningObject,
     );
