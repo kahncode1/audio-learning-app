@@ -2,25 +2,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:audio_learning_app/providers/audio_context_provider.dart';
-import 'package:audio_learning_app/models/learning_object.dart';
+import 'package:audio_learning_app/models/learning_object_v2.dart';
+import '../test_data.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Audio Context Provider', () {
     late ProviderContainer container;
-    late LearningObject testLearningObject;
+    late LearningObjectV2 testLearningObject;
 
     setUp(() {
       container = ProviderContainer();
-      testLearningObject = LearningObject(
+      testLearningObject = TestData.createTestLearningObjectV2(
         id: 'test-lo',
         assignmentId: 'test-assignment',
         title: 'Test Learning Object',
-        contentType: 'audio',
         orderIndex: 0,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
         isCompleted: false,
         currentPositionMs: 0,
       );
@@ -33,7 +31,7 @@ void main() {
     group('AudioContext Model', () {
       test('should create audio context with required learning object', () {
         final context = AudioContext(learningObject: testLearningObject);
-        
+
         expect(context.learningObject, testLearningObject);
         expect(context.courseNumber, isNull);
         expect(context.courseTitle, isNull);
@@ -57,7 +55,9 @@ void main() {
         expect(context.assignmentNumber, 3);
       });
 
-      test('should generate formatted subtitle with course and assignment number', () {
+      test(
+          'should generate formatted subtitle with course and assignment number',
+          () {
         final context = AudioContext(
           courseNumber: 'INS-101',
           assignmentNumber: 3,
@@ -76,7 +76,8 @@ void main() {
         expect(context.formattedSubtitle, 'BUS-200');
       });
 
-      test('should generate formatted subtitle with assignment number only', () {
+      test('should generate formatted subtitle with assignment number only',
+          () {
         final context = AudioContext(
           assignmentNumber: 5,
           learningObject: testLearningObject,
@@ -137,14 +138,11 @@ void main() {
           learningObject: testLearningObject,
         );
 
-        final newLearningObject = LearningObject(
+        final newLearningObject = TestData.createTestLearningObjectV2(
           id: 'new-lo',
           assignmentId: 'new-assignment',
           title: 'New Learning Object',
-          contentType: 'audio',
           orderIndex: 1,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
           isCompleted: false,
           currentPositionMs: 0,
         );
@@ -206,7 +204,8 @@ void main() {
 
         expect(updatedContext.courseNumber, 'PRESERVE-101'); // Preserved
         expect(updatedContext.courseTitle, 'Updated Course'); // Updated
-        expect(updatedContext.assignmentTitle, 'Preserve Assignment'); // Preserved
+        expect(
+            updatedContext.assignmentTitle, 'Preserve Assignment'); // Preserved
         expect(updatedContext.assignmentNumber, 3); // Preserved
         expect(updatedContext.learningObject, testLearningObject); // Preserved
       });
@@ -225,7 +224,7 @@ void main() {
         );
 
         container.read(audioContextProvider.notifier).state = context;
-        
+
         final audioContext = container.read(audioContextProvider);
         expect(audioContext, context);
         expect(audioContext!.courseNumber, 'TEST-101');
@@ -234,11 +233,11 @@ void main() {
 
       test('should allow clearing audio context', () {
         final context = AudioContext(learningObject: testLearningObject);
-        
+
         // Set context
         container.read(audioContextProvider.notifier).state = context;
         expect(container.read(audioContextProvider), isNotNull);
-        
+
         // Clear context
         container.read(audioContextProvider.notifier).state = null;
         expect(container.read(audioContextProvider), isNull);
@@ -246,7 +245,7 @@ void main() {
 
       test('should notify listeners when context changes', () {
         var notificationCount = 0;
-        
+
         container.listen(
           audioContextProvider,
           (previous, next) => notificationCount++,
@@ -254,7 +253,7 @@ void main() {
 
         final context = AudioContext(learningObject: testLearningObject);
         container.read(audioContextProvider.notifier).state = context;
-        
+
         expect(notificationCount, 1);
         expect(container.read(audioContextProvider), context);
       });
@@ -274,7 +273,7 @@ void main() {
         );
 
         container.read(audioContextProvider.notifier).state = context;
-        
+
         final subtitle = container.read(miniPlayerSubtitleProvider);
         expect(subtitle, 'INS-101 • Assignment 2');
       });
@@ -302,7 +301,7 @@ void main() {
 
       test('should watch audio context provider', () {
         var notificationCount = 0;
-        
+
         container.listen(
           miniPlayerSubtitleProvider,
           (previous, next) => notificationCount++,
@@ -313,7 +312,7 @@ void main() {
           learningObject: testLearningObject,
         );
         container.read(audioContextProvider.notifier).state = context;
-        
+
         expect(notificationCount, 1);
         expect(container.read(miniPlayerSubtitleProvider), 'Assignment 3');
       });
@@ -379,7 +378,8 @@ void main() {
       });
 
       test('should create context from learning object only', () {
-        final context = AudioContextHelper.fromLearningObject(testLearningObject);
+        final context =
+            AudioContextHelper.fromLearningObject(testLearningObject);
 
         expect(context.courseNumber, isNull);
         expect(context.courseTitle, isNull);
@@ -411,16 +411,16 @@ void main() {
     group('Provider Integration', () {
       test('should work with provider lifecycle', () {
         final testContainer = ProviderContainer();
-        
+
         final context = AudioContext(
           courseNumber: 'LIFECYCLE-101',
           learningObject: testLearningObject,
         );
-        
+
         testContainer.read(audioContextProvider.notifier).state = context;
         expect(testContainer.read(audioContextProvider), context);
         expect(testContainer.read(miniPlayerSubtitleProvider), 'LIFECYCLE-101');
-        
+
         testContainer.dispose();
       });
 
@@ -428,10 +428,10 @@ void main() {
         final testContainer = ProviderContainer();
         final context1 = testContainer.read(audioContextProvider);
         testContainer.dispose();
-        
+
         final newContainer = ProviderContainer();
         final context2 = newContainer.read(audioContextProvider);
-        
+
         // Should start fresh with null
         expect(context1, isNull);
         expect(context2, isNull);
@@ -443,7 +443,7 @@ void main() {
       test('should handle extremely long context strings', () {
         final longCourseNumber = 'A' * 100;
         final longAssignmentTitle = 'B' * 200;
-        
+
         final context = AudioContext(
           courseNumber: longCourseNumber,
           assignmentTitle: longAssignmentTitle,
@@ -492,7 +492,7 @@ void main() {
           courseNumber: 'FIRST-101',
           learningObject: testLearningObject,
         );
-        
+
         final context2 = AudioContext(
           courseNumber: 'SECOND-202',
           assignmentNumber: 1,
@@ -503,7 +503,8 @@ void main() {
         expect(container.read(miniPlayerSubtitleProvider), 'FIRST-101');
 
         container.read(audioContextProvider.notifier).state = context2;
-        expect(container.read(miniPlayerSubtitleProvider), 'SECOND-202 • Assignment 1');
+        expect(container.read(miniPlayerSubtitleProvider),
+            'SECOND-202 • Assignment 1');
 
         container.read(audioContextProvider.notifier).state = null;
         expect(container.read(miniPlayerSubtitleProvider), 'Learning Module');

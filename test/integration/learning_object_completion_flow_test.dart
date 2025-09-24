@@ -5,20 +5,23 @@ import 'package:mocktail/mocktail.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_learning_app/screens/assignments_screen.dart';
 import 'package:audio_learning_app/screens/enhanced_audio_player_screen.dart';
-import 'package:audio_learning_app/models/learning_object.dart';
+import 'package:audio_learning_app/models/learning_object_v2.dart';
 import 'package:audio_learning_app/models/assignment.dart';
 import 'package:audio_learning_app/services/audio_player_service_local.dart';
 import 'package:audio_learning_app/services/progress_service.dart';
-import 'package:audio_learning_app/providers/course_providers.dart';
+import 'package:audio_learning_app/providers/database_providers.dart';
+import '../test_data.dart';
 
 // Mock classes
-class MockAudioPlayerServiceLocal extends Mock implements AudioPlayerServiceLocal {}
+class MockAudioPlayerServiceLocal extends Mock
+    implements AudioPlayerServiceLocal {}
+
 class MockProgressService extends Mock implements ProgressService {}
 
 void main() {
   late MockAudioPlayerServiceLocal mockAudioService;
   late MockProgressService mockProgressService;
-  late LearningObject testLearningObject;
+  late LearningObjectV2 testLearningObject;
   late Assignment testAssignment;
 
   setUpAll(() {
@@ -37,17 +40,16 @@ void main() {
       assignmentNumber: 1,
       orderIndex: 1,
       createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
 
-    testLearningObject = LearningObject(
+    testLearningObject = TestData.createTestLearningObjectV2(
       id: 'test-lo-id',
       assignmentId: testAssignment.id,
       title: 'Test Learning Object',
-      plainText: 'Test content for integration testing',
-      durationMs: 30000, // 30 seconds
+      displayText: 'Test content for integration testing',
+      totalDurationMs: 30000, // 30 seconds
       orderIndex: 1,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
       isCompleted: false,
       isInProgress: false,
       currentPositionMs: 0,
@@ -60,17 +62,19 @@ void main() {
         .thenAnswer((_) => Stream.value(Duration.zero));
     when(() => mockAudioService.isPlayingStream)
         .thenAnswer((_) => Stream.value(false));
-    when(() => mockAudioService.duration).thenReturn(const Duration(seconds: 30));
+    when(() => mockAudioService.duration)
+        .thenReturn(const Duration(seconds: 30));
     when(() => mockProgressService.saveProgress(
-      learningObjectId: any(named: 'learningObjectId'),
-      positionMs: any(named: 'positionMs'),
-      isCompleted: any(named: 'isCompleted'),
-      isInProgress: any(named: 'isInProgress'),
-    )).thenReturn(null);
+          learningObjectId: any(named: 'learningObjectId'),
+          positionMs: any(named: 'positionMs'),
+          isCompleted: any(named: 'isCompleted'),
+          isInProgress: any(named: 'isInProgress'),
+        )).thenReturn(null);
   });
 
   group('Complete Learning Object Flow', () {
-    testWidgets('should complete full flow from assignment to completion', (tester) async {
+    testWidgets('should complete full flow from assignment to completion',
+        (tester) async {
       // This is a high-level integration test showing the complete flow
       // In a real scenario, this would be more complex with actual providers
 
@@ -79,7 +83,8 @@ void main() {
         MaterialApp(
           home: ProviderScope(
             overrides: [
-              learningObjectsProvider(testAssignment.id).overrideWith((ref) async {
+              assignmentLearningObjectsProvider(testAssignment.id)
+                  .overrideWith((ref) async {
                 return [testLearningObject];
               }),
             ],
@@ -121,34 +126,39 @@ void main() {
       expect(testLearningObject, isNotNull);
     });
 
-    testWidgets('should update UI after learning object completion', (tester) async {
+    testWidgets('should update UI after learning object completion',
+        (tester) async {
       // Create a completed version of the learning object
       final completedLearningObject = testLearningObject.copyWith(
         isCompleted: true,
-        currentPositionMs: testLearningObject.durationMs,
+        currentPositionMs: testLearningObject.totalDurationMs,
       );
 
       // Start with uncompleted learning object
-      final learningObjects = ValueNotifier<List<LearningObject>>([testLearningObject]);
+      final learningObjects =
+          ValueNotifier<List<LearningObjectV2>>([testLearningObject]);
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ValueListenableBuilder<List<LearningObject>>(
+            body: ValueListenableBuilder<List<LearningObjectV2>>(
               valueListenable: learningObjects,
               builder: (context, objects, _) {
                 return Column(
-                  children: objects.map((lo) => LearningObjectTile(
-                    learningObject: lo,
-                    isActive: false,
-                    onTap: () async {
-                      // Simulate navigation and completion
-                      await Future.delayed(const Duration(milliseconds: 100));
+                  children: objects
+                      .map((lo) => LearningObjectTileV2(
+                            learningObject: lo,
+                            isActive: false,
+                            onTap: () async {
+                              // Simulate navigation and completion
+                              await Future.delayed(
+                                  const Duration(milliseconds: 100));
 
-                      // Update the list with completed object
-                      learningObjects.value = [completedLearningObject];
-                    },
-                  )).toList(),
+                              // Update the list with completed object
+                              learningObjects.value = [completedLearningObject];
+                            },
+                          ))
+                      .toList(),
                 );
               },
             ),
@@ -179,7 +189,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: completedLearningObject,
               isActive: false,
               onTap: () {},
@@ -207,7 +217,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: completedLearningObject,
               isActive: false,
               onTap: () {},
@@ -221,7 +231,8 @@ void main() {
       expect(find.textContaining('Completed'), findsOneWidget);
     });
 
-    testWidgets('should handle multiple learning objects completion', (tester) async {
+    testWidgets('should handle multiple learning objects completion',
+        (tester) async {
       // Create multiple learning objects
       final lo1 = testLearningObject;
       final lo2 = testLearningObject.copyWith(
@@ -241,17 +252,17 @@ void main() {
           home: Scaffold(
             body: Column(
               children: [
-                LearningObjectTile(
+                LearningObjectTileV2(
                   learningObject: lo1,
                   isActive: false,
                   onTap: () {},
                 ),
-                LearningObjectTile(
+                LearningObjectTileV2(
                   learningObject: lo2,
                   isActive: false,
                   onTap: () {},
                 ),
-                LearningObjectTile(
+                LearningObjectTileV2(
                   learningObject: lo3,
                   isActive: false,
                   onTap: () {},
@@ -267,7 +278,8 @@ void main() {
       expect(firstTile, findsOneWidget);
       expect(
         find.descendant(
-          of: find.ancestor(of: firstTile, matching: find.byType(LearningObjectTile)),
+          of: find.ancestor(
+              of: firstTile, matching: find.byType(LearningObjectTileV2)),
           matching: find.byIcon(Icons.check_circle),
         ),
         findsNothing,
@@ -278,7 +290,8 @@ void main() {
       expect(secondTile, findsOneWidget);
       expect(
         find.descendant(
-          of: find.ancestor(of: secondTile, matching: find.byType(LearningObjectTile)),
+          of: find.ancestor(
+              of: secondTile, matching: find.byType(LearningObjectTileV2)),
           matching: find.byIcon(Icons.check_circle),
         ),
         findsWidgets,
@@ -289,7 +302,8 @@ void main() {
       expect(thirdTile, findsOneWidget);
       expect(
         find.descendant(
-          of: find.ancestor(of: thirdTile, matching: find.byType(LearningObjectTile)),
+          of: find.ancestor(
+              of: thirdTile, matching: find.byType(LearningObjectTileV2)),
           matching: find.text('Resume'),
         ),
         findsOneWidget,
@@ -302,7 +316,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: testLearningObject,
               isActive: false,
               onTap: () {
@@ -319,7 +333,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // App should still be running
-      expect(find.byType(LearningObjectTile), findsOneWidget);
+      expect(find.byType(LearningObjectTileV2), findsOneWidget);
     });
 
     testWidgets('should handle missing progress service', (tester) async {
@@ -328,7 +342,7 @@ void main() {
         MaterialApp(
           home: ProviderScope(
             child: Scaffold(
-              body: LearningObjectTile(
+              body: LearningObjectTileV2(
                 learningObject: testLearningObject,
                 isActive: false,
                 onTap: () async {
@@ -345,7 +359,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should not crash
-      expect(find.byType(LearningObjectTile), findsOneWidget);
+      expect(find.byType(LearningObjectTileV2), findsOneWidget);
     });
   });
 }

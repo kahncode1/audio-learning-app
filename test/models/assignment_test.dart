@@ -15,13 +15,15 @@ void main() {
 
     group('Constructor', () {
       test('should create Assignment with all required fields', () {
+        final now = DateTime.now();
         final assignment = Assignment(
           id: 'test-id',
           courseId: 'course-id',
           assignmentNumber: 1,
           title: 'Test Assignment',
           orderIndex: 0,
-          createdAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
         );
 
         expect(assignment.id, 'test-id');
@@ -34,6 +36,7 @@ void main() {
       });
 
       test('should create Assignment with optional description', () {
+        final now = DateTime.now();
         final assignment = Assignment(
           id: 'test-id',
           courseId: 'course-id',
@@ -41,7 +44,8 @@ void main() {
           title: 'Test Assignment',
           description: 'Detailed description',
           orderIndex: 1,
-          createdAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
         );
 
         expect(assignment.description, 'Detailed description');
@@ -50,13 +54,15 @@ void main() {
 
     group('Display Properties', () {
       test('displayNumber should return string representation', () {
+        final now = DateTime.now();
         final assignment = Assignment(
           id: 'test',
           courseId: 'course',
           assignmentNumber: 42,
           title: 'Test',
           orderIndex: 0,
-          createdAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
         );
 
         expect(assignment.displayNumber, '42');
@@ -72,7 +78,8 @@ void main() {
         expect(assignment.courseId, 'course-123');
         expect(assignment.assignmentNumber, 3);
         expect(assignment.title, 'Risk Management Fundamentals');
-        expect(assignment.description, 'Understanding core risk management principles');
+        expect(assignment.description,
+            'Understanding core risk management principles');
         expect(assignment.orderIndex, 2);
         expect(assignment.createdAt, DateTime.parse('2024-02-15T09:30:00Z'));
       });
@@ -99,7 +106,8 @@ void main() {
         expect(json['course_id'], 'course-123');
         expect(json['assignment_number'], 3);
         expect(json['title'], 'Risk Management Fundamentals');
-        expect(json['description'], 'Understanding core risk management principles');
+        expect(json['description'],
+            'Understanding core risk management principles');
         expect(json['order_index'], 2);
         expect(json['created_at'], '2024-02-15T09:30:00.000Z');
       });
@@ -151,6 +159,7 @@ void main() {
       });
 
       test('should allow clearing nullable fields', () {
+        final now = DateTime.now();
         final original = Assignment(
           id: 'test',
           courseId: 'course',
@@ -158,7 +167,8 @@ void main() {
           title: 'Test',
           description: 'Has description',
           orderIndex: 0,
-          createdAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
         );
 
         final updated = original.copyWith(description: null);
@@ -176,6 +186,7 @@ void main() {
           title: 'Assignment 1',
           orderIndex: 0,
           createdAt: now,
+          updatedAt: now,
         );
 
         final assignment2 = Assignment(
@@ -185,6 +196,7 @@ void main() {
           title: 'Assignment 2',
           orderIndex: 1,
           createdAt: now.add(const Duration(days: 1)),
+          updatedAt: now.add(const Duration(days: 1)),
         );
 
         expect(assignment1, equals(assignment2));
@@ -200,6 +212,7 @@ void main() {
           title: 'Same Title',
           orderIndex: 0,
           createdAt: now,
+          updatedAt: now,
         );
 
         final assignment2 = Assignment(
@@ -209,6 +222,7 @@ void main() {
           title: 'Same Title',
           orderIndex: 0,
           createdAt: now,
+          updatedAt: now,
         );
 
         expect(assignment1, isNot(equals(assignment2)));
@@ -223,13 +237,15 @@ void main() {
 
     group('toString', () {
       test('should return readable string representation', () {
+        final now = DateTime.now();
         final assignment = Assignment(
           id: 'test-123',
           courseId: 'course-456',
           assignmentNumber: 7,
           title: 'Advanced Topics',
           orderIndex: 6,
-          createdAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
         );
 
         final str = assignment.toString();
@@ -249,6 +265,7 @@ void main() {
             title: 'First',
             orderIndex: 0,
             createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
           ),
           Assignment(
             id: 'a2',
@@ -257,6 +274,7 @@ void main() {
             title: 'Second',
             orderIndex: 1,
             createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
           ),
           Assignment(
             id: 'a3',
@@ -265,6 +283,7 @@ void main() {
             title: 'Third',
             orderIndex: 2,
             createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
           ),
         ];
 
@@ -277,13 +296,15 @@ void main() {
       });
 
       test('assignment number and order index can differ', () {
+        final now = DateTime.now();
         final assignment = Assignment(
           id: 'test',
           courseId: 'course',
-          assignmentNumber: 5,  // Display number
+          assignmentNumber: 5, // Display number
           title: 'Test',
-          orderIndex: 0,  // First in order despite being #5
-          createdAt: DateTime.now(),
+          orderIndex: 0, // First in order despite being #5
+          createdAt: now,
+          updatedAt: now,
         );
 
         expect(assignment.assignmentNumber, 5);
@@ -300,13 +321,15 @@ void main() {
 
     group('Course Relationship', () {
       test('should maintain course ID reference', () {
+        final now = DateTime.now();
         final assignment = Assignment(
           id: 'assign-1',
           courseId: 'course-xyz',
           assignmentNumber: 1,
           title: 'Test',
           orderIndex: 0,
-          createdAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
         );
 
         expect(assignment.courseId, 'course-xyz');
@@ -314,13 +337,15 @@ void main() {
 
       test('multiple assignments can belong to same course', () {
         final courseId = 'shared-course-id';
+        final now = DateTime.now();
         final assignment1 = Assignment(
           id: 'a1',
           courseId: courseId,
           assignmentNumber: 1,
           title: 'First',
           orderIndex: 0,
-          createdAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
         );
 
         final assignment2 = Assignment(
@@ -329,7 +354,8 @@ void main() {
           assignmentNumber: 2,
           title: 'Second',
           orderIndex: 1,
-          createdAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
         );
 
         expect(assignment1.courseId, assignment2.courseId);

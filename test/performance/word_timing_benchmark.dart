@@ -11,7 +11,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:audio_learning_app/models/word_timing.dart';
-import 'package:audio_learning_app/services/word_timing_service.dart';
+import 'package:audio_learning_app/services/word_timing_service_simplified.dart';
 import 'dart:math';
 
 void main() {
@@ -56,12 +56,15 @@ void main() {
 
         print('Binary Search Performance (10,000 words):');
         print('  - Total time: ${stopwatch.elapsedMicroseconds}μs');
-        print('  - Average per search: ${avgTimePerSearch.toStringAsFixed(1)}μs');
-        print('  - Searches per second: ${(1000000 / avgTimePerSearch).toStringAsFixed(0)}');
+        print(
+            '  - Average per search: ${avgTimePerSearch.toStringAsFixed(1)}μs');
+        print(
+            '  - Searches per second: ${(1000000 / avgTimePerSearch).toStringAsFixed(0)}');
 
         // Requirement: <5ms (5000μs) for multiple searches
         expect(avgTimePerSearch, lessThan(5000));
-        expect(stopwatch.elapsedMilliseconds, lessThan(50)); // Total time reasonable
+        expect(stopwatch.elapsedMilliseconds,
+            lessThan(50)); // Total time reasonable
       });
 
       test('should scale logarithmically with dataset size', () {
@@ -96,7 +99,8 @@ void main() {
         final scalingFactor = xlTime / smallTime;
 
         expect(scalingFactor, lessThan(10)); // Should scale well
-        print('  - Scaling factor (XL/Small): ${scalingFactor.toStringAsFixed(1)}x');
+        print(
+            '  - Scaling factor (XL/Small): ${scalingFactor.toStringAsFixed(1)}x');
       });
     });
 
@@ -131,7 +135,8 @@ void main() {
         final speedupFactor = randomAvg / sequentialAvg;
 
         print('\nLocality Caching Performance:');
-        print('  - Sequential access: ${sequentialAvg.toStringAsFixed(1)}μs avg');
+        print(
+            '  - Sequential access: ${sequentialAvg.toStringAsFixed(1)}μs avg');
         print('  - Random access: ${randomAvg.toStringAsFixed(1)}μs avg');
         print('  - Speedup factor: ${speedupFactor.toStringAsFixed(1)}x');
 
@@ -164,11 +169,13 @@ void main() {
         print('\n60fps Simulation Performance:');
         print('  - Total time: ${totalTimeMs}ms for 10s simulation');
         print('  - Average per frame: ${avgTimePerFrame.toStringAsFixed(1)}μs');
-        print('  - Real-time multiplier: ${(10000 / totalTimeMs).toStringAsFixed(1)}x');
+        print(
+            '  - Real-time multiplier: ${(10000 / totalTimeMs).toStringAsFixed(1)}x');
 
         // Should easily maintain 60fps (<16ms per frame)
         expect(avgTimePerFrame, lessThan(16000)); // 16ms in microseconds
-        expect(totalTimeMs, lessThan(100)); // Should complete much faster than real-time
+        expect(totalTimeMs,
+            lessThan(100)); // Should complete much faster than real-time
       });
     });
 
@@ -190,8 +197,10 @@ void main() {
         final avgTime = stopwatch.elapsedMicroseconds / lookupCount;
 
         print('\nSentence Operations Performance:');
-        print('  - Sentence boundary lookups: ${avgTime.toStringAsFixed(1)}μs avg');
-        print('  - Lookups per second: ${(1000000 / avgTime).toStringAsFixed(0)}');
+        print(
+            '  - Sentence boundary lookups: ${avgTime.toStringAsFixed(1)}μs avg');
+        print(
+            '  - Lookups per second: ${(1000000 / avgTime).toStringAsFixed(0)}');
 
         // Should be extremely fast due to caching
         expect(avgTime, lessThan(10)); // <10μs per lookup
@@ -204,16 +213,20 @@ void main() {
         final stopwatch = Stopwatch()..start();
 
         // Get words for all sentences
-        for (int sentenceIndex = 0; sentenceIndex < collection.sentenceCount; sentenceIndex++) {
+        for (int sentenceIndex = 0;
+            sentenceIndex < collection.sentenceCount;
+            sentenceIndex++) {
           final words = collection.getWordsInSentence(sentenceIndex);
           expect(words.isNotEmpty, isTrue); // Should find words
         }
 
         stopwatch.stop();
 
-        final avgTime = stopwatch.elapsedMicroseconds / collection.sentenceCount;
+        final avgTime =
+            stopwatch.elapsedMicroseconds / collection.sentenceCount;
 
-        print('  - Words in sentence lookup: ${avgTime.toStringAsFixed(1)}μs avg');
+        print(
+            '  - Words in sentence lookup: ${avgTime.toStringAsFixed(1)}μs avg');
         print('  - Sentences processed: ${collection.sentenceCount}');
 
         expect(avgTime, lessThan(100)); // Should be fast due to caching
@@ -225,32 +238,38 @@ void main() {
         final collection = WordTimingCollection(largeDataset);
 
         // Test cache sizes are reasonable (not exact, but order of magnitude)
-        expect(collection.sentenceCount, lessThan(2000)); // Reasonable sentence count
+        expect(collection.sentenceCount,
+            lessThan(2000)); // Reasonable sentence count
 
         // Test that caches don't grow unbounded
         final wordsInFirstSentence = collection.getWordsInSentence(0);
-        final wordsInLastSentence = collection.getWordsInSentence(collection.sentenceCount - 1);
+        final wordsInLastSentence =
+            collection.getWordsInSentence(collection.sentenceCount - 1);
 
         expect(wordsInFirstSentence.length, greaterThan(0));
         expect(wordsInLastSentence.length, greaterThan(0));
-        expect(wordsInFirstSentence.length, lessThan(200)); // Reasonable sentence length
+        expect(wordsInFirstSentence.length,
+            lessThan(200)); // Reasonable sentence length
 
         print('\nMemory Usage Stats:');
         print('  - Total words: ${largeDataset.length}');
         print('  - Sentence count: ${collection.sentenceCount}');
-        print('  - Avg words per sentence: ${(largeDataset.length / collection.sentenceCount).toStringAsFixed(1)}');
-        print('  - Total duration: ${(collection.totalDurationMs / 1000).toStringAsFixed(1)}s');
+        print(
+            '  - Avg words per sentence: ${(largeDataset.length / collection.sentenceCount).toStringAsFixed(1)}');
+        print(
+            '  - Total duration: ${(collection.totalDurationMs / 1000).toStringAsFixed(1)}s');
       });
 
       test('should handle cache operations efficiently', () {
-        final service = WordTimingService.instance;
+        final service = WordTimingServiceSimplified.instance;
 
         // Test cache clearing
         final stopwatch = Stopwatch()..start();
         service.clearCache();
         stopwatch.stop();
 
-        expect(stopwatch.elapsedMicroseconds, lessThan(1000)); // Should be very fast
+        expect(stopwatch.elapsedMicroseconds,
+            lessThan(1000)); // Should be very fast
         print('  - Cache clear time: ${stopwatch.elapsedMicroseconds}μs');
 
         // Verify cache is actually cleared
@@ -269,7 +288,8 @@ void main() {
         for (int i = 0; i < rangeCount; i++) {
           final startTime = i * 1000;
           final endTime = startTime + 5000; // 5 second ranges
-          final wordsInRange = collection.getWordIndicesInRange(startTime, endTime);
+          final wordsInRange =
+              collection.getWordIndicesInRange(startTime, endTime);
           expect(wordsInRange, isA<List<int>>()); // Should return valid list
         }
 
@@ -279,13 +299,15 @@ void main() {
 
         print('\nRange Query Performance:');
         print('  - Average range query: ${avgTime.toStringAsFixed(1)}μs');
-        print('  - Range queries per second: ${(1000000 / avgTime).toStringAsFixed(0)}');
+        print(
+            '  - Range queries per second: ${(1000000 / avgTime).toStringAsFixed(0)}');
 
         expect(avgTime, lessThan(1000)); // Should be fast with binary search
       });
 
       test('should efficiently find words by text content', () {
-        final collection = WordTimingCollection(smallDataset); // Use smaller dataset for text search
+        final collection = WordTimingCollection(
+            smallDataset); // Use smaller dataset for text search
 
         final stopwatch = Stopwatch()..start();
 
@@ -302,9 +324,11 @@ void main() {
 
         print('\nText Search Performance:');
         print('  - Average text search: ${avgTime.toStringAsFixed(1)}μs');
-        print('  - Text searches per second: ${(1000000 / avgTime).toStringAsFixed(0)}');
+        print(
+            '  - Text searches per second: ${(1000000 / avgTime).toStringAsFixed(0)}');
 
-        expect(avgTime, lessThan(100)); // Linear search should still be reasonably fast
+        expect(avgTime,
+            lessThan(100)); // Linear search should still be reasonably fast
       });
     });
 
@@ -318,7 +342,8 @@ void main() {
         for (int i = 0; i < testCount; i++) {
           final targetWordIndex = i % mediumDataset.length;
           final targetTiming = mediumDataset[targetWordIndex];
-          final targetTime = targetTiming.startMs + (targetTiming.durationMs ~/ 2);
+          final targetTime =
+              targetTiming.startMs + (targetTiming.durationMs ~/ 2);
 
           final foundIndex = collection.findActiveWordIndex(targetTime);
 
@@ -347,7 +372,7 @@ void main() {
           final wordIndex = i % mediumDataset.length;
           final expectedSentence = mediumDataset[wordIndex].sentenceIndex;
           final wordTime = mediumDataset[wordIndex].startMs +
-                          (mediumDataset[wordIndex].durationMs ~/ 2);
+              (mediumDataset[wordIndex].durationMs ~/ 2);
 
           final foundSentence = collection.findActiveSentenceIndex(wordTime);
 
@@ -358,7 +383,8 @@ void main() {
 
         final sentenceAccuracy = (correctSentences / testCount) * 100;
 
-        print('  - Sentence sync accuracy: ${sentenceAccuracy.toStringAsFixed(1)}%');
+        print(
+            '  - Sentence sync accuracy: ${sentenceAccuracy.toStringAsFixed(1)}%');
         print('  - Correct sentences: $correctSentences / $testCount');
 
         // Requirement: 100% sentence accuracy
@@ -369,7 +395,8 @@ void main() {
 }
 
 /// Helper function to create realistic test datasets
-List<WordTiming> _createTestDataset(int wordCount, {int avgWordDurationMs = 200}) {
+List<WordTiming> _createTestDataset(int wordCount,
+    {int avgWordDurationMs = 200}) {
   final timings = <WordTiming>[];
   final random = Random(42); // Fixed seed for reproducible results
 
@@ -380,8 +407,8 @@ List<WordTiming> _createTestDataset(int wordCount, {int avgWordDurationMs = 200}
 
   for (int i = 0; i < wordCount; i++) {
     // Vary word duration realistically (100ms to 400ms)
-    final duration = (avgWordDurationMs * 0.5) +
-                    (random.nextDouble() * avgWordDurationMs);
+    final duration =
+        (avgWordDurationMs * 0.5) + (random.nextDouble() * avgWordDurationMs);
 
     timings.add(WordTiming(
       word: 'word$i',
@@ -393,7 +420,8 @@ List<WordTiming> _createTestDataset(int wordCount, {int avgWordDurationMs = 200}
     currentTime += duration.toInt();
 
     // Add small gaps between words (realistic speech patterns)
-    if (random.nextDouble() < 0.7) { // 70% chance of small pause
+    if (random.nextDouble() < 0.7) {
+      // 70% chance of small pause
       currentTime += random.nextInt(50); // 0-50ms pause
     }
 

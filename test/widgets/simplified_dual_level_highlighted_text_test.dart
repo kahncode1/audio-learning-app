@@ -15,7 +15,8 @@ import 'package:audio_learning_app/models/word_timing.dart';
 /// - Word sync accuracy: ±50ms
 void main() {
   group('SimplifiedDualLevelHighlightedText Performance', () {
-    const testText = 'When dealing with insurance claims, it is crucial to establish '
+    const testText =
+        'When dealing with insurance claims, it is crucial to establish '
         'a proper case reserve early in the process. This helps ensure that '
         'adequate funds are allocated for potential payouts. The reserve amount '
         'should reflect the estimated total cost of the claim including legal fees.';
@@ -54,11 +55,11 @@ void main() {
     group('Binary Search Performance', () {
       test('should find word index in <1ms', () {
         final timings = createTestTimings();
-        final collection = WordTimingCollection(timings: timings);
+        final collection = WordTimingCollection(timings);
 
         // Warm up
         for (int i = 0; i < 10; i++) {
-          collection.getCurrentWordIndex(5000);
+          collection.findActiveWordIndex(5000);
         }
 
         // Measure performance
@@ -67,7 +68,7 @@ void main() {
 
         for (int i = 0; i < iterations; i++) {
           final positionMs = (i * 100) % 20000; // Vary positions
-          collection.getCurrentWordIndex(positionMs);
+          collection.findActiveWordIndex(positionMs);
         }
 
         stopwatch.stop();
@@ -76,27 +77,29 @@ void main() {
         // Should be <1000μs (1ms), currently achieving ~549μs
         expect(avgMicroseconds, lessThan(1000),
             reason: 'Binary search took $avgMicrosecondsμs average, '
-                   'should be <1000μs (target: 549μs)');
+                'should be <1000μs (target: 549μs)');
 
         // Log performance for tracking
-        debugPrint('Binary search performance: ${avgMicroseconds.toStringAsFixed(0)}μs '
-                  '(target: 549μs, requirement: <1000μs)');
+        debugPrint(
+            'Binary search performance: ${avgMicroseconds.toStringAsFixed(0)}μs '
+            '(target: 549μs, requirement: <1000μs)');
       });
 
       test('should handle edge cases correctly', () {
         final timings = createTestTimings();
-        final collection = WordTimingCollection(timings: timings);
+        final collection = WordTimingCollection(timings);
 
         // Before first word
-        expect(collection.getCurrentWordIndex(-100), equals(0));
+        expect(collection.findActiveWordIndex(-100), equals(0));
 
         // After last word
-        expect(collection.getCurrentWordIndex(999999), equals(timings.length - 1));
+        expect(
+            collection.findActiveWordIndex(999999), equals(timings.length - 1));
 
         // Exact word boundaries
-        expect(collection.getCurrentWordIndex(0), equals(0));
-        expect(collection.getCurrentWordIndex(300), equals(1));
-        expect(collection.getCurrentWordIndex(650), equals(2));
+        expect(collection.findActiveWordIndex(0), equals(0));
+        expect(collection.findActiveWordIndex(300), equals(1));
+        expect(collection.findActiveWordIndex(650), equals(2));
       });
     });
 
@@ -105,9 +108,8 @@ void main() {
         final timings = createTestTimings();
         final widget = SimplifiedDualLevelHighlightedText(
           text: testText,
-          wordTimings: timings,
-          currentWordIndex: 0,
-          currentSentenceIndex: 0,
+          contentId: 'test-content-id',
+          baseStyle: const TextStyle(fontSize: 16, color: Colors.black),
         );
 
         // Create widget tester
@@ -121,7 +123,8 @@ void main() {
           );
 
           // Widget should render without errors
-          expect(find.byType(SimplifiedDualLevelHighlightedText), findsOneWidget);
+          expect(
+              find.byType(SimplifiedDualLevelHighlightedText), findsOneWidget);
         });
       });
 
@@ -133,35 +136,36 @@ void main() {
             startMs: 0,
             endMs: 300,
             charStart: 1, // Wrong: should be 0
-            charEnd: 5,   // Wrong: should be 4
+            charEnd: 5, // Wrong: should be 4
             sentenceIndex: 0,
           ),
           WordTiming(
             word: 'word',
             startMs: 300,
             endMs: 600,
-            charStart: 6,  // Wrong: should be 5
-            charEnd: 10,  // Wrong: should be 9
+            charStart: 6, // Wrong: should be 5
+            charEnd: 10, // Wrong: should be 9
             sentenceIndex: 0,
           ),
         ];
 
-        testWidgets('handles misaligned positions', (WidgetTester tester) async {
+        testWidgets('handles misaligned positions',
+            (WidgetTester tester) async {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
                 body: SimplifiedDualLevelHighlightedText(
                   text: 'Test word',
-                  wordTimings: timings,
-                  currentWordIndex: 0,
-                  currentSentenceIndex: 0,
+                  contentId: 'test-content-id',
+                  baseStyle: const TextStyle(fontSize: 16, color: Colors.black),
                 ),
               ),
             ),
           );
 
           // Should render without throwing
-          expect(find.byType(SimplifiedDualLevelHighlightedText), findsOneWidget);
+          expect(
+              find.byType(SimplifiedDualLevelHighlightedText), findsOneWidget);
         });
       });
 
@@ -173,7 +177,7 @@ void main() {
             startMs: 0,
             endMs: 300,
             charStart: null, // Missing position
-            charEnd: null,   // Missing position
+            charEnd: null, // Missing position
             sentenceIndex: 0,
           ),
         ];
@@ -184,22 +188,23 @@ void main() {
               home: Scaffold(
                 body: SimplifiedDualLevelHighlightedText(
                   text: 'Insurance coverage is important',
-                  wordTimings: timings,
-                  currentWordIndex: 0,
-                  currentSentenceIndex: 0,
+                  contentId: 'test-content-id',
+                  baseStyle: const TextStyle(fontSize: 16, color: Colors.black),
                 ),
               ),
             ),
           );
 
           // Should render with fallback UI
-          expect(find.byType(SimplifiedDualLevelHighlightedText), findsOneWidget);
+          expect(
+              find.byType(SimplifiedDualLevelHighlightedText), findsOneWidget);
         });
       });
     });
 
     group('Paint Cycle Performance', () {
-      testWidgets('should maintain 60fps during highlighting', (WidgetTester tester) async {
+      testWidgets('should maintain 60fps during highlighting',
+          (WidgetTester tester) async {
         final timings = createTestTimings();
         int currentIndex = 0;
 
@@ -210,9 +215,8 @@ void main() {
                 builder: (context, setState) {
                   return SimplifiedDualLevelHighlightedText(
                     text: testText,
-                    wordTimings: timings,
-                    currentWordIndex: currentIndex,
-                    currentSentenceIndex: 0,
+                    contentId: 'test-content-id',
+                    baseStyle: const TextStyle(fontSize: 16, color: Colors.black),
                   );
                 },
               ),
@@ -236,18 +240,20 @@ void main() {
         // All frames should be <16ms for 60fps
         for (final frameTime in frameTimes) {
           expect(frameTime.inMilliseconds, lessThan(16),
-              reason: 'Frame took ${frameTime.inMilliseconds}ms, needs <16ms for 60fps');
+              reason:
+                  'Frame took ${frameTime.inMilliseconds}ms, needs <16ms for 60fps');
         }
 
-        final avgFrameMs = frameTimes
-            .map((d) => d.inMilliseconds)
-            .reduce((a, b) => a + b) / frameTimes.length;
+        final avgFrameMs =
+            frameTimes.map((d) => d.inMilliseconds).reduce((a, b) => a + b) /
+                frameTimes.length;
 
         debugPrint('Average frame time: ${avgFrameMs.toStringAsFixed(1)}ms '
-                  '(requirement: <16ms for 60fps)');
+            '(requirement: <16ms for 60fps)');
       });
 
-      testWidgets('should not recreate TextPainter during paint', (WidgetTester tester) async {
+      testWidgets('should not recreate TextPainter during paint',
+          (WidgetTester tester) async {
         final timings = createTestTimings();
 
         await tester.pumpWidget(
@@ -255,9 +261,8 @@ void main() {
             home: Scaffold(
               body: SimplifiedDualLevelHighlightedText(
                 text: testText,
-                wordTimings: timings,
-                currentWordIndex: 0,
-                currentSentenceIndex: 0,
+                contentId: 'test-content-id',
+                  baseStyle: const TextStyle(fontSize: 16, color: Colors.black),
               ),
             ),
           ),
@@ -274,7 +279,8 @@ void main() {
     });
 
     group('Auto-Scroll Behavior', () {
-      testWidgets('should maintain 25-35% reading zone', (WidgetTester tester) async {
+      testWidgets('should maintain 25-35% reading zone',
+          (WidgetTester tester) async {
         final timings = createTestTimings();
         final scrollController = ScrollController();
 
@@ -287,11 +293,9 @@ void main() {
                   controller: scrollController,
                   child: SimplifiedDualLevelHighlightedText(
                     text: testText * 10, // Long text to enable scrolling
-                    wordTimings: timings,
-                    currentWordIndex: 0,
-                    currentSentenceIndex: 0,
+                    contentId: 'test-content-id',
+                    baseStyle: const TextStyle(fontSize: 16, color: Colors.black),
                     scrollController: scrollController,
-                    enableAutoScroll: true,
                   ),
                 ),
               ),
@@ -313,7 +317,8 @@ void main() {
         // This validates the basic setup
       });
 
-      testWidgets('should handle font size changes efficiently', (WidgetTester tester) async {
+      testWidgets('should handle font size changes efficiently',
+          (WidgetTester tester) async {
         final timings = createTestTimings();
         double fontSize = 16.0;
 
@@ -324,10 +329,8 @@ void main() {
                 builder: (context, setState) {
                   return SimplifiedDualLevelHighlightedText(
                     text: testText,
-                    wordTimings: timings,
-                    currentWordIndex: 0,
-                    currentSentenceIndex: 0,
-                    fontSize: fontSize,
+                    contentId: 'test-content-id-rebuild',
+                    baseStyle: TextStyle(fontSize: fontSize, color: Colors.black),
                   );
                 },
               ),
@@ -345,13 +348,15 @@ void main() {
 
         // Font size change should be <16ms
         expect(stopwatch.elapsed.inMilliseconds, lessThan(16),
-            reason: 'Font size change took ${stopwatch.elapsed.inMilliseconds}ms, '
-                   'should be <16ms');
+            reason:
+                'Font size change took ${stopwatch.elapsed.inMilliseconds}ms, '
+                'should be <16ms');
       });
     });
 
     group('Three-Layer Paint System', () {
-      testWidgets('should paint layers in correct order', (WidgetTester tester) async {
+      testWidgets('should paint layers in correct order',
+          (WidgetTester tester) async {
         final timings = createTestTimings();
 
         await tester.pumpWidget(
@@ -359,9 +364,8 @@ void main() {
             home: Scaffold(
               body: SimplifiedDualLevelHighlightedText(
                 text: testText,
-                wordTimings: timings,
-                currentWordIndex: 2,
-                currentSentenceIndex: 0,
+                contentId: 'test-content-id',
+                  baseStyle: const TextStyle(fontSize: 16, color: Colors.black),
               ),
             ),
           ),
@@ -378,15 +382,15 @@ void main() {
         // Note: Actual paint order validation would require custom render testing
       });
 
-      testWidgets('should handle empty highlighting gracefully', (WidgetTester tester) async {
+      testWidgets('should handle empty highlighting gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
               body: SimplifiedDualLevelHighlightedText(
                 text: testText,
-                wordTimings: [], // No timings
-                currentWordIndex: -1,
-                currentSentenceIndex: -1,
+                contentId: 'test-content-id-empty',
+                baseStyle: const TextStyle(fontSize: 16, color: Colors.black),
               ),
             ),
           ),
@@ -400,22 +404,23 @@ void main() {
     group('Stress Testing', () {
       test('should handle rapid position updates', () {
         final timings = createTestTimings();
-        final collection = WordTimingCollection(timings: timings);
+        final collection = WordTimingCollection(timings);
 
         // Simulate rapid position updates (60fps for 1 second)
         final stopwatch = Stopwatch()..start();
 
         for (int frame = 0; frame < 60; frame++) {
           final positionMs = frame * 16; // 16ms per frame at 60fps
-          collection.getCurrentWordIndex(positionMs);
-          collection.getCurrentSentenceIndex(positionMs);
+          collection.findActiveWordIndex(positionMs);
+          collection.findActiveSentenceIndex(positionMs);
         }
 
         stopwatch.stop();
 
         // Should complete 60 lookups in <1 second
         expect(stopwatch.elapsed.inMilliseconds, lessThan(1000),
-            reason: '60 position updates took ${stopwatch.elapsed.inMilliseconds}ms');
+            reason:
+                '60 position updates took ${stopwatch.elapsed.inMilliseconds}ms');
       });
 
       test('should handle very long sentences efficiently', () {
@@ -437,13 +442,13 @@ void main() {
           charPos += word.length + 1;
         }
 
-        final collection = WordTimingCollection(timings: timings);
+        final collection = WordTimingCollection(timings);
 
         // Should handle lookups efficiently even with long sentence
         final stopwatch = Stopwatch()..start();
 
         for (int i = 0; i < 100; i++) {
-          collection.getCurrentSentenceIndex(i * 100);
+          collection.findActiveSentenceIndex(i * 100);
         }
 
         stopwatch.stop();

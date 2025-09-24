@@ -42,56 +42,60 @@ void main() {
 
     group('ProgressUpdateNotifier', () {
       test('should initialize with AsyncValue.data(null)', () {
-        final notifier = ProgressUpdateNotifier(container);
+        final notifier = container.read(progressUpdateProvider.notifier);
         expect(notifier.state, isA<AsyncData<void>>());
         expect(notifier.state.hasValue, isTrue);
       });
 
       test('should handle updateProgress method calls', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Method should exist and not throw when called
-        expect(() => notifier.updateProgress(
-          learningObjectId: 'test-lo-id',
-          positionMs: 5000,
-        ), returnsNormally);
+        expect(
+            () => notifier.updateProgress(
+                  learningObjectId: 'test-lo-id',
+                  positionMs: 5000,
+                ),
+            returnsNormally);
       });
 
       test('should handle markCompleted method calls', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         expect(() => notifier.markCompleted('test-lo-id'), returnsNormally);
       });
 
       test('should handle resumeProgress method calls', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         expect(() => notifier.resumeProgress('test-lo-id'), returnsNormally);
       });
 
       test('should expose ref property', () {
-        final notifier = ProgressUpdateNotifier(container);
-        expect(notifier.ref, equals(container));
+        final notifier = container.read(progressUpdateProvider.notifier);
+        expect(notifier.ref, isNotNull);
       });
 
       test('should accept all updateProgress parameters', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should accept all optional parameters
-        expect(() => notifier.updateProgress(
-          learningObjectId: 'test-lo-id',
-          positionMs: 10000,
-          isCompleted: true,
-          isInProgress: false,
-        ), returnsNormally);
+        expect(
+            () => notifier.updateProgress(
+                  learningObjectId: 'test-lo-id',
+                  positionMs: 10000,
+                  isCompleted: true,
+                  isInProgress: false,
+                ),
+            returnsNormally);
       });
 
       test('should handle progress state transitions', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Initial state should be data
         expect(notifier.state, isA<AsyncData<void>>());
-        
+
         // State should remain accessible
         expect(notifier.state.hasValue, isTrue);
       });
@@ -105,7 +109,7 @@ void main() {
 
       test('should handle initialization process', () {
         final appInit = container.read(appInitializationProvider);
-        
+
         // Should be async value that eventually resolves to boolean
         appInit.when(
           data: (initialized) => expect(initialized, isA<bool>()),
@@ -122,14 +126,14 @@ void main() {
 
       test('should handle initialization success', () {
         final appInit = container.read(appInitializationProvider);
-        
+
         // Provider should handle both success and failure cases
         expect(appInit, isA<AsyncValue<bool>>());
       });
 
       test('should handle initialization failure gracefully', () {
         final appInit = container.read(appInitializationProvider);
-        
+
         // Should not throw even if services fail to initialize
         appInit.when(
           data: (result) => expect(result, anyOf([isTrue, isFalse])),
@@ -142,10 +146,10 @@ void main() {
     group('Provider Integration', () {
       test('progressUpdateProvider should access required providers', () {
         final notifier = container.read(progressUpdateProvider.notifier);
-        
+
         // Should be able to access ref for reading other providers
         expect(notifier.ref, isNotNull);
-        
+
         // Verify provider dependencies don't throw
         expect(() => container.read(supabaseServiceProvider), returnsNormally);
         expect(() => container.read(currentUserProvider), returnsNormally);
@@ -155,14 +159,16 @@ void main() {
       });
 
       test('should handle cross-provider state updates', () {
-        final progressNotifier = container.read(progressUpdateProvider.notifier);
-        
+        final progressNotifier =
+            container.read(progressUpdateProvider.notifier);
+
         // Should be able to read UI providers for preferences
         expect(() => container.read(fontSizeIndexProvider), returnsNormally);
         expect(() => container.read(playbackSpeedProvider), returnsNormally);
-        
+
         // Should be able to update audio position
-        expect(() => container.read(playbackPositionProvider.notifier), returnsNormally);
+        expect(() => container.read(playbackPositionProvider.notifier),
+            returnsNormally);
       });
     });
 
@@ -170,7 +176,7 @@ void main() {
       test('should track async operations', () {
         final state = container.read(progressUpdateProvider);
         expect(state, isA<AsyncValue<void>>());
-        
+
         // Should handle all async states
         state.when(
           data: (_) => expect(true, true),
@@ -180,25 +186,27 @@ void main() {
       });
 
       test('should handle progress updates with position', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should accept position parameters
-        expect(() => notifier.updateProgress(
-          learningObjectId: 'test-id',
-          positionMs: 15000,
-        ), returnsNormally);
+        expect(
+            () => notifier.updateProgress(
+                  learningObjectId: 'test-id',
+                  positionMs: 15000,
+                ),
+            returnsNormally);
       });
 
       test('should handle completion marking', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should mark as completed properly
         expect(() => notifier.markCompleted('test-id'), returnsNormally);
       });
 
       test('should handle progress resumption', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should handle resume logic
         expect(() => notifier.resumeProgress('test-id'), returnsNormally);
       });
@@ -206,18 +214,20 @@ void main() {
 
     group('Error Handling', () {
       test('should handle service errors gracefully', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should not throw when services are unavailable
-        expect(() => notifier.updateProgress(
-          learningObjectId: 'invalid-id',
-          positionMs: 0,
-        ), returnsNormally);
+        expect(
+            () => notifier.updateProgress(
+                  learningObjectId: 'invalid-id',
+                  positionMs: 0,
+                ),
+            returnsNormally);
       });
 
       test('should handle authentication errors', () {
         final appInit = container.read(appInitializationProvider);
-        
+
         // Should handle auth failures gracefully
         appInit.when(
           data: (result) => expect(result, isA<bool>()),
@@ -227,13 +237,15 @@ void main() {
       });
 
       test('should handle invalid progress data', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should handle edge cases
-        expect(() => notifier.updateProgress(
-          learningObjectId: '',
-          positionMs: -1,
-        ), returnsNormally);
+        expect(
+            () => notifier.updateProgress(
+                  learningObjectId: '',
+                  positionMs: -1,
+                ),
+            returnsNormally);
       });
     });
 
@@ -265,24 +277,26 @@ void main() {
 
     group('Preference Synchronization', () {
       test('should sync font size preferences', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should be able to access font size provider
         expect(() => container.read(fontSizeIndexProvider), returnsNormally);
-        expect(() => container.read(fontSizeIndexProvider.notifier), returnsNormally);
+        expect(() => container.read(fontSizeIndexProvider.notifier),
+            returnsNormally);
       });
 
       test('should sync playback speed preferences', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should be able to access playback speed provider
         expect(() => container.read(playbackSpeedProvider), returnsNormally);
-        expect(() => container.read(playbackSpeedProvider.notifier), returnsNormally);
+        expect(() => container.read(playbackSpeedProvider.notifier),
+            returnsNormally);
       });
 
       test('should restore preferences from progress', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should be able to restore user preferences
         expect(() => notifier.resumeProgress('test-id'), returnsNormally);
       });
@@ -290,28 +304,31 @@ void main() {
 
     group('Position Tracking', () {
       test('should track playback position', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should handle position updates
-        expect(() => notifier.updateProgress(
-          learningObjectId: 'test-id',
-          positionMs: 30000,
-        ), returnsNormally);
+        expect(
+            () => notifier.updateProgress(
+                  learningObjectId: 'test-id',
+                  positionMs: 30000,
+                ),
+            returnsNormally);
       });
 
       test('should handle position restoration', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should restore position from saved progress
         expect(() => notifier.resumeProgress('test-id'), returnsNormally);
-        
+
         // Should access position provider
-        expect(() => container.read(playbackPositionProvider.notifier), returnsNormally);
+        expect(() => container.read(playbackPositionProvider.notifier),
+            returnsNormally);
       });
 
       test('should handle zero position for completion', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Completion should reset position to 0
         expect(() => notifier.markCompleted('test-id'), returnsNormally);
       });
@@ -319,37 +336,41 @@ void main() {
 
     group('State Transitions', () {
       test('should handle loading state during updates', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Initial state should be data
         expect(notifier.state, isA<AsyncData<void>>());
         expect(notifier.state.hasValue, isTrue);
       });
 
       test('should handle completion state changes', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should handle completion marking
         expect(() => notifier.markCompleted('test-id'), returnsNormally);
       });
 
       test('should handle progress vs completed states', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should handle both progress and completion
-        expect(() => notifier.updateProgress(
-          learningObjectId: 'test-id',
-          positionMs: 1000,
-          isInProgress: true,
-          isCompleted: false,
-        ), returnsNormally);
-        
-        expect(() => notifier.updateProgress(
-          learningObjectId: 'test-id',
-          positionMs: 0,
-          isInProgress: false,
-          isCompleted: true,
-        ), returnsNormally);
+        expect(
+            () => notifier.updateProgress(
+                  learningObjectId: 'test-id',
+                  positionMs: 1000,
+                  isInProgress: true,
+                  isCompleted: false,
+                ),
+            returnsNormally);
+
+        expect(
+            () => notifier.updateProgress(
+                  learningObjectId: 'test-id',
+                  positionMs: 0,
+                  isInProgress: false,
+                  isCompleted: true,
+                ),
+            returnsNormally);
       });
     });
 
@@ -361,14 +382,14 @@ void main() {
 
       test('should handle service initialization', () {
         final appInit = container.read(appInitializationProvider);
-        
+
         // Should initialize required services
         expect(appInit, isA<AsyncValue<bool>>());
       });
 
       test('should handle authentication bridging', () {
         final appInit = container.read(appInitializationProvider);
-        
+
         // Should handle auth bridging logic
         appInit.when(
           data: (success) => expect(success, isA<bool>()),
@@ -381,10 +402,10 @@ void main() {
     group('Provider Lifecycle', () {
       test('providers should be disposable', () {
         final testContainer = ProviderContainer();
-        
+
         testContainer.read(progressUpdateProvider);
         testContainer.read(appInitializationProvider);
-        
+
         expect(() => testContainer.dispose(), returnsNormally);
       });
 
@@ -392,10 +413,10 @@ void main() {
         final testContainer = ProviderContainer();
         final notifier1 = testContainer.read(progressUpdateProvider.notifier);
         testContainer.dispose();
-        
+
         final newContainer = ProviderContainer();
         final notifier2 = newContainer.read(progressUpdateProvider.notifier);
-        
+
         // Should be different instances
         expect(identical(notifier1, notifier2), isFalse);
         newContainer.dispose();
@@ -404,25 +425,28 @@ void main() {
 
     group('Cache Invalidation', () {
       test('should invalidate progress cache on updates', () {
-        final notifier = ProgressUpdateNotifier(container);
-        
+        final notifier = container.read(progressUpdateProvider.notifier);
+
         // Should handle cache invalidation
-        expect(() => notifier.updateProgress(
-          learningObjectId: 'test-id',
-          positionMs: 5000,
-        ), returnsNormally);
+        expect(
+            () => notifier.updateProgress(
+                  learningObjectId: 'test-id',
+                  positionMs: 5000,
+                ),
+            returnsNormally);
       });
 
       test('should handle progress provider invalidation', () {
         // Should be able to access progress provider
-        expect(() => container.read(progressProvider('test-id')), returnsNormally);
+        expect(
+            () => container.read(progressProvider('test-id')), returnsNormally);
       });
     });
 
     group('Mock Authentication Handling', () {
       test('should handle mock tokens in initialization', () {
         final appInit = container.read(appInitializationProvider);
-        
+
         // Should handle mock token detection
         appInit.when(
           data: (result) => expect(result, isA<bool>()),
@@ -433,7 +457,7 @@ void main() {
 
       test('should skip Cognito bridge for mock auth', () {
         final appInit = container.read(appInitializationProvider);
-        
+
         // Should handle mock auth without bridging
         expect(appInit, isA<AsyncValue<bool>>());
       });

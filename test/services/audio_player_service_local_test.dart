@@ -35,23 +35,22 @@ void main() {
         startMs: 0,
         endMs: 500,
         sentenceIndex: 0,
-        wordIndexInSentence: 0,
       ),
       WordTiming(
         word: 'content',
         startMs: 500,
         endMs: 1000,
         sentenceIndex: 0,
-        wordIndexInSentence: 1,
       ),
     ],
     sentences: [
       SentenceTiming(
         text: 'Test content',
-        startMs: 0,
-        endMs: 1000,
-        wordIndexStart: 0,
-        wordIndexEnd: 1,
+        startTime: 0,
+        endTime: 1000,
+        sentenceIndex: 0,
+        wordStartIndex: 0,
+        wordEndIndex: 1,
       ),
     ],
     totalDurationMs: 1000,
@@ -85,7 +84,8 @@ void main() {
     });
 
     test('should have speed options configured', () {
-      expect(AudioPlayerServiceLocal.speedOptions, [0.8, 1.0, 1.25, 1.5, 1.75, 2.0]);
+      expect(AudioPlayerServiceLocal.speedOptions,
+          [0.8, 1.0, 1.25, 1.5, 1.75, 2.0]);
     });
 
     test('should have skip duration configured', () {
@@ -96,7 +96,7 @@ void main() {
   group('AudioPlayerServiceLocal - Audio Loading', () {
     test('should load local audio successfully', () async {
       final service = AudioPlayerServiceLocal.instance;
-      
+
       // This test would require more complex mocking due to singleton pattern
       // For now, we verify the method exists and can be called
       expect(service.loadLocalAudio, isA<Function>());
@@ -221,7 +221,7 @@ void main() {
       // This tests the duration sanitization logic
       // The service should detect and correct corrupted duration values
       final service = AudioPlayerServiceLocal.instance;
-      
+
       // The service has logic to handle:
       // - Negative durations
       // - Extremely large durations (>1 hour)
@@ -283,7 +283,7 @@ void main() {
       // - file system paths (downloaded content)
       final assetPath = 'assets/audio/test.mp3';
       final filePath = '/path/to/audio.mp3';
-      
+
       expect(assetPath.startsWith('assets/'), isTrue);
       expect(filePath.startsWith('assets/'), isFalse);
     });

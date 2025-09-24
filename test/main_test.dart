@@ -10,7 +10,8 @@ void main() {
 
   group('Main App', () {
     group('AudioLearningApp', () {
-      testWidgets('should create MaterialApp with correct configuration', (tester) async {
+      testWidgets('should create MaterialApp with correct configuration',
+          (tester) async {
         await tester.pumpWidget(
           const ProviderScope(
             child: AudioLearningApp(),
@@ -18,7 +19,8 @@ void main() {
         );
 
         // Find MaterialApp
-        final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+        final materialApp =
+            tester.widget<MaterialApp>(find.byType(MaterialApp));
         expect(materialApp.title, 'The Institutes');
         expect(materialApp.theme, isNotNull);
         expect(materialApp.darkTheme, isNotNull);
@@ -41,7 +43,8 @@ void main() {
           ),
         );
 
-        final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+        final materialApp =
+            tester.widget<MaterialApp>(find.byType(MaterialApp));
         expect(materialApp.routes, contains('/main'));
         expect(materialApp.routes, contains('/home'));
         expect(materialApp.routes, contains('/settings'));
@@ -120,9 +123,10 @@ void main() {
         expect(find.byType(SplashScreen), findsNothing);
       });
 
-      testWidgets('should handle mounted check during navigation', (tester) async {
+      testWidgets('should handle mounted check during navigation',
+          (tester) async {
         late StatefulWidget splashWidget;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -183,7 +187,8 @@ void main() {
         expect(positioned, findsWidgets);
       });
 
-      testWidgets('should handle mini player visibility animation', (tester) async {
+      testWidgets('should handle mini player visibility animation',
+          (tester) async {
         await tester.pumpWidget(
           ProviderScope(
             child: MaterialApp(
@@ -216,7 +221,8 @@ void main() {
     });
 
     group('Route Generation', () {
-      testWidgets('should handle course detail route generation', (tester) async {
+      testWidgets('should handle course detail route generation',
+          (tester) async {
         final app = MaterialApp.router(
           routerDelegate: _TestRouterDelegate('/course-detail', {
             'courseId': 'test-course',
@@ -251,7 +257,8 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should handle player route with map arguments', (tester) async {
+      testWidgets('should handle player route with map arguments',
+          (tester) async {
         final learningObject = LearningObject(
           id: 'test-lo',
           assignmentId: 'test-assignment',
@@ -283,7 +290,9 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should handle player route with legacy LearningObject argument', (tester) async {
+      testWidgets(
+          'should handle player route with legacy LearningObject argument',
+          (tester) async {
         final learningObject = LearningObject(
           id: 'test-lo',
           assignmentId: 'test-assignment',
@@ -310,17 +319,17 @@ void main() {
       });
 
       testWidgets('should return null for unknown routes', (tester) async {
-        final app = AudioLearningApp();
-        final materialApp = MaterialApp(
-          onGenerateRoute: app.build(
-            tester.element(find.byType(Placeholder)),
-            ProviderContainer(),
-          ).onGenerateRoute,
+        await tester.pumpWidget(
+          const ProviderScope(
+            child: AudioLearningApp(),
+          ),
         );
 
+        final materialApp =
+            tester.widget<MaterialApp>(find.byType(MaterialApp));
         final unknownRoute = RouteSettings(name: '/unknown');
         final route = materialApp.onGenerateRoute!(unknownRoute);
-        
+
         expect(route, isNull);
       });
     });
@@ -335,10 +344,10 @@ void main() {
 
         // Should have MaterialApp as root
         expect(find.byType(MaterialApp), findsOneWidget);
-        
+
         // Should contain SplashScreen initially
         expect(find.byType(SplashScreen), findsOneWidget);
-        
+
         // SplashScreen should have proper structure
         expect(find.byType(Scaffold), findsOneWidget);
         expect(find.byType(Column), findsOneWidget);
@@ -355,21 +364,23 @@ void main() {
 
         // Should have ProviderScope in widget tree
         expect(find.byType(ProviderScope), findsOneWidget);
-        
+
         // AudioLearningApp should be ConsumerWidget
         expect(find.byType(AudioLearningApp), findsOneWidget);
       });
     });
 
     group('Theme Integration', () {
-      testWidgets('should use AppTheme for light and dark themes', (tester) async {
+      testWidgets('should use AppTheme for light and dark themes',
+          (tester) async {
         await tester.pumpWidget(
           const ProviderScope(
             child: AudioLearningApp(),
           ),
         );
 
-        final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+        final materialApp =
+            tester.widget<MaterialApp>(find.byType(MaterialApp));
         expect(materialApp.theme, isNotNull);
         expect(materialApp.darkTheme, isNotNull);
         expect(materialApp.themeMode, isNotNull);
@@ -389,7 +400,8 @@ void main() {
     });
 
     group('Error Handling', () {
-      testWidgets('should handle image loading errors gracefully', (tester) async {
+      testWidgets('should handle image loading errors gracefully',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const SplashScreen(),
@@ -419,7 +431,8 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('should have semantic labels for key elements', (tester) async {
+      testWidgets('should have semantic labels for key elements',
+          (tester) async {
         await tester.pumpWidget(
           const ProviderScope(
             child: AudioLearningApp(),
@@ -428,16 +441,17 @@ void main() {
 
         // Title should be accessible
         expect(find.text('The Institutes'), findsOneWidget);
-        
+
         // Progress indicator should be present for loading state
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
     });
 
     group('Performance', () {
-      testWidgets('should build efficiently without unnecessary rebuilds', (tester) async {
+      testWidgets('should build efficiently without unnecessary rebuilds',
+          (tester) async {
         int buildCount = 0;
-        
+
         await tester.pumpWidget(
           ProviderScope(
             child: Builder(
@@ -451,11 +465,11 @@ void main() {
 
         // Should build once initially
         expect(buildCount, 1);
-        
+
         // Additional pumps should not cause unnecessary rebuilds
         await tester.pump();
         await tester.pump();
-        
+
         // Build count should remain stable
         expect(buildCount, 1);
       });
@@ -464,7 +478,7 @@ void main() {
     group('State Management', () {
       testWidgets('should integrate with Riverpod correctly', (tester) async {
         late ProviderContainer container;
-        
+
         await tester.pumpWidget(
           ProviderScope(
             child: Builder(
@@ -485,7 +499,8 @@ void main() {
 }
 
 // Helper classes for route testing
-class _TestRouterDelegate extends RouterDelegate<String> with PopNavigatorRouterDelegateMixin {
+class _TestRouterDelegate extends RouterDelegate<String>
+    with PopNavigatorRouterDelegateMixin, ChangeNotifier {
   final String route;
   final dynamic arguments;
 
@@ -493,6 +508,15 @@ class _TestRouterDelegate extends RouterDelegate<String> with PopNavigatorRouter
 
   @override
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  String get currentConfiguration => route;
+
+  @override
+  Future<void> setNewRoutePath(String configuration) async {
+    // Implementation for route setting
+    notifyListeners();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -507,13 +531,12 @@ class _TestRouterDelegate extends RouterDelegate<String> with PopNavigatorRouter
     );
   }
 
-  @override
-  Future<void> setNewRoutePath(String configuration) async {}
 }
 
 class _TestRouteParser extends RouteInformationParser<String> {
   @override
-  Future<String> parseRouteInformation(RouteInformation routeInformation) async {
+  Future<String> parseRouteInformation(
+      RouteInformation routeInformation) async {
     return routeInformation.uri.path;
   }
 
