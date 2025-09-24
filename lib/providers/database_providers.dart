@@ -96,10 +96,19 @@ final assignmentLearningObjectsProvider =
   final localDb = ref.watch(localDatabaseServiceProvider);
   final learningObjectsData = await localDb.getLearningObjects(assignmentId);
 
-  // Convert database rows to LearningObjectV2 models
-  return learningObjectsData
-      .map((data) => LearningObjectV2.fromJson(data))
-      .toList();
+  // Convert database rows to LearningObjectV2 models with error handling
+  final learningObjects = <LearningObjectV2>[];
+  for (final data in learningObjectsData) {
+    try {
+      learningObjects.add(LearningObjectV2.fromJson(data));
+    } catch (e, stack) {
+      print('Error parsing learning object: $e');
+      print('Data that failed: $data');
+      print('Stack trace: $stack');
+    }
+  }
+
+  return learningObjects;
 });
 
 /// Provider for user progress on a specific learning object

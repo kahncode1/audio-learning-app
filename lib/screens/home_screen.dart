@@ -97,8 +97,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       // Get the download service
       final downloadService = ref.read(courseDownloadApiServiceProvider);
 
-      // Use a real course ID from Supabase (Insurance Fundamentals - INS-101)
-      const testCourseId = 'cb236d98-dbb8-4810-b205-17e8091dcf69';
+      // Use a real course ID from Supabase
+      const testCourseId = 'e3d85ff7-cb25-4702-b2ba-813e8a24f16d';
       const testUserId = 'test-user-001';
 
       // Listen to download progress
@@ -287,20 +287,27 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: Text('Error loading courses: $error'),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isDeleting ? null : _deleteAllDownloads,
-        backgroundColor: Colors.red,
-        icon: _isDeleting
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : const Icon(Icons.delete_forever),
-        label: Text(_isDeleting ? 'Deleting...' : 'Delete Downloads'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: FloatingActionButton.extended(
+          onPressed: _isDeleting ? null : _deleteAllDownloads,
+          backgroundColor: Colors.red,
+          extendedPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          icon: _isDeleting
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Icon(Icons.delete_forever, size: 28),
+          label: Text(
+            _isDeleting ? 'Deleting...' : 'Delete All Downloads',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ),
       ),
     );
   }

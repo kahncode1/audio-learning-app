@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import '../theme/app_theme.dart';
 import '../services/audio_player_service_local.dart';
+import '../services/local_content_service.dart';
 import '../services/progress_service.dart';
 import '../services/word_timing_service_simplified.dart';
 import '../models/learning_object_v2.dart';
@@ -104,6 +105,26 @@ class _EnhancedAudioPlayerScreenState
         // Just update the display text from the current service state
         _displayText = _audioService.currentDisplayText ??
             widget.learningObject.displayText;
+
+        // If we still don't have display text, load it from the learning object
+        if (_displayText == null || _displayText!.isEmpty) {
+          _displayText = widget.learningObject.displayText;
+
+          // If still no display text, this is an error condition
+          if (_displayText == null || _displayText!.isEmpty) {
+            AppLogger.warning('No display text available when resuming', {
+              'learningObjectId': widget.learningObject.id,
+              'hasServiceText': _audioService.currentDisplayText != null,
+              'hasObjectText': widget.learningObject.displayText != null,
+            });
+            _displayText = 'No content available for display';
+          }
+        }
+
+        AppLogger.info('Resumed with display text', {
+          'textLength': _displayText?.length ?? 0,
+          'source': 'resume from mini player',
+        });
       } else {
         // Use plainText as single source of truth for display
         // The text processing should have already happened in SpeechifyService
@@ -124,6 +145,10 @@ class _EnhancedAudioPlayerScreenState
           'learningObjectId': widget.learningObject.id,
           'source': 'plainText field (single source of truth)',
         });
+
+        // Set the course ID in LocalContentService for proper path resolution
+        final localContentService = LocalContentService.instance;
+        localContentService.setCourseId(widget.learningObject.courseId);
 
         // Load the learning object audio
         debugPrint('Loading learning object audio...');

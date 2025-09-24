@@ -57,13 +57,14 @@ class SentenceTiming {
   factory SentenceTiming.fromJson(Map<String, dynamic> json) {
     return SentenceTiming(
       text: json['text'] as String,
-      startMs: json['start_ms'] as int,
-      endMs: json['end_ms'] as int,
-      sentenceIndex: json['sentence_index'] as int,
-      wordStartIndex: json['word_start_index'] as int,
-      wordEndIndex: json['word_end_index'] as int,
-      charStart: json['char_start'] as int,
-      charEnd: json['char_end'] as int,
+      startMs: json['start_ms'] as int? ?? (json['startMs'] as int? ?? 0),
+      endMs: json['end_ms'] as int? ?? (json['endMs'] as int? ?? 0),
+      sentenceIndex: json['sentence_index'] as int? ?? (json['sentenceIndex'] as int? ?? 0),
+      // Handle both snake_case and camelCase for backward compatibility
+      wordStartIndex: json['word_start_index'] as int? ?? (json['wordStartIndex'] as int? ?? 0),
+      wordEndIndex: json['word_end_index'] as int? ?? (json['wordEndIndex'] as int? ?? 0),
+      charStart: json['char_start'] as int? ?? (json['charStart'] as int? ?? 0),
+      charEnd: json['char_end'] as int? ?? (json['charEnd'] as int? ?? 0),
     );
   }
 

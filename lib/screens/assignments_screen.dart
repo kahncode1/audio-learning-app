@@ -196,7 +196,7 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).textTheme.bodyLarge?.color,
           child: Text(
-            assignment.assignmentNumber.toString(),
+            assignment.displayNumber,  // Use displayNumber which handles null assignmentNumber
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),

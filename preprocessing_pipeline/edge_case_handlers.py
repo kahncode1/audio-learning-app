@@ -533,8 +533,8 @@ class EdgeCaseHandlers:
                     'start_ms': current_sentence_words[0]['start_ms'],
                     'end_ms': word['end_ms'],
                     'sentence_index': sentence_index,
-                    'wordStartIndex': i - len(current_sentence_words) + 1,
-                    'wordEndIndex': i,
+                    'word_start_index': i - len(current_sentence_words) + 1,
+                    'word_end_index': i,
                     'char_start': current_sentence_start,
                     'char_end': word['char_end'],
                     'break_reason': break_reason  # For debugging
@@ -555,8 +555,8 @@ class EdgeCaseHandlers:
                 'start_ms': current_sentence_words[0]['start_ms'],
                 'end_ms': current_sentence_words[-1]['end_ms'],
                 'sentence_index': sentence_index,
-                'wordStartIndex': len(words) - len(current_sentence_words),
-                'wordEndIndex': len(words) - 1,
+                'word_start_index': len(words) - len(current_sentence_words),
+                'word_end_index': len(words) - 1,
                 'char_start': current_sentence_start,
                 'char_end': len(text) - 1,
                 'break_reason': 'end_of_text'

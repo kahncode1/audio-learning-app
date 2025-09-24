@@ -324,38 +324,39 @@ class LocalContentService {
     String learningObjectId, {
     String? lookupJsonString,
   }) {
-    // Parse word timings
+    // Parse word timings (support both snake_case and camelCase)
     final words = <WordTiming>[];
-    if (timingJson['words'] != null) {
-      for (final wordData in timingJson['words']) {
+    final wordList = timingJson['word_timings'] ?? timingJson['words'];
+    if (wordList != null) {
+      for (final wordData in wordList) {
         words.add(WordTiming(
           word: wordData['word'] as String,
-          startMs: wordData['startMs'] as int,
-          endMs: wordData['endMs'] as int,
-          charStart: wordData['charStart'] as int,
-          charEnd: wordData['charEnd'] as int,
-          sentenceIndex: wordData['sentenceIndex'] as int? ??
-              0, // Use sentenceIndex from JSON
+          startMs: (wordData['start_ms'] ?? wordData['startMs']) as int,
+          endMs: (wordData['end_ms'] ?? wordData['endMs']) as int,
+          charStart: (wordData['char_start'] ?? wordData['charStart']) as int,
+          charEnd: (wordData['char_end'] ?? wordData['charEnd']) as int,
+          sentenceIndex: (wordData['sentence_index'] ?? wordData['sentenceIndex'] ?? 0) as int,
         ));
       }
     }
 
-    // Parse sentence data
+    // Parse sentence data (support both snake_case and camelCase)
     final sentences = <SentenceTiming>[];
-    if (timingJson['sentences'] != null) {
+    final sentenceList = timingJson['sentence_timings'] ?? timingJson['sentences'];
+    if (sentenceList != null) {
       int sentenceIndex = 0;
-      for (final sentData in timingJson['sentences']) {
-        final startIdx = sentData['wordStartIndex'] as int;
-        final endIdx = sentData['wordEndIndex'] as int;
+      for (final sentData in sentenceList) {
+        final startIdx = (sentData['word_start_index'] ?? sentData['wordStartIndex']) as int;
+        final endIdx = (sentData['word_end_index'] ?? sentData['wordEndIndex']) as int;
 
         // Note: We no longer need to update word sentence indices here
         // since we're reading them directly from the JSON
 
         sentences.add(SentenceTiming(
           text: sentData['text'] as String,
-          startTime: sentData['startMs'] as int,
-          endTime: sentData['endMs'] as int,
-          sentenceIndex: sentenceIndex,
+          startTime: (sentData['start_ms'] ?? sentData['startMs']) as int,
+          endTime: (sentData['end_ms'] ?? sentData['endMs']) as int,
+          sentenceIndex: (sentData['sentence_index'] ?? sentenceIndex) as int,
           wordStartIndex: startIdx,
           wordEndIndex: endIdx,
         ));
@@ -367,7 +368,7 @@ class LocalContentService {
     final timingData = TimingData(
       words: words,
       sentences: sentences,
-      totalDurationMs: timingJson['totalDurationMs'] as int,
+      totalDurationMs: (timingJson['total_duration_ms'] ?? timingJson['totalDurationMs']) as int,
     );
 
     // Load and set position lookup table if available

@@ -19,7 +19,7 @@
 class Assignment {
   final String id;
   final String courseId;
-  final int assignmentNumber;
+  final int? assignmentNumber;  // Made optional since it's not in database
   final String title;
   final String? description;
   final int learningObjectCount;
@@ -31,7 +31,7 @@ class Assignment {
   Assignment({
     required this.id,
     required this.courseId,
-    required this.assignmentNumber,
+    this.assignmentNumber,  // Made optional
     required this.title,
     this.description,
     this.learningObjectCount = 0,
@@ -41,8 +41,8 @@ class Assignment {
     required this.updatedAt,
   });
 
-  /// Display string for assignment number
-  String get displayNumber => assignmentNumber.toString();
+  /// Display string for assignment number (uses orderIndex if assignmentNumber is null)
+  String get displayNumber => (assignmentNumber ?? (orderIndex + 1)).toString();
 
   /// Format duration from milliseconds to readable string
   String get formattedDuration {
@@ -63,7 +63,7 @@ class Assignment {
     return Assignment(
       id: json['id'] as String,
       courseId: json['course_id'] as String,
-      assignmentNumber: json['assignment_number'] as int,
+      assignmentNumber: json['assignment_number'] as int?,  // Now nullable
       title: json['title'] as String,
       description: json['description'] as String?,
       learningObjectCount: json['learning_object_count'] as int? ?? 0,
@@ -134,11 +134,11 @@ class Assignment {
 
 /// Validation function to verify Assignment model implementation
 void validateAssignmentModel() {
-  // Test JSON parsing with new fields
+  // Test JSON parsing WITHOUT assignment_number (as in actual database)
   final testJson = {
     'id': 'assignment-123',
     'course_id': 'course-456',
-    'assignment_number': 1,
+    // No assignment_number field - simulating actual database
     'title': 'Introduction to Risk Assessment',
     'description': 'Learn the fundamentals of risk assessment',
     'learning_object_count': 5,
@@ -151,8 +151,8 @@ void validateAssignmentModel() {
   final assignment = Assignment.fromJson(testJson);
   assert(assignment.id == 'assignment-123');
   assert(assignment.courseId == 'course-456');
-  assert(assignment.assignmentNumber == 1);
-  assert(assignment.displayNumber == '1');
+  assert(assignment.assignmentNumber == null);
+  assert(assignment.displayNumber == '1');  // Should use orderIndex + 1
   assert(assignment.title == 'Introduction to Risk Assessment');
   assert(assignment.learningObjectCount == 5);
   assert(assignment.totalDurationMs == 1800000);
@@ -161,7 +161,7 @@ void validateAssignmentModel() {
   // Test serialization
   final json = assignment.toJson();
   assert(json['id'] == 'assignment-123');
-  assert(json['assignment_number'] == 1);
+  assert(json['assignment_number'] == null);  // Should be null
   assert(json['learning_object_count'] == 5);
   assert(json['total_duration_ms'] == 1800000);
 

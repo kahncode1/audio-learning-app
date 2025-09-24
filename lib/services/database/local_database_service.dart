@@ -31,7 +31,7 @@ class LocalDatabaseService {
 
   static Database? _database;
   static const String _dbName = 'audio_learning_app.db';
-  static const int _dbVersion = 1;
+  static const int _dbVersion = 2;
 
   /// Get database instance
   Future<Database> get database async {
@@ -78,7 +78,6 @@ class LocalDatabaseService {
       CREATE TABLE assignments (
         id TEXT PRIMARY KEY,
         course_id TEXT NOT NULL,
-        assignment_number INTEGER NOT NULL,
         title TEXT NOT NULL,
         description TEXT,
         learning_object_count INTEGER DEFAULT 0,
@@ -86,8 +85,7 @@ class LocalDatabaseService {
         order_index INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
-        FOREIGN KEY (course_id) REFERENCES courses (id) ON DELETE CASCADE,
-        UNIQUE(course_id, assignment_number)
+        FOREIGN KEY (course_id) REFERENCES courses (id) ON DELETE CASCADE
       )
     ''');
 
@@ -252,11 +250,20 @@ class LocalDatabaseService {
   /// Handle database upgrades
   Future<void> _upgradeDatabase(
       Database db, int oldVersion, int newVersion) async {
-    // Handle future migrations here
-    // Example:
-    // if (oldVersion < 2) {
-    //   await db.execute('ALTER TABLE courses ADD COLUMN new_field TEXT');
-    // }
+    // Handle migration from version 1 to 2
+    if (oldVersion < 2) {
+      // Drop all existing tables to recreate with new schema
+      await db.execute('DROP TABLE IF EXISTS download_cache');
+      await db.execute('DROP TABLE IF EXISTS user_course_progress');
+      await db.execute('DROP TABLE IF EXISTS user_progress');
+      await db.execute('DROP TABLE IF EXISTS user_settings');
+      await db.execute('DROP TABLE IF EXISTS learning_objects');
+      await db.execute('DROP TABLE IF EXISTS assignments');
+      await db.execute('DROP TABLE IF EXISTS courses');
+
+      // Recreate all tables with new schema
+      await _createDatabase(db, newVersion);
+    }
   }
 
   /// Insert or update a course
@@ -360,12 +367,19 @@ class LocalDatabaseService {
   Future<List<Map<String, dynamic>>> getLearningObjects(
       String assignmentId) async {
     final db = await database;
+    AppLogger.info('Querying learning objects for assignment: $assignmentId');
     final results = await db.query(
       'learning_objects',
       where: 'assignment_id = ?',
       whereArgs: [assignmentId],
       orderBy: 'order_index ASC',
     );
+    AppLogger.info('Found ${results.length} learning objects for assignment: $assignmentId');
+
+    // Log the raw data for debugging
+    if (results.isNotEmpty) {
+      AppLogger.info('First learning object raw data keys: ${results.first.keys.toList()}');
+    }
 
     // Parse JSON strings back to objects
     // Create mutable copies of the results to avoid read-only error

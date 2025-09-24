@@ -18,7 +18,6 @@ class OptimizedHighlightPainter extends CustomPainter {
   final TextStyle baseStyle;
   final Color sentenceHighlightColor;
   final Color wordHighlightColor;
-  final bool justSeeked;
 
   // Cache for TextBox calculations to avoid expensive layout operations
   static final Map<String, List<TextBox>> textBoxCache = {};
@@ -33,7 +32,6 @@ class OptimizedHighlightPainter extends CustomPainter {
     required this.baseStyle,
     required this.sentenceHighlightColor,
     required this.wordHighlightColor,
-    this.justSeeked = false,
   });
 
   /// Get cached TextBoxes for a selection to avoid expensive layout operations
@@ -70,19 +68,19 @@ class OptimizedHighlightPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Three-layer paint system for optimal visual hierarchy
 
-    // Layer 1: Paint base text (background)
-    textPainter.paint(canvas, Offset.zero);
-
-    // Layer 2: Paint sentence highlight (if active)
+    // Layer 1: Paint sentence highlight (background)
     if (currentSentenceIndex >= 0) {
       _paintSentenceHighlight(canvas, currentSentenceIndex);
     }
 
-    // Layer 3: Paint word highlight (if active)
+    // Layer 2: Paint word highlight (middle)
     if (currentWordIndex >= 0 &&
         currentWordIndex < timingCollection.timings.length) {
       _paintWordHighlight(canvas, currentWordIndex);
     }
+
+    // Layer 3: Paint base text (foreground - on top)
+    textPainter.paint(canvas, Offset.zero);
   }
 
   void _paintSentenceHighlight(Canvas canvas, int sentenceIndex) {
@@ -176,16 +174,13 @@ class OptimizedHighlightPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(OptimizedHighlightPainter oldDelegate) {
-    // Force repaint after seek to clear any visual artifacts
-    if (justSeeked) {
-      return true;
-    }
+    // Only repaint when actual visual changes occur
+    // Remove the justSeeked check - it causes unnecessary repaints
 
-    // Repaint when highlighting changes or style changes
+    // Repaint only when highlighting positions change or text/size changes
     return currentWordIndex != oldDelegate.currentWordIndex ||
         currentSentenceIndex != oldDelegate.currentSentenceIndex ||
         text != oldDelegate.text ||
-        baseStyle != oldDelegate.baseStyle ||
         baseStyle.fontSize != oldDelegate.baseStyle.fontSize;
   }
 }

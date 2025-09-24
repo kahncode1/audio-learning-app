@@ -103,15 +103,14 @@ class LearningObjectV2 {
 
   /// Creates LearningObjectV2 from JSON map
   factory LearningObjectV2.fromJson(Map<String, dynamic> json) {
-    // Parse content JSONB
-    final contentJson = json['content'] as Map<String, dynamic>?;
-    final displayText = contentJson?['display_text'] as String? ?? '';
-    final paragraphs = (contentJson?['paragraphs'] as List?)
+    // Data comes flat from database - no nested 'content' object
+    final displayText = json['display_text'] as String? ?? '';
+    final paragraphs = (json['paragraphs'] as List?)
             ?.map((p) => p as String)
             .toList() ??
         [];
     final headers =
-        (contentJson?['headers'] as List?)?.map((h) => h as String).toList() ??
+        (json['headers'] as List?)?.map((h) => h as String).toList() ??
             [];
 
     // Parse formatting JSONB
@@ -150,7 +149,7 @@ class LearningObjectV2 {
       assignmentId: json['assignment_id'] as String,
       courseId: json['course_id'] as String,
       title: json['title'] as String,
-      orderIndex: json['order_index'] as int,
+      orderIndex: json['order_index'] as int? ?? 0,
       displayText: displayText,
       paragraphs: paragraphs,
       headers: headers,
@@ -183,11 +182,9 @@ class LearningObjectV2 {
       'course_id': courseId,
       'title': title,
       'order_index': orderIndex,
-      'content': {
-        'display_text': displayText,
-        'paragraphs': paragraphs,
-        'headers': headers,
-      },
+      'display_text': displayText,
+      'paragraphs': paragraphs,
+      'headers': headers,
       'formatting': formatting.toJson(),
       'metadata': metadata.toJson(),
       'word_timings': wordTimings.map((w) => w.toJson()).toList(),

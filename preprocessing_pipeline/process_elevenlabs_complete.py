@@ -153,8 +153,8 @@ class ElevenLabsCompleteProcessor:
                         'start_ms': current_sentence_words[0]['start_ms'],
                         'end_ms': word['end_ms'],
                         'sentence_index': sentence_index,
-                        'wordStartIndex': i - len(current_sentence_words) + 1,
-                        'wordEndIndex': i,
+                        'word_start_index': i - len(current_sentence_words) + 1,
+                        'word_end_index': i,
                         'char_start': current_sentence_start,
                         'char_end': word['char_end']
                     })
@@ -172,8 +172,8 @@ class ElevenLabsCompleteProcessor:
                 'start_ms': current_sentence_words[0]['start_ms'],
                 'end_ms': current_sentence_words[-1]['end_ms'],
                 'sentence_index': sentence_index,
-                'wordStartIndex': len(words) - len(current_sentence_words),
-                'wordEndIndex': len(words) - 1,
+                'word_start_index': len(words) - len(current_sentence_words),
+                'word_end_index': len(words) - 1,
                 'char_start': current_sentence_start,
                 'char_end': len(text) - 1
             })
@@ -328,23 +328,23 @@ class ElevenLabsCompleteProcessor:
         content = {
             "version": "1.0",
             "source": "elevenlabs-complete",
-            "displayText": display_text,
+            "display_text": display_text,
             "paragraphs": paragraphs,
             "headers": headers,
             "formatting": {
-                "boldHeaders": False,
-                "paragraphSpacing": True
+                "bold_headers": False,
+                "paragraph_spacing": True
             },
             "metadata": {
-                "wordCount": len(words),
-                "characterCount": len(full_text),
-                "estimatedReadingTime": f"{max(1, len(words) // 200)} minutes",
+                "word_count": len(words),
+                "character_count": len(full_text),
+                "estimated_reading_time": f"{max(1, len(words) // 200)} minutes",
                 "language": "en"
             },
             "timing": {
                 "words": words,
                 "sentences": sentences,
-                "totalDurationMs": total_duration_ms
+                "total_duration_ms": total_duration_ms
             }
         }
 
@@ -359,22 +359,22 @@ class ElevenLabsCompleteProcessor:
 
         print(f"\n✅ Saved enhanced content to: {output_path}")
         print(f"\n📊 Summary:")
-        print(f"   Text: {content['metadata']['characterCount']} characters")
+        print(f"   Text: {content['metadata']['character_count']} characters")
         print(f"   Words: {len(content['timing']['words'])}")
         print(f"   Sentences: {len(content['timing']['sentences'])}")
         print(f"   Paragraphs: {len(content['paragraphs'])}")
-        print(f"   Duration: {content['timing']['totalDurationMs'] / 1000:.1f} seconds")
-        print(f"   Duration: {content['timing']['totalDurationMs'] / 60000:.1f} minutes")
+        print(f"   Duration: {content['timing']['total_duration_ms'] / 1000:.1f} seconds")
+        print(f"   Duration: {content['timing']['total_duration_ms'] / 60000:.1f} minutes")
 
         # Verify against original if provided
         if self.original_content:
             orig_text = self.original_content.get('full_text', '')
-            if orig_text.strip() == content['displayText'].strip():
+            if orig_text.strip() == content['display_text'].strip():
                 print("\n✅ Text matches original content perfectly!")
             else:
                 print(f"\n⚠️ Text differs from original:")
                 print(f"   Original: {len(orig_text)} chars")
-                print(f"   Processed: {len(content['displayText'])} chars")
+                print(f"   Processed: {len(content['display_text'])} chars")
 
 
 def main():

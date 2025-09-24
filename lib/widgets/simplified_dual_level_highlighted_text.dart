@@ -67,9 +67,6 @@ class _SimplifiedDualLevelHighlightedTextState
   StreamSubscription<int>? _wordSubscription;
   StreamSubscription<int>? _sentenceSubscription;
 
-  // Track seeks to force complete repaint for a fixed duration
-  // Using a fixed window that doesn't extend prevents cascading effects
-  DateTime? _seekWindowStartTime;
 
   // Single TextPainter instance for efficiency
   late TextPainter _textPainter;
@@ -95,32 +92,6 @@ class _SimplifiedDualLevelHighlightedTextState
     // Direct stream subscription - WordTimingService handles throttling
     _wordSubscription = _timingService.currentWordStream.listen((wordIndex) {
       if (mounted && wordIndex != _currentWordIndex) {
-        // Detect large jumps (seeks/fast-forward)
-        // A jump of more than 50 words indicates a seek operation
-        if (_currentWordIndex >= 0 &&
-            (wordIndex - _currentWordIndex).abs() > 50) {
-          // Only set the window start time if we're not already in a seek window
-          // This prevents extending the window on rapid consecutive seeks
-          if (_seekWindowStartTime == null ||
-              DateTime.now().difference(_seekWindowStartTime!).inMilliseconds >
-                  500) {
-            _seekWindowStartTime = DateTime.now();
-            AppLogger.info('🎨 WIDGET: Seek window opened', {
-              'oldIndex': _currentWordIndex,
-              'newIndex': wordIndex,
-              'jumpDistance': (wordIndex - _currentWordIndex).abs(),
-            });
-          } else {
-            AppLogger.info('🎨 WIDGET: Additional seek in active window', {
-              'oldIndex': _currentWordIndex,
-              'newIndex': wordIndex,
-              'windowAge': DateTime.now()
-                  .difference(_seekWindowStartTime!)
-                  .inMilliseconds,
-            });
-          }
-        }
-
         AppLogger.info('🎨 WIDGET: Word index update received', {
           'oldIndex': _currentWordIndex,
           'newIndex': wordIndex,
@@ -383,12 +354,6 @@ class _SimplifiedDualLevelHighlightedTextState
             widget.sentenceHighlightColor ?? theme.sentenceHighlight;
         final wordColor = widget.wordHighlightColor ?? theme.wordHighlight;
 
-        // Check if we're within the fixed seek window (500ms)
-        // The window doesn't extend - it's exactly 500ms from when the first seek was detected
-        final bool isWithinSeekWindow = _seekWindowStartTime != null &&
-            DateTime.now().difference(_seekWindowStartTime!).inMilliseconds <
-                500;
-
         return CustomPaint(
           size: Size(constraints.maxWidth, _textPainter.height),
           painter: OptimizedHighlightPainter(
@@ -400,7 +365,6 @@ class _SimplifiedDualLevelHighlightedTextState
             baseStyle: widget.baseStyle,
             sentenceHighlightColor: sentenceColor,
             wordHighlightColor: wordColor,
-            justSeeked: isWithinSeekWindow,
           ),
         );
       },

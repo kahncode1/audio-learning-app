@@ -52,10 +52,11 @@ class ContentMetadata {
 
   factory ContentMetadata.fromJson(Map<String, dynamic> json) {
     return ContentMetadata(
-      wordCount: json['word_count'] as int,
-      characterCount: json['character_count'] as int,
-      estimatedReadingTime: json['estimated_reading_time'] as String,
-      language: json['language'] as String,
+      // Handle both snake_case and camelCase for backward compatibility
+      wordCount: (json['word_count'] ?? json['wordCount'] ?? 0) as int,
+      characterCount: (json['character_count'] ?? json['characterCount'] ?? 0) as int,
+      estimatedReadingTime: (json['estimated_reading_time'] ?? json['estimatedReadingTime'] ?? '0 min') as String,
+      language: (json['language'] ?? 'en') as String,
     );
   }
 
