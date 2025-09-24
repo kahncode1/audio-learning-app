@@ -4,6 +4,7 @@ import '../models/assignment.dart';
 import '../models/learning_object_v2.dart';
 import '../providers/providers.dart';
 import '../widgets/mini_audio_player.dart';
+import '../widgets/animated_loading_indicator.dart';
 
 /// AssignmentsScreen displays assignments with expandable tiles
 class AssignmentsScreen extends ConsumerWidget {
@@ -25,7 +26,6 @@ class AssignmentsScreen extends ConsumerWidget {
 
     return assignmentsFuture.when(
       data: (assignments) {
-
         final shouldShowMiniPlayer = ref.watch(shouldShowMiniPlayerProvider);
 
         return Scaffold(
@@ -62,7 +62,8 @@ class AssignmentsScreen extends ConsumerWidget {
                 child: AnimatedSlide(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
-                  offset: shouldShowMiniPlayer ? Offset.zero : const Offset(0, 1),
+                  offset:
+                      shouldShowMiniPlayer ? Offset.zero : const Offset(0, 1),
                   child: const AnimatedMiniAudioPlayer(),
                 ),
               ),
@@ -71,7 +72,9 @@ class AssignmentsScreen extends ConsumerWidget {
         );
       },
       loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: AnimatedLoadingIndicator(
+          message: 'Loading assignments...',
+        )),
       ),
       error: (error, stack) => Scaffold(
         appBar: AppBar(
@@ -150,7 +153,8 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
   Widget build(BuildContext context) {
     final assignment = widget.assignment;
     // Load learning objects from local database
-    final learningObjectsFuture = ref.watch(assignmentLearningObjectsProvider(assignment.id));
+    final learningObjectsFuture =
+        ref.watch(assignmentLearningObjectsProvider(assignment.id));
 
     final learningObjects = learningObjectsFuture.when(
       data: (objects) => objects,
@@ -169,10 +173,8 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
         : '${completionPercentage.round()}% complete';
 
     // Calculate total actual duration from learning objects
-    final totalDurationMs = learningObjects.fold<int>(
-      0,
-      (sum, lo) => sum + lo.totalDurationMs
-    );
+    final totalDurationMs =
+        learningObjects.fold<int>(0, (sum, lo) => sum + lo.totalDurationMs);
     final durationMinutes = totalDurationMs > 0
         ? (totalDurationMs / 60000).round()
         : learningObjects.length * 5; // Fallback estimate if no duration data
@@ -188,8 +190,8 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
         childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
         leading: CircleAvatar(
           backgroundColor: isActiveAssignment || isExpanded
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
-              : Theme.of(context).dividerColor.withOpacity(0.2),
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15)
+              : Theme.of(context).dividerColor.withValues(alpha: 0.2),
           foregroundColor: isActiveAssignment || isExpanded
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).textTheme.bodyLarge?.color,
@@ -201,9 +203,9 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
         title: Text(
           assignment.title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
         ),
         subtitle: Text(
           '${learningObjects.length} learning objects • $durationMinutes min • $completionText',
@@ -232,10 +234,12 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
                 ...learningObjects.map(
                   (learningObject) => LearningObjectTileV2(
                     learningObject: learningObject,
-                    isActive: audioContext?.learningObject.id == learningObject.id,
+                    isActive:
+                        audioContext?.learningObject.id == learningObject.id,
                     onTap: () async {
                       // Set the audio context before navigation
-                      ref.read(audioContextProvider.notifier).state = AudioContext(
+                      ref.read(audioContextProvider.notifier).state =
+                          AudioContext(
                         courseNumber: widget.courseNumber,
                         courseTitle: widget.courseTitle,
                         assignmentTitle: assignment.title,
@@ -257,7 +261,8 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
 
                       // If the learning object was completed, refresh the list
                       if (result == true) {
-                        ref.invalidate(assignmentLearningObjectsProvider(assignment.id));
+                        ref.invalidate(
+                            assignmentLearningObjectsProvider(assignment.id));
                       }
                     },
                   ),
@@ -283,7 +288,8 @@ class LearningObjectTileV2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCompleted = learningObject.isCompleted ?? false;
-    final isInProgress = (learningObject.currentPositionMs ?? 0) > 0 && !isCompleted;
+    final isInProgress =
+        (learningObject.currentPositionMs ?? 0) > 0 && !isCompleted;
 
     // Use actual duration from the model
     final durationMinutes = (learningObject.totalDurationMs / 60000).round();
@@ -298,7 +304,7 @@ class LearningObjectTileV2 extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: isCompleted
-            ? const Color(0xFF4CAF50).withOpacity(0.04)
+            ? const Color(0xFF4CAF50).withValues(alpha: 0.04)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
@@ -344,16 +350,15 @@ class LearningObjectTileV2 extends StatelessWidget {
                 : isActive
                     ? const Color(0xFF2196F3)
                     : const Color(0xFF424242),
-            fontWeight: isActive || isCompleted ? FontWeight.w600 : FontWeight.normal,
+            fontWeight:
+                isActive || isCompleted ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
         subtitle: Text(
           statusText,
           style: TextStyle(
             fontSize: 12,
-            color: isCompleted
-                ? const Color(0xFF4CAF50)
-                : Colors.grey.shade600,
+            color: isCompleted ? const Color(0xFF4CAF50) : Colors.grey.shade600,
             fontWeight: isCompleted ? FontWeight.w500 : FontWeight.normal,
           ),
         ),
@@ -361,9 +366,10 @@ class LearningObjectTileV2 extends StatelessWidget {
             ? const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 24)
             : isInProgress
                 ? Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2196F3).withOpacity(0.1),
+                      color: const Color(0xFF2196F3).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(

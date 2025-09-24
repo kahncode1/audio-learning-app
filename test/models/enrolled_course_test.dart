@@ -6,7 +6,7 @@ void main() {
   group('EnrolledCourse Model', () {
     final futureDate = DateTime.now().add(const Duration(days: 30));
     final pastDate = DateTime.now().subtract(const Duration(days: 5));
-    
+
     final testJson = {
       'id': 'enrollment-xyz123',
       'user_id': 'user-abc456',
@@ -217,7 +217,8 @@ void main() {
         expect(enrollment.userId, 'user-abc456');
         expect(enrollment.courseId, 'course-def789');
         expect(enrollment.enrolledAt, DateTime.parse('2024-01-15T09:00:00Z'));
-        expect(enrollment.expiresAt, DateTime.parse(futureDate.toIso8601String()));
+        expect(
+            enrollment.expiresAt, DateTime.parse(futureDate.toIso8601String()));
         expect(enrollment.isActive, true);
         expect(enrollment.completionPercentage, 45.8);
         expect(enrollment.course, isNull);

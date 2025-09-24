@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/learning_object_v2.dart';
 import '../services/local_content_service.dart';
 import '../services/audio_player_service_local.dart';
 import '../utils/app_logger.dart';
@@ -27,7 +26,8 @@ class LocalContentTestScreen extends ConsumerStatefulWidget {
 class _LocalContentTestScreenState
     extends ConsumerState<LocalContentTestScreen> {
   final LocalContentService _contentService = LocalContentService();
-  final AudioPlayerServiceLocal _audioService = AudioPlayerServiceLocal.instance;
+  final AudioPlayerServiceLocal _audioService =
+      AudioPlayerServiceLocal.instance;
 
   bool _isLoading = false;
   String _status = 'Ready to load content';
@@ -51,7 +51,8 @@ class _LocalContentTestScreenState
       if (_timingData != null) {
         final positionMs = position.inMilliseconds;
         final newWordIndex = _timingData!.getCurrentWordIndex(positionMs);
-        final newSentenceIndex = _timingData!.getCurrentSentenceIndex(positionMs);
+        final newSentenceIndex =
+            _timingData!.getCurrentSentenceIndex(positionMs);
 
         if (newWordIndex != _currentWordIndex ||
             newSentenceIndex != _currentSentenceIndex) {
@@ -108,7 +109,8 @@ class _LocalContentTestScreenState
 
       setState(() {
         _isLoading = false;
-        _status = 'Ready to play! Duration: ${_audioService.duration.inSeconds}s';
+        _status =
+            'Ready to play! Duration: ${_audioService.duration.inSeconds}s';
       });
     } catch (e) {
       setState(() {
@@ -164,10 +166,10 @@ class _LocalContentTestScreenState
       );
     }
 
-    final currentWord = _currentWordIndex >= 0 &&
-            _currentWordIndex < _timingData!.words.length
-        ? _timingData!.words[_currentWordIndex]
-        : null;
+    final currentWord =
+        _currentWordIndex >= 0 && _currentWordIndex < _timingData!.words.length
+            ? _timingData!.words[_currentWordIndex]
+            : null;
 
     final currentSentence = _currentSentenceIndex >= 0 &&
             _currentSentenceIndex < _timingData!.sentences.length
@@ -350,9 +352,8 @@ class _LocalContentTestScreenState
                             ? Icons.check_circle
                             : Icons.download,
                         size: 48,
-                        color: _contentData != null
-                            ? Colors.green
-                            : Colors.blue,
+                        color:
+                            _contentData != null ? Colors.green : Colors.blue,
                       ),
                     const SizedBox(height: 16),
                     Text(

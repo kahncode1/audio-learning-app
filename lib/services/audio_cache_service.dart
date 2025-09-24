@@ -222,7 +222,8 @@ class AudioCacheService {
       }
     }
 
-    debugPrint('Cache warming complete - Cached $cached/${urls.length} segments');
+    debugPrint(
+        'Cache warming complete - Cached $cached/${urls.length} segments');
   }
 
   /// Save segment metadata
@@ -235,9 +236,8 @@ class AudioCacheService {
       'access_count': 1,
     };
 
-    final metaString = metadata.entries
-        .map((e) => '${e.key}:${e.value}')
-        .join(',');
+    final metaString =
+        metadata.entries.map((e) => '${e.key}:${e.value}').join(',');
 
     await _prefs.setString(metaKey, metaString);
   }
@@ -259,9 +259,8 @@ class AudioCacheService {
       metadata['last_access'] = DateTime.now().millisecondsSinceEpoch;
       metadata['access_count'] = (metadata['access_count'] ?? 0) + 1;
 
-      final updatedString = metadata.entries
-          .map((e) => '${e.key}:${e.value}')
-          .join(',');
+      final updatedString =
+          metadata.entries.map((e) => '${e.key}:${e.value}').join(',');
 
       await _prefs.setString(metaKey, updatedString);
     }
@@ -284,7 +283,8 @@ class AudioCacheService {
       await _cacheManager.emptyCache();
 
       // Clear metadata
-      final keys = _prefs.getKeys()
+      final keys = _prefs
+          .getKeys()
           .where((key) => key.startsWith(_metadataPrefix))
           .toList();
 
@@ -341,7 +341,8 @@ class AudioCacheService {
   /// Get cache statistics
   Map<String, dynamic> getStatistics() {
     final totalRequests = _cacheHits + _cacheMisses;
-    final hitRate = totalRequests > 0 ? (_cacheHits / totalRequests) * 100 : 0.0;
+    final hitRate =
+        totalRequests > 0 ? (_cacheHits / totalRequests) * 100 : 0.0;
 
     return {
       'hits': _cacheHits,
@@ -362,7 +363,8 @@ class AudioCacheService {
 
   /// Get all cached segment keys
   Future<List<String>> getCachedSegments() async {
-    final keys = _prefs.getKeys()
+    final keys = _prefs
+        .getKeys()
         .where((key) => key.startsWith(_metadataPrefix))
         .map((key) => key.substring(_metadataPrefix.length))
         .toList();
@@ -426,12 +428,14 @@ Future<void> validateAudioCacheService() async {
   debugPrint('✓ Service initialization verified');
 
   // Test 2: Cache configuration
-  assert(AudioCacheService.maxCacheAge == const Duration(days: 7), 'Max age must be 7 days');
-  assert(AudioCacheService.maxCacheSize == 100 * 1024 * 1024, 'Max size must be 100MB');
+  assert(AudioCacheService.maxCacheAge == const Duration(days: 7),
+      'Max age must be 7 days');
+  assert(AudioCacheService.maxCacheSize == 100 * 1024 * 1024,
+      'Max size must be 100MB');
   debugPrint('✓ Cache configuration verified');
 
   // Test 3: Network state
-  final isOnline = await service.isOnline();
+  await service.isOnline();
   debugPrint('✓ Network state detection verified');
 
   // Test 4: Cache statistics

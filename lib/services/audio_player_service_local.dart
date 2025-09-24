@@ -64,12 +64,12 @@ class AudioPlayerServiceLocal {
   // State streams
   final BehaviorSubject<bool> _isPlayingSubject = BehaviorSubject.seeded(false);
   final BehaviorSubject<Duration> _positionSubject =
-    BehaviorSubject.seeded(Duration.zero);
+      BehaviorSubject.seeded(Duration.zero);
   final BehaviorSubject<Duration> _durationSubject =
-    BehaviorSubject.seeded(Duration.zero);
+      BehaviorSubject.seeded(Duration.zero);
   final BehaviorSubject<double> _speedSubject = BehaviorSubject.seeded(1.0);
   final BehaviorSubject<ProcessingState> _processingStateSubject =
-    BehaviorSubject.seeded(ProcessingState.idle);
+      BehaviorSubject.seeded(ProcessingState.idle);
 
   // Word timing data
   List<WordTiming> _currentWordTimings = [];
@@ -90,188 +90,193 @@ class AudioPlayerServiceLocal {
 
   // Private constructor
   AudioPlayerServiceLocal._()
-    : _player = AudioPlayer(),
-      _localContentService = LocalContentService() {
-  _initializePlayer();
+      : _player = AudioPlayer(),
+        _localContentService = LocalContentService() {
+    _initializePlayer();
   }
 
   /// Get singleton instance
   static AudioPlayerServiceLocal get instance {
-  _instance ??= AudioPlayerServiceLocal._();
-  return _instance!;
+    _instance ??= AudioPlayerServiceLocal._();
+    return _instance!;
   }
 
   /// Initialize player and set up listeners
   void _initializePlayer() {
-  // Configure audio session
-  _configureAudioSession();
-  // Initialize audio handler for lock screen controls
-  _initializeAudioHandler();
+    // Configure audio session
+    _configureAudioSession();
+    // Initialize audio handler for lock screen controls
+    _initializeAudioHandler();
 
-  // Listen to player state changes
-  _subscriptions.add(
-    _player.playingStream.listen((playing) {
-      _isPlayingSubject.add(playing);
-    }),
-  );
+    // Listen to player state changes
+    _subscriptions.add(
+      _player.playingStream.listen((playing) {
+        _isPlayingSubject.add(playing);
+      }),
+    );
 
-  _subscriptions.add(
-    _player.positionStream.listen((position) {
-      // Sanitize position values to prevent corrupted time displays
-      final currentDuration = _durationSubject.value;
-      Duration sanitizedPosition = position;
+    _subscriptions.add(
+      _player.positionStream.listen((position) {
+        // Sanitize position values to prevent corrupted time displays
+        final currentDuration = _durationSubject.value;
+        Duration sanitizedPosition = position;
 
-      // If position is invalid or exceeds duration, clamp it
-      if (position.inMilliseconds < 0) {
-        sanitizedPosition = Duration.zero;
-        AppLogger.warning('Negative position detected, clamped to zero', {
-          'originalPosition': position.inMilliseconds,
-        });
-      } else if (currentDuration.inMilliseconds > 0 &&
-                 position.inMilliseconds > currentDuration.inMilliseconds) {
-        sanitizedPosition = currentDuration;
-        AppLogger.warning('Position exceeds duration, clamped to duration', {
-          'originalPosition': position.inMilliseconds,
-          'duration': currentDuration.inMilliseconds,
-        });
-      }
-
-      _positionSubject.add(sanitizedPosition);
-    }),
-  );
-
-  _subscriptions.add(
-    _player.durationStream.listen((duration) {
-      if (duration != null) {
-        // DEBUG: Log all duration values to understand the corruption
-        AppLogger.info('Raw duration from just_audio', {
-          'durationMs': duration.inMilliseconds,
-          'durationSeconds': duration.inSeconds,
-          'durationMinutes': duration.inMinutes,
-          'durationHours': duration.inHours,
-        });
-
-        // Sanitize duration values to prevent corrupted time displays
-        Duration sanitizedDuration = duration;
-
-        // Check for unreasonably large duration values (over 1 hour for our use case)
-        // The audio file should be ~45 seconds, so anything over 1 hour is corruption
-        if (duration.inMinutes > 60) {
-          AppLogger.warning('Corrupted duration detected, resetting', {
-            'originalDurationMs': duration.inMilliseconds,
-            'originalDurationHours': duration.inHours,
-            'originalDurationMinutes': duration.inMinutes,
+        // If position is invalid or exceeds duration, clamp it
+        if (position.inMilliseconds < 0) {
+          sanitizedPosition = Duration.zero;
+          AppLogger.warning('Negative position detected, clamped to zero', {
+            'originalPosition': position.inMilliseconds,
           });
-
-          // If we have timing data with expected duration, use that instead
-          if (_currentTimingData != null) {
-            sanitizedDuration = Duration(milliseconds: _currentTimingData!.totalDurationMs);
-            AppLogger.info('Using timing data duration instead', {
-              'timingDurationMs': _currentTimingData!.totalDurationMs,
-              'timingDurationSeconds': _currentTimingData!.totalDurationMs / 1000,
-            });
-          } else {
-            // For this specific case: "12:25:39" suggests 44739 seconds instead of 44739ms
-            // Let's try to detect this pattern and fix it
-            final totalSeconds = duration.inSeconds;
-            if (totalSeconds > 20000 && totalSeconds < 50000) {
-              // This range suggests it might be milliseconds interpreted as seconds
-              sanitizedDuration = Duration(milliseconds: totalSeconds);
-              AppLogger.info('Corrected seconds-to-milliseconds corruption', {
-                'originalSeconds': totalSeconds,
-                'correctedMs': totalSeconds,
-                'correctedDuration': '${totalSeconds / 1000}s',
-              });
-            } else {
-              // Safe fallback duration
-              sanitizedDuration = const Duration(seconds: 45); // Expected duration
-              AppLogger.warning('Using fallback duration', {
-                'fallbackSeconds': 45,
-              });
-            }
-          }
+        } else if (currentDuration.inMilliseconds > 0 &&
+            position.inMilliseconds > currentDuration.inMilliseconds) {
+          sanitizedPosition = currentDuration;
+          AppLogger.warning('Position exceeds duration, clamped to duration', {
+            'originalPosition': position.inMilliseconds,
+            'duration': currentDuration.inMilliseconds,
+          });
         }
 
-        AppLogger.info('Final sanitized duration', {
-          'sanitizedMs': sanitizedDuration.inMilliseconds,
-          'sanitizedSeconds': sanitizedDuration.inSeconds,
-          'formatted': '${sanitizedDuration.inMinutes}:${(sanitizedDuration.inSeconds % 60).toString().padLeft(2, '0')}',
-        });
+        _positionSubject.add(sanitizedPosition);
+      }),
+    );
 
-        _durationSubject.add(sanitizedDuration);
-      }
-    }),
-  );
+    _subscriptions.add(
+      _player.durationStream.listen((duration) {
+        if (duration != null) {
+          // DEBUG: Log all duration values to understand the corruption
+          AppLogger.info('Raw duration from just_audio', {
+            'durationMs': duration.inMilliseconds,
+            'durationSeconds': duration.inSeconds,
+            'durationMinutes': duration.inMinutes,
+            'durationHours': duration.inHours,
+          });
 
-  _subscriptions.add(
-    _player.processingStateStream.listen((state) {
-      _processingStateSubject.add(state);
-    }),
-  );
+          // Sanitize duration values to prevent corrupted time displays
+          Duration sanitizedDuration = duration;
 
-  _subscriptions.add(
-    _player.speedStream.listen((speed) {
-      _speedSubject.add(speed);
-    }),
-  );
+          // Check for unreasonably large duration values (over 1 hour for our use case)
+          // The audio file should be ~45 seconds, so anything over 1 hour is corruption
+          if (duration.inMinutes > 60) {
+            AppLogger.warning('Corrupted duration detected, resetting', {
+              'originalDurationMs': duration.inMilliseconds,
+              'originalDurationHours': duration.inHours,
+              'originalDurationMinutes': duration.inMinutes,
+            });
+
+            // If we have timing data with expected duration, use that instead
+            if (_currentTimingData != null) {
+              sanitizedDuration =
+                  Duration(milliseconds: _currentTimingData!.totalDurationMs);
+              AppLogger.info('Using timing data duration instead', {
+                'timingDurationMs': _currentTimingData!.totalDurationMs,
+                'timingDurationSeconds':
+                    _currentTimingData!.totalDurationMs / 1000,
+              });
+            } else {
+              // For this specific case: "12:25:39" suggests 44739 seconds instead of 44739ms
+              // Let's try to detect this pattern and fix it
+              final totalSeconds = duration.inSeconds;
+              if (totalSeconds > 20000 && totalSeconds < 50000) {
+                // This range suggests it might be milliseconds interpreted as seconds
+                sanitizedDuration = Duration(milliseconds: totalSeconds);
+                AppLogger.info('Corrected seconds-to-milliseconds corruption', {
+                  'originalSeconds': totalSeconds,
+                  'correctedMs': totalSeconds,
+                  'correctedDuration': '${totalSeconds / 1000}s',
+                });
+              } else {
+                // Safe fallback duration
+                sanitizedDuration =
+                    const Duration(seconds: 45); // Expected duration
+                AppLogger.warning('Using fallback duration', {
+                  'fallbackSeconds': 45,
+                });
+              }
+            }
+          }
+
+          AppLogger.info('Final sanitized duration', {
+            'sanitizedMs': sanitizedDuration.inMilliseconds,
+            'sanitizedSeconds': sanitizedDuration.inSeconds,
+            'formatted':
+                '${sanitizedDuration.inMinutes}:${(sanitizedDuration.inSeconds % 60).toString().padLeft(2, '0')}',
+          });
+
+          _durationSubject.add(sanitizedDuration);
+        }
+      }),
+    );
+
+    _subscriptions.add(
+      _player.processingStateStream.listen((state) {
+        _processingStateSubject.add(state);
+      }),
+    );
+
+    _subscriptions.add(
+      _player.speedStream.listen((speed) {
+        _speedSubject.add(speed);
+      }),
+    );
   }
 
   /// Configure audio session for background playback
   Future<void> _configureAudioSession() async {
-  final session = await AudioSession.instance;
-  await session.configure(const AudioSessionConfiguration(
-    avAudioSessionCategory: AVAudioSessionCategory.playback,
-    avAudioSessionCategoryOptions:
-        AVAudioSessionCategoryOptions.allowBluetooth,
-    avAudioSessionMode: AVAudioSessionMode.spokenAudio,
-    avAudioSessionRouteSharingPolicy:
-        AVAudioSessionRouteSharingPolicy.defaultPolicy,
-    avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
-    androidAudioAttributes: AndroidAudioAttributes(
-      contentType: AndroidAudioContentType.speech,
-      flags: AndroidAudioFlags.none,
-      usage: AndroidAudioUsage.media,
-    ),
-    androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-    androidWillPauseWhenDucked: true,
-  ));
+    final session = await AudioSession.instance;
+    await session.configure(const AudioSessionConfiguration(
+      avAudioSessionCategory: AVAudioSessionCategory.playback,
+      avAudioSessionCategoryOptions:
+          AVAudioSessionCategoryOptions.allowBluetooth,
+      avAudioSessionMode: AVAudioSessionMode.spokenAudio,
+      avAudioSessionRouteSharingPolicy:
+          AVAudioSessionRouteSharingPolicy.defaultPolicy,
+      avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+      androidAudioAttributes: AndroidAudioAttributes(
+        contentType: AndroidAudioContentType.speech,
+        flags: AndroidAudioFlags.none,
+        usage: AndroidAudioUsage.media,
+      ),
+      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+      androidWillPauseWhenDucked: true,
+    ));
 
-  // Handle interruptions
-  session.interruptionEventStream.listen((event) {
-    if (event.begin) {
-      switch (event.type) {
-        case AudioInterruptionType.duck:
-          // Lower volume
-          _player.setVolume(0.5);
-          break;
-        case AudioInterruptionType.pause:
-        case AudioInterruptionType.unknown:
-          // Pause playback
-          pause();
-          break;
+    // Handle interruptions
+    session.interruptionEventStream.listen((event) {
+      if (event.begin) {
+        switch (event.type) {
+          case AudioInterruptionType.duck:
+            // Lower volume
+            _player.setVolume(0.5);
+            break;
+          case AudioInterruptionType.pause:
+          case AudioInterruptionType.unknown:
+            // Pause playback
+            pause();
+            break;
+        }
+      } else {
+        // Resume normal volume
+        _player.setVolume(1.0);
       }
-    } else {
-      // Resume normal volume
-      _player.setVolume(1.0);
-    }
-  });
+    });
   }
 
   /// Initialize audio handler for lock screen controls
   Future<void> _initializeAudioHandler() async {
-  try {
-    _audioHandler = await AudioService.init(
-      builder: () => AudioLearningHandler(_player),
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'com.example.audio_learning_app.channel.audio',
-        androidNotificationChannelName: 'Audio Learning',
-        androidNotificationOngoing: true,
-        androidStopForegroundOnPause: true,
-      ),
-    );
-  } catch (e) {
-    AppLogger.error('Failed to initialize audio handler', error: e);
-  }
+    try {
+      _audioHandler = await AudioService.init(
+        builder: () => AudioLearningHandler(_player),
+        config: const AudioServiceConfig(
+          androidNotificationChannelId:
+              'com.example.audio_learning_app.channel.audio',
+          androidNotificationChannelName: 'Audio Learning',
+          androidNotificationOngoing: true,
+          androidStopForegroundOnPause: true,
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('Failed to initialize audio handler', error: e);
+    }
   }
 
   /// Load audio from local content (NEW METHOD)
@@ -287,9 +292,11 @@ class AudioPlayerServiceLocal {
         });
 
         // Check if content is available
-        final isAvailable = await _localContentService.isContentAvailable(learningObject.id);
+        final isAvailable =
+            await _localContentService.isContentAvailable(learningObject.id);
         if (!isAvailable) {
-          throw Exception('Content not available locally for ${learningObject.id}');
+          throw Exception(
+              'Content not available locally for ${learningObject.id}');
         }
 
         // Load content and timing data in parallel
@@ -368,30 +375,30 @@ class AudioPlayerServiceLocal {
 
   /// Load audio (fallback to original method for compatibility)
   Future<void> loadAudio(LearningObjectV2 learningObject) async {
-  // For now, use the local loading method
-  // In production, you might check if local content exists first
-  await loadLocalAudio(learningObject);
+    // For now, use the local loading method
+    // In production, you might check if local content exists first
+    await loadLocalAudio(learningObject);
   }
 
   /// Alias for loadLocalAudio to maintain compatibility with original AudioPlayerService
   Future<void> loadLearningObject(LearningObjectV2 learningObject) async {
-  await loadLocalAudio(learningObject);
+    await loadLocalAudio(learningObject);
   }
 
   /// Get current word index based on position
   int getCurrentWordIndex() {
-  if (_currentTimingData == null) return -1;
+    if (_currentTimingData == null) return -1;
 
-  final positionMs = _positionSubject.value.inMilliseconds;
-  return _currentTimingData!.getCurrentWordIndex(positionMs);
+    final positionMs = _positionSubject.value.inMilliseconds;
+    return _currentTimingData!.getCurrentWordIndex(positionMs);
   }
 
   /// Get current sentence index based on position
   int getCurrentSentenceIndex() {
-  if (_currentTimingData == null) return -1;
+    if (_currentTimingData == null) return -1;
 
-  final positionMs = _positionSubject.value.inMilliseconds;
-  return _currentTimingData!.getCurrentSentenceIndex(positionMs);
+    final positionMs = _positionSubject.value.inMilliseconds;
+    return _currentTimingData!.getCurrentSentenceIndex(positionMs);
   }
 
   // ============================================================================
@@ -400,122 +407,123 @@ class AudioPlayerServiceLocal {
 
   /// Play audio
   Future<void> play() async {
-  try {
-    await _player.play();
-  } catch (e) {
-    AppLogger.error('Error playing audio', error: e);
-    throw Exception('Failed to play audio: $e');
-  }
+    try {
+      await _player.play();
+    } catch (e) {
+      AppLogger.error('Error playing audio', error: e);
+      throw Exception('Failed to play audio: $e');
+    }
   }
 
   /// Pause audio
   Future<void> pause() async {
-  try {
-    await _player.pause();
-  } catch (e) {
-    AppLogger.error('Error pausing audio', error: e);
-  }
+    try {
+      await _player.pause();
+    } catch (e) {
+      AppLogger.error('Error pausing audio', error: e);
+    }
   }
 
   /// Toggle play/pause
   Future<void> togglePlayPause() async {
-  if (_isPlayingSubject.value) {
-    await pause();
-  } else {
-    await play();
-  }
+    if (_isPlayingSubject.value) {
+      await pause();
+    } else {
+      await play();
+    }
   }
 
   /// Skip forward by 30 seconds
   Future<void> skipForward() async {
-  final newPosition = _positionSubject.value + skipDuration;
-  final duration = _durationSubject.value;
+    final newPosition = _positionSubject.value + skipDuration;
+    final duration = _durationSubject.value;
 
-  if (newPosition < duration) {
-    await seekToPosition(newPosition);
-  } else {
-    await seekToPosition(duration);
-  }
+    if (newPosition < duration) {
+      await seekToPosition(newPosition);
+    } else {
+      await seekToPosition(duration);
+    }
   }
 
   /// Skip backward by 30 seconds
   Future<void> skipBackward() async {
-  final newPosition = _positionSubject.value - skipDuration;
+    final newPosition = _positionSubject.value - skipDuration;
 
-  if (newPosition > Duration.zero) {
-    await seekToPosition(newPosition);
-  } else {
-    await seekToPosition(Duration.zero);
-  }
+    if (newPosition > Duration.zero) {
+      await seekToPosition(newPosition);
+    } else {
+      await seekToPosition(Duration.zero);
+    }
   }
 
   /// Seek to specific position
   Future<void> seekToPosition(Duration position) async {
-  try {
-    final oldPosition = _positionSubject.value;
-    final jumpDistance = (position.inMilliseconds - oldPosition.inMilliseconds).abs();
+    try {
+      final oldPosition = _positionSubject.value;
+      final jumpDistance =
+          (position.inMilliseconds - oldPosition.inMilliseconds).abs();
 
-    // Log significant seeks for debugging
-    if (jumpDistance > 1000) {
-      AppLogger.info('🎯 SEEK: Large position jump detected', {
-        'oldPosition': oldPosition.inMilliseconds,
-        'newPosition': position.inMilliseconds,
-        'jumpDistance': jumpDistance,
-        'jumpDirection': position > oldPosition ? 'forward' : 'backward',
+      // Log significant seeks for debugging
+      if (jumpDistance > 1000) {
+        AppLogger.info('🎯 SEEK: Large position jump detected', {
+          'oldPosition': oldPosition.inMilliseconds,
+          'newPosition': position.inMilliseconds,
+          'jumpDistance': jumpDistance,
+          'jumpDirection': position > oldPosition ? 'forward' : 'backward',
+        });
+      }
+
+      await _player.seek(position);
+
+      // Reset the locality cache AFTER seek completes for accurate highlighting
+      // This is debounced internally to prevent cache thrashing during slider drags
+      WordTimingServiceSimplified.instance.resetLocalityCacheForSeek();
+
+      // Force immediate position update after seek
+      _positionSubject.add(position);
+
+      // Update word timing immediately after seek
+      if (_currentLearningObjectId != null) {
+        WordTimingServiceSimplified.instance.updatePosition(
+          position.inMilliseconds,
+          _currentLearningObjectId!,
+        );
+      }
+
+      AppLogger.debug('Seek completed', {
+        'position': position.inMilliseconds,
+        'cacheReset': true,
       });
+    } catch (e) {
+      AppLogger.error('Error seeking position', error: e);
     }
-
-    await _player.seek(position);
-
-    // Reset the locality cache AFTER seek completes for accurate highlighting
-    // This is debounced internally to prevent cache thrashing during slider drags
-    WordTimingServiceSimplified.instance.resetLocalityCacheForSeek();
-
-    // Force immediate position update after seek
-    _positionSubject.add(position);
-
-    // Update word timing immediately after seek
-    if (_currentLearningObjectId != null) {
-      WordTimingServiceSimplified.instance.updatePosition(
-        position.inMilliseconds,
-        _currentLearningObjectId!,
-      );
-    }
-
-    AppLogger.debug('Seek completed', {
-      'position': position.inMilliseconds,
-      'cacheReset': true,
-    });
-  } catch (e) {
-    AppLogger.error('Error seeking position', error: e);
-  }
   }
 
   /// Cycle through playback speeds
   Future<void> cycleSpeed() async {
-  _currentSpeedIndex = (_currentSpeedIndex + 1) % speedOptions.length;
-  final newSpeed = speedOptions[_currentSpeedIndex];
-  await setSpeed(newSpeed);
+    _currentSpeedIndex = (_currentSpeedIndex + 1) % speedOptions.length;
+    final newSpeed = speedOptions[_currentSpeedIndex];
+    await setSpeed(newSpeed);
   }
 
   /// Set specific playback speed
   Future<void> setSpeed(double speed) async {
-  try {
-    await _player.setSpeed(speed);
-    _speedSubject.add(speed);
-  } catch (e) {
-    AppLogger.error('Error setting speed', error: e);
-  }
+    try {
+      await _player.setSpeed(speed);
+      _speedSubject.add(speed);
+    } catch (e) {
+      AppLogger.error('Error setting speed', error: e);
+    }
   }
 
   /// Stop playback and reset
   Future<void> stop() async {
-  try {
-    await _player.stop();
-    await seekToPosition(Duration.zero);
-  } catch (e) {
-    AppLogger.error('Error stopping audio', error: e);
-  }
+    try {
+      await _player.stop();
+      await seekToPosition(Duration.zero);
+    } catch (e) {
+      AppLogger.error('Error stopping audio', error: e);
+    }
   }
 
   // ============================================================================
@@ -527,7 +535,7 @@ class AudioPlayerServiceLocal {
   Stream<Duration> get durationStream => _durationSubject.stream;
   Stream<double> get speedStream => _speedSubject.stream;
   Stream<ProcessingState> get processingStateStream =>
-    _processingStateSubject.stream;
+      _processingStateSubject.stream;
 
   bool get isPlaying => _isPlayingSubject.value;
   Duration get position => _positionSubject.value;
@@ -540,15 +548,15 @@ class AudioPlayerServiceLocal {
 
   /// Dispose resources
   void dispose() {
-  for (final subscription in _subscriptions) {
-    subscription.cancel();
-  }
-  _isPlayingSubject.close();
-  _positionSubject.close();
-  _durationSubject.close();
-  _speedSubject.close();
-  _processingStateSubject.close();
-  _player.dispose();
+    for (final subscription in _subscriptions) {
+      subscription.cancel();
+    }
+    _isPlayingSubject.close();
+    _positionSubject.close();
+    _durationSubject.close();
+    _speedSubject.close();
+    _processingStateSubject.close();
+    _player.dispose();
   }
 }
 
@@ -557,9 +565,6 @@ Future<void> validateAudioPlayerServiceLocal() async {
   if (!kDebugMode) return;
 
   debugPrint('=== AudioPlayerServiceLocal Validation ===');
-
-  final service = AudioPlayerServiceLocal.instance;
-  const testId = '63ad7b78-0970-4265-a4fe-51f3fee39d5f';
 
   // TODO: Update validation to use LearningObjectV2
   // Validation temporarily disabled during migration to V2

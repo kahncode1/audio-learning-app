@@ -145,7 +145,8 @@ class CognitoAuthService implements AuthServiceInterface {
   @override
   Future<String?> getJwtToken() async {
     try {
-      final session = await Amplify.Auth.fetchAuthSession() as amplify.CognitoAuthSession;
+      final session =
+          await Amplify.Auth.fetchAuthSession() as amplify.CognitoAuthSession;
       if (!session.isSignedIn) return null;
 
       final idToken = session.userPoolTokensResult.value.idToken.raw;
@@ -195,12 +196,13 @@ class CognitoAuthService implements AuthServiceInterface {
       // Set the Authorization header for Supabase client
       // This approach works with Supabase's JWT settings configured for Cognito
       // The JWT will be validated using the JWKS endpoint we configured
-      supa.Supabase.instance.client.headers['Authorization'] = 'Bearer $idToken';
+      supa.Supabase.instance.client.headers['Authorization'] =
+          'Bearer $idToken';
 
       // Test the JWT by making a simple query to verify it works
       try {
         // Try to query user profile to verify JWT is working
-        final userTest = await supa.Supabase.instance.client
+        await supa.Supabase.instance.client
             .from('user_profiles')
             .select('id')
             .limit(1)

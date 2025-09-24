@@ -75,19 +75,20 @@ class _DownloadProgressScreenState extends State<DownloadProgressScreen>
       _downloadService = await CourseDownloadService.getInstance();
 
       // Listen to progress updates
-      _progressSubscription = _downloadService.progressStream.listen((progress) {
+      _progressSubscription =
+          _downloadService.progressStream.listen((progress) {
         if (mounted) {
           setState(() {
             _currentProgress = progress;
           });
 
           // Check if download is complete
-          if (progress?.isComplete == true && progress?.overallStatus == DownloadStatus.completed) {
+          if (progress?.isComplete == true &&
+              progress?.overallStatus == DownloadStatus.completed) {
             _onDownloadComplete();
           }
         }
       });
-
     } catch (e) {
       AppLogger.error('Failed to initialize download', error: e);
       _showError(e.toString());
@@ -163,18 +164,18 @@ class _DownloadProgressScreenState extends State<DownloadProgressScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDownloading = _currentProgress?.overallStatus == DownloadStatus.downloading;
+    final isDownloading =
+        _currentProgress?.overallStatus == DownloadStatus.downloading;
     final isPaused = _currentProgress?.overallStatus == DownloadStatus.paused;
     final hasFailed = _currentProgress?.hasFailed == true;
 
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: !(isDownloading || isPaused),
+      onPopInvokedWithResult: (didPop, result) {
         // Prevent dismissing while downloading
-        if (isDownloading || isPaused) {
+        if (!didPop && (isDownloading || isPaused)) {
           _showCancelConfirmation();
-          return false;
         }
-        return true;
       },
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -189,7 +190,7 @@ class _DownloadProgressScreenState extends State<DownloadProgressScreen>
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: theme.primaryColor.withOpacity(0.1),
+                        color: theme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: AnimatedBuilder(
@@ -249,7 +250,8 @@ class _DownloadProgressScreenState extends State<DownloadProgressScreen>
                                 value: _currentProgress?.percentage ?? 0,
                                 strokeWidth: 12,
                                 backgroundColor: Colors.grey[200],
-                                valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    theme.primaryColor),
                               ),
                             ),
                             Column(
@@ -336,7 +338,9 @@ class _DownloadProgressScreenState extends State<DownloadProgressScreen>
                               const SizedBox(width: 24),
 
                               // Time remaining
-                              if (_currentProgress!.getEstimatedTimeRemaining() != null)
+                              if (_currentProgress!
+                                      .getEstimatedTimeRemaining() !=
+                                  null)
                                 Row(
                                   children: [
                                     Icon(
@@ -347,7 +351,8 @@ class _DownloadProgressScreenState extends State<DownloadProgressScreen>
                                     const SizedBox(width: 4),
                                     Text(
                                       CourseDownloadProgress.formatDuration(
-                                        _currentProgress!.getEstimatedTimeRemaining()!,
+                                        _currentProgress!
+                                            .getEstimatedTimeRemaining()!,
                                       ),
                                       style: TextStyle(
                                         fontSize: 12,
@@ -402,8 +407,10 @@ class _DownloadProgressScreenState extends State<DownloadProgressScreen>
                     // Pause/Resume button
                     if (isDownloading || isPaused) ...[
                       ElevatedButton.icon(
-                        onPressed: isDownloading ? _pauseDownload : _resumeDownload,
-                        icon: Icon(isDownloading ? Icons.pause : Icons.play_arrow),
+                        onPressed:
+                            isDownloading ? _pauseDownload : _resumeDownload,
+                        icon: Icon(
+                            isDownloading ? Icons.pause : Icons.play_arrow),
                         label: Text(isDownloading ? 'Pause' : 'Resume'),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(

@@ -68,13 +68,16 @@ void main() {
         // Find retry interceptor
         final hasRetryInterceptor = dio.interceptors.any((interceptor) {
           // Check if interceptor is a retry interceptor by type name
-          return interceptor.runtimeType.toString().contains('RetryInterceptor');
+          return interceptor.runtimeType
+              .toString()
+              .contains('RetryInterceptor');
         });
 
         expect(hasRetryInterceptor, isTrue);
       });
 
-      test('should use correct retry delays (1s, 2s, 4s) - configuration test', () {
+      test('should use correct retry delays (1s, 2s, 4s) - configuration test',
+          () {
         // The retry delays are configured as 1s, 2s, 4s
         const expectedDelays = [
           Duration(seconds: 1),
@@ -88,7 +91,6 @@ void main() {
         expect(expectedDelays[2].inSeconds, equals(4));
       });
     });
-
 
     group('Reset Functionality', () {
       test('should create new instances after reset', () {

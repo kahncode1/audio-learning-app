@@ -4,7 +4,8 @@ import 'package:just_audio/just_audio.dart';
 
 import 'package:audio_learning_app/providers/audio_providers.dart';
 import 'package:audio_learning_app/services/audio_player_service_local.dart';
-import 'package:audio_learning_app/models/learning_object.dart';
+import 'package:audio_learning_app/models/learning_object_v2.dart';
+import '../test_data.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +24,7 @@ void main() {
     group('audioPlayerServiceProvider', () {
       test('should provide AudioPlayerServiceLocal singleton', () {
         final service = container.read(audioPlayerServiceProvider);
-        
+
         expect(service, isA<AudioPlayerServiceLocal>());
         expect(service, AudioPlayerServiceLocal.instance);
       });
@@ -31,7 +32,7 @@ void main() {
       test('should provide same instance on multiple reads', () {
         final service1 = container.read(audioPlayerServiceProvider);
         final service2 = container.read(audioPlayerServiceProvider);
-        
+
         expect(identical(service1, service2), isTrue);
       });
     });
@@ -43,42 +44,38 @@ void main() {
       });
 
       test('should update current learning object', () {
-        final learningObject = LearningObject(
+        final learningObject = TestData.createTestLearningObjectV2(
           id: 'test-123',
           assignmentId: 'assign-456',
           title: 'Test Learning Object',
-          contentType: 'audio',
           orderIndex: 0,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
           isCompleted: false,
           currentPositionMs: 0,
         );
 
-        container.read(currentLearningObjectProvider.notifier).state = learningObject;
-        
+        container.read(currentLearningObjectProvider.notifier).state =
+            learningObject;
+
         final currentObject = container.read(currentLearningObjectProvider);
         expect(currentObject, equals(learningObject));
         expect(currentObject!.id, 'test-123');
       });
 
       test('should allow clearing current learning object', () {
-        final learningObject = LearningObject(
+        final learningObject = TestData.createTestLearningObjectV2(
           id: 'test-123',
           assignmentId: 'assign-456',
           title: 'Test Learning Object',
-          contentType: 'audio',
           orderIndex: 0,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
           isCompleted: false,
           currentPositionMs: 0,
         );
 
         // Set then clear
-        container.read(currentLearningObjectProvider.notifier).state = learningObject;
+        container.read(currentLearningObjectProvider.notifier).state =
+            learningObject;
         container.read(currentLearningObjectProvider.notifier).state = null;
-        
+
         final currentObject = container.read(currentLearningObjectProvider);
         expect(currentObject, isNull);
       });
@@ -174,7 +171,8 @@ void main() {
         expect(service, isNotNull);
 
         // Stream providers should be able to access service streams
-        expect(() => container.read(audioPlayingStateProvider), returnsNormally);
+        expect(
+            () => container.read(audioPlayingStateProvider), returnsNormally);
         expect(() => container.read(audioPositionProvider), returnsNormally);
         expect(() => container.read(audioDurationProvider), returnsNormally);
       });
@@ -198,7 +196,7 @@ void main() {
         final testContainer = ProviderContainer();
         testContainer.read(audioPlayerServiceProvider);
         testContainer.read(currentLearningObjectProvider);
-        
+
         expect(() => testContainer.dispose(), returnsNormally);
       });
 
@@ -206,10 +204,10 @@ void main() {
         final testContainer = ProviderContainer();
         final service1 = testContainer.read(audioPlayerServiceProvider);
         testContainer.dispose();
-        
+
         final newContainer = ProviderContainer();
         final service2 = newContainer.read(audioPlayerServiceProvider);
-        
+
         // Should get same singleton instance
         expect(identical(service1, service2), isTrue);
         newContainer.dispose();
@@ -217,37 +215,38 @@ void main() {
     });
 
     group('State Updates', () {
-      test('currentLearningObjectProvider should notify listeners on change', () {
+      test('currentLearningObjectProvider should notify listeners on change',
+          () {
         var notificationCount = 0;
-        
+
         container.listen(
           currentLearningObjectProvider,
           (previous, next) => notificationCount++,
         );
 
-        final learningObject = LearningObject(
+        final learningObject = TestData.createTestLearningObjectV2(
           id: 'test-notify',
           assignmentId: 'assign-notify',
           title: 'Notification Test',
-          contentType: 'audio',
           orderIndex: 0,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
           isCompleted: false,
           currentPositionMs: 0,
         );
 
-        container.read(currentLearningObjectProvider.notifier).state = learningObject;
-        
+        container.read(currentLearningObjectProvider.notifier).state =
+            learningObject;
+
         expect(notificationCount, 1);
-        expect(container.read(currentLearningObjectProvider), equals(learningObject));
+        expect(container.read(currentLearningObjectProvider),
+            equals(learningObject));
       });
     });
 
     group('Error Handling', () {
       test('stream providers should handle service errors gracefully', () {
         // Stream providers should not throw even if service has issues
-        expect(() => container.read(audioPlayingStateProvider), returnsNormally);
+        expect(
+            () => container.read(audioPlayingStateProvider), returnsNormally);
         expect(() => container.read(audioPositionProvider), returnsNormally);
         expect(() => container.read(audioDurationProvider), returnsNormally);
       });
@@ -255,26 +254,25 @@ void main() {
       test('computed providers should handle missing dependencies', () {
         // Progress provider should handle null/missing stream values
         expect(() => container.read(audioProgressProvider), returnsNormally);
-        expect(() => container.read(shouldShowMiniPlayerProvider), returnsNormally);
+        expect(() => container.read(shouldShowMiniPlayerProvider),
+            returnsNormally);
       });
     });
 
     group('Integration', () {
       test('providers should work together', () {
         // Set a learning object
-        final learningObject = LearningObject(
+        final learningObject = TestData.createTestLearningObjectV2(
           id: 'integration-test',
           assignmentId: 'assign-integration',
           title: 'Integration Test',
-          contentType: 'audio',
           orderIndex: 0,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
           isCompleted: false,
           currentPositionMs: 5000,
         );
 
-        container.read(currentLearningObjectProvider.notifier).state = learningObject;
+        container.read(currentLearningObjectProvider.notifier).state =
+            learningObject;
 
         // Verify other providers can access this
         final currentObject = container.read(currentLearningObjectProvider);

@@ -1,23 +1,25 @@
 # Audio Learning Platform - Development Tasks
 
-## 🎯 CURRENT STATUS: Functionally Complete, Needs Platform Deployment
+## 🎯 CURRENT STATUS: Core Features Complete with CDN Infrastructure
 
 **App Status:**
 - ✅ AWS Cognito authentication fully implemented
 - ✅ Offline-first architecture with SQLite
+- ✅ Course download functionality with progress tracking
+- ✅ Supabase Storage CDN configured for audio files
 - ✅ All features working in iOS simulator
-- ⚠️ Android project structure incomplete
+- ✅ Android project structure created
+- ⚠️ Audio files need to be uploaded to CDN
 - ❌ Not tested on physical devices
 - ❌ Not ready for app store submission
 
-## 🚨 CRITICAL: Android Project Setup Required
+## 🚨 CRITICAL: Audio File Upload Required
 
 ### Immediate Action Needed
-The Android project is missing critical Gradle files. Must run:
-```bash
-flutter create . --platforms android
-```
-This will regenerate the Android project structure without affecting existing code.
+The Supabase Storage CDN is configured but audio files need to be uploaded:
+1. Process audio files through ElevenLabs TTS pipeline
+2. Upload MP3 files to Supabase Storage using guide at `/preprocessing_pipeline/UPLOAD_TO_SUPABASE.md`
+3. Files will be immediately available via CDN for app downloads
 
 ## 📱 Mobile Platform Tasks
 
@@ -54,9 +56,10 @@ This will regenerate the Android project structure without affecting existing co
 ### 2. Android Platform Configuration
 
 #### Initial Setup (Critical)
-- [ ] Run `flutter create . --platforms android` to fix project
-- [ ] Configure `android/build.gradle`
-- [ ] Configure `android/app/build.gradle`
+- [x] ~~Run `flutter create . --platforms android` to fix project~~ (Completed)
+- [x] Android project structure created
+- [ ] Configure `android/build.gradle` for production
+- [ ] Configure `android/app/build.gradle` for release
 - [ ] Set minimum SDK to 21 (Android 5.0)
 - [ ] Set target SDK to 34 (Android 14)
 - [ ] Configure ProGuard rules
@@ -136,6 +139,23 @@ This will regenerate the Android project structure without affecting existing co
 - [ ] Archive builds
 - [ ] Upload debug symbols
 
+## 📦 Content & CDN Tasks
+
+### Audio File Upload (High Priority)
+- [ ] Process learning objects through ElevenLabs TTS
+- [ ] Generate MP3 files with proper naming (`{learning_object_id}.mp3`)
+- [ ] Upload files to Supabase Storage bucket
+- [ ] Verify files accessible via CDN URLs
+- [ ] Test complete download and playback flow
+
+### Storage Management
+- [x] Configure Supabase Storage bucket (completed)
+- [x] Set up public access policies (completed)
+- [x] Configure 50MB file size limit (completed)
+- [x] Update database URLs to CDN format (completed)
+- [ ] Monitor storage usage and costs
+- [ ] Set up backup strategy for audio files
+
 ## 🧪 Testing Tasks
 
 ### Unit & Widget Tests
@@ -148,6 +168,8 @@ This will regenerate the Android project structure without affecting existing co
 - [ ] Set up Patrol framework
 - [ ] Test authentication flow
 - [ ] Test course download flow
+- [ ] Test offline/online sync
+- [ ] Test audio playback with CDN files
 - [ ] Test offline playback
 - [ ] Test sync functionality
 - [ ] Test mini player navigation

@@ -40,7 +40,7 @@ void main() {
 
       test('should handle unauthenticated state', () {
         final enrolledCourses = container.read(enrolledCoursesProvider);
-        
+
         // Should handle authentication check
         enrolledCourses.when(
           data: (courses) => expect(courses, isA<List<EnrolledCourse>>()),
@@ -66,18 +66,19 @@ void main() {
       test('should handle different course IDs', () {
         const courseId1 = 'course-123';
         const courseId2 = 'course-456';
-        
+
         final assignments1 = container.read(assignmentsProvider(courseId1));
         final assignments2 = container.read(assignmentsProvider(courseId2));
-        
+
         expect(assignments1, isA<AsyncValue<List<Assignment>>>());
         expect(assignments2, isA<AsyncValue<List<Assignment>>>());
       });
 
       test('should return empty list for unauthenticated non-test courses', () {
         const regularCourseId = 'regular-course-id';
-        final assignments = container.read(assignmentsProvider(regularCourseId));
-        
+        final assignments =
+            container.read(assignmentsProvider(regularCourseId));
+
         // Should handle authentication properly
         expect(assignments, isA<AsyncValue<List<Assignment>>>());
       });
@@ -86,23 +87,27 @@ void main() {
     group('learningObjectsProvider', () {
       test('should provide future of learning objects for assignment', () {
         const testAssignmentId = 'assignment-123';
-        final learningObjects = container.read(learningObjectsProvider(testAssignmentId));
+        final learningObjects =
+            container.read(learningObjectsProvider(testAssignmentId));
         expect(learningObjects, isA<AsyncValue<List<LearningObject>>>());
       });
 
       test('should allow test assignment ID to bypass authentication', () {
         const testAssignmentId = 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-        final learningObjects = container.read(learningObjectsProvider(testAssignmentId));
+        final learningObjects =
+            container.read(learningObjectsProvider(testAssignmentId));
         expect(learningObjects, isA<AsyncValue<List<LearningObject>>>());
       });
 
       test('should handle different assignment IDs', () {
         const assignmentId1 = 'assignment-123';
         const assignmentId2 = 'assignment-456';
-        
-        final learningObjects1 = container.read(learningObjectsProvider(assignmentId1));
-        final learningObjects2 = container.read(learningObjectsProvider(assignmentId2));
-        
+
+        final learningObjects1 =
+            container.read(learningObjectsProvider(assignmentId1));
+        final learningObjects2 =
+            container.read(learningObjectsProvider(assignmentId2));
+
         expect(learningObjects1, isA<AsyncValue<List<LearningObject>>>());
         expect(learningObjects2, isA<AsyncValue<List<LearningObject>>>());
       });
@@ -118,10 +123,11 @@ void main() {
       test('should handle unauthenticated state', () {
         const learningObjectId = 'lo-456';
         final progress = container.read(progressProvider(learningObjectId));
-        
+
         // Should return null when unauthenticated
         progress.when(
-          data: (progressState) => expect(progressState, anyOf([isNull, isA<ProgressState>()])),
+          data: (progressState) =>
+              expect(progressState, anyOf([isNull, isA<ProgressState>()])),
           loading: () => expect(true, true),
           error: (error, stack) => expect(error, isNotNull),
         );
@@ -130,10 +136,10 @@ void main() {
       test('should handle different learning object IDs', () {
         const loId1 = 'lo-123';
         const loId2 = 'lo-456';
-        
+
         final progress1 = container.read(progressProvider(loId1));
         final progress2 = container.read(progressProvider(loId2));
-        
+
         expect(progress1, isA<AsyncValue<ProgressState?>>());
         expect(progress2, isA<AsyncValue<ProgressState?>>());
       });
@@ -156,7 +162,7 @@ void main() {
           );
 
           container.read(selectedCourseProvider.notifier).state = testCourse;
-          
+
           final selectedCourse = container.read(selectedCourseProvider);
           expect(selectedCourse, equals(testCourse));
           expect(selectedCourse!.id, 'course-123');
@@ -174,7 +180,7 @@ void main() {
           // Set then clear
           container.read(selectedCourseProvider.notifier).state = testCourse;
           container.read(selectedCourseProvider.notifier).state = null;
-          
+
           final selectedCourse = container.read(selectedCourseProvider);
           expect(selectedCourse, isNull);
         });
@@ -194,10 +200,12 @@ void main() {
             title: 'Test Assignment',
             orderIndex: 0,
             createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
           );
 
-          container.read(selectedAssignmentProvider.notifier).state = testAssignment;
-          
+          container.read(selectedAssignmentProvider.notifier).state =
+              testAssignment;
+
           final selectedAssignment = container.read(selectedAssignmentProvider);
           expect(selectedAssignment, equals(testAssignment));
           expect(selectedAssignment!.id, 'assignment-123');
@@ -223,8 +231,9 @@ void main() {
             currentPositionMs: 0,
           );
 
-          container.read(selectedLearningObjectProvider.notifier).state = testLO;
-          
+          container.read(selectedLearningObjectProvider.notifier).state =
+              testLO;
+
           final selectedLO = container.read(selectedLearningObjectProvider);
           expect(selectedLO, equals(testLO));
           expect(selectedLO!.id, 'lo-123');
@@ -239,8 +248,10 @@ void main() {
 
         // Other providers should be able to access the service
         expect(() => container.read(enrolledCoursesProvider), returnsNormally);
-        expect(() => container.read(assignmentsProvider('test')), returnsNormally);
-        expect(() => container.read(learningObjectsProvider('test')), returnsNormally);
+        expect(
+            () => container.read(assignmentsProvider('test')), returnsNormally);
+        expect(() => container.read(learningObjectsProvider('test')),
+            returnsNormally);
         expect(() => container.read(progressProvider('test')), returnsNormally);
       });
     });
@@ -249,37 +260,40 @@ void main() {
       test('assignmentsProvider should cache different course requests', () {
         const courseId1 = 'course-1';
         const courseId2 = 'course-2';
-        
+
         final assignments1 = container.read(assignmentsProvider(courseId1));
         final assignments2 = container.read(assignmentsProvider(courseId2));
-        final assignments1Again = container.read(assignmentsProvider(courseId1));
-        
+        final assignments1Again =
+            container.read(assignmentsProvider(courseId1));
+
         expect(assignments1, isA<AsyncValue<List<Assignment>>>());
         expect(assignments2, isA<AsyncValue<List<Assignment>>>());
         expect(identical(assignments1, assignments1Again), isTrue);
       });
 
-      test('learningObjectsProvider should cache different assignment requests', () {
+      test('learningObjectsProvider should cache different assignment requests',
+          () {
         const assignmentId1 = 'assignment-1';
         const assignmentId2 = 'assignment-2';
-        
+
         final lo1 = container.read(learningObjectsProvider(assignmentId1));
         final lo2 = container.read(learningObjectsProvider(assignmentId2));
         final lo1Again = container.read(learningObjectsProvider(assignmentId1));
-        
+
         expect(lo1, isA<AsyncValue<List<LearningObject>>>());
         expect(lo2, isA<AsyncValue<List<LearningObject>>>());
         expect(identical(lo1, lo1Again), isTrue);
       });
 
-      test('progressProvider should cache different learning object requests', () {
+      test('progressProvider should cache different learning object requests',
+          () {
         const loId1 = 'lo-1';
         const loId2 = 'lo-2';
-        
+
         final progress1 = container.read(progressProvider(loId1));
         final progress2 = container.read(progressProvider(loId2));
         final progress1Again = container.read(progressProvider(loId1));
-        
+
         expect(progress1, isA<AsyncValue<ProgressState?>>());
         expect(progress2, isA<AsyncValue<ProgressState?>>());
         expect(identical(progress1, progress1Again), isTrue);
@@ -289,7 +303,7 @@ void main() {
     group('State Updates and Notifications', () {
       test('selectedCourseProvider should notify listeners', () {
         var notificationCount = 0;
-        
+
         container.listen(
           selectedCourseProvider,
           (previous, next) => notificationCount++,
@@ -304,7 +318,7 @@ void main() {
         );
 
         container.read(selectedCourseProvider.notifier).state = testCourse;
-        
+
         expect(notificationCount, 1);
         expect(container.read(selectedCourseProvider), equals(testCourse));
       });
@@ -317,7 +331,7 @@ void main() {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-        
+
         final course2 = Course(
           id: 'course-2',
           courseNumber: 'C2',
@@ -329,10 +343,10 @@ void main() {
         // Multiple updates should work
         container.read(selectedCourseProvider.notifier).state = course1;
         expect(container.read(selectedCourseProvider), equals(course1));
-        
+
         container.read(selectedCourseProvider.notifier).state = course2;
         expect(container.read(selectedCourseProvider), equals(course2));
-        
+
         container.read(selectedCourseProvider.notifier).state = null;
         expect(container.read(selectedCourseProvider), isNull);
       });
@@ -342,16 +356,27 @@ void main() {
       test('providers should handle service errors gracefully', () {
         // Future providers should not throw even if service has issues
         expect(() => container.read(enrolledCoursesProvider), returnsNormally);
-        expect(() => container.read(assignmentsProvider('test')), returnsNormally);
-        expect(() => container.read(learningObjectsProvider('test')), returnsNormally);
+        expect(
+            () => container.read(assignmentsProvider('test')), returnsNormally);
+        expect(() => container.read(learningObjectsProvider('test')),
+            returnsNormally);
         expect(() => container.read(progressProvider('test')), returnsNormally);
       });
 
       test('state providers should handle null values', () {
         // Should accept null values without throwing
-        expect(() => container.read(selectedCourseProvider.notifier).state = null, returnsNormally);
-        expect(() => container.read(selectedAssignmentProvider.notifier).state = null, returnsNormally);
-        expect(() => container.read(selectedLearningObjectProvider.notifier).state = null, returnsNormally);
+        expect(
+            () => container.read(selectedCourseProvider.notifier).state = null,
+            returnsNormally);
+        expect(
+            () => container.read(selectedAssignmentProvider.notifier).state =
+                null,
+            returnsNormally);
+        expect(
+            () => container
+                .read(selectedLearningObjectProvider.notifier)
+                .state = null,
+            returnsNormally);
       });
     });
 
@@ -364,7 +389,8 @@ void main() {
 
       test('should allow specific test assignment ID', () {
         const testAssignmentId = 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-        final learningObjects = container.read(learningObjectsProvider(testAssignmentId));
+        final learningObjects =
+            container.read(learningObjectsProvider(testAssignmentId));
         expect(learningObjects, isA<AsyncValue<List<LearningObject>>>());
       });
     });
@@ -372,11 +398,11 @@ void main() {
     group('Provider Lifecycle', () {
       test('providers should be disposable', () {
         final testContainer = ProviderContainer();
-        
+
         testContainer.read(supabaseServiceProvider);
         testContainer.read(enrolledCoursesProvider);
         testContainer.read(selectedCourseProvider);
-        
+
         expect(() => testContainer.dispose(), returnsNormally);
       });
 
@@ -384,10 +410,10 @@ void main() {
         final testContainer = ProviderContainer();
         final service1 = testContainer.read(supabaseServiceProvider);
         testContainer.dispose();
-        
+
         final newContainer = ProviderContainer();
         final service2 = newContainer.read(supabaseServiceProvider);
-        
+
         // Should get same singleton instance
         expect(identical(service1, service2), isTrue);
         newContainer.dispose();
@@ -412,6 +438,7 @@ void main() {
           title: 'Integration Assignment',
           orderIndex: 0,
           createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         );
 
         final learningObject = LearningObject(
@@ -429,16 +456,19 @@ void main() {
         // Set selections
         container.read(selectedCourseProvider.notifier).state = course;
         container.read(selectedAssignmentProvider.notifier).state = assignment;
-        container.read(selectedLearningObjectProvider.notifier).state = learningObject;
+        container.read(selectedLearningObjectProvider.notifier).state =
+            learningObject;
 
         // Verify selections
         expect(container.read(selectedCourseProvider), equals(course));
         expect(container.read(selectedAssignmentProvider), equals(assignment));
-        expect(container.read(selectedLearningObjectProvider), equals(learningObject));
+        expect(container.read(selectedLearningObjectProvider),
+            equals(learningObject));
 
         // Verify hierarchy relationships
         expect(container.read(selectedAssignmentProvider)!.courseId, course.id);
-        expect(container.read(selectedLearningObjectProvider)!.assignmentId, assignment.id);
+        expect(container.read(selectedLearningObjectProvider)!.assignmentId,
+            assignment.id);
       });
     });
   });

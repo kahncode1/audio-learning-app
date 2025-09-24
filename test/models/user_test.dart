@@ -492,7 +492,8 @@ void main() {
           id: 'test',
           cognitoSub: 'sub',
           email: 'test@example.com',
-          fullName: 'Alexander Maximilian Christopher Wellington Blackwood-Smythe',
+          fullName:
+              'Alexander Maximilian Christopher Wellington Blackwood-Smythe',
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );

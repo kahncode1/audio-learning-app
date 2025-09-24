@@ -120,13 +120,15 @@ void main() {
       });
 
       group('Retry Logic', () {
-        test('canRetry should be true for failed task with low retry count', () {
+        test('canRetry should be true for failed task with low retry count',
+            () {
           task.status = DownloadStatus.failed;
           task.retryCount = 1;
           expect(task.canRetry, true);
         });
 
-        test('canRetry should be false for failed task with high retry count', () {
+        test('canRetry should be false for failed task with high retry count',
+            () {
           task.status = DownloadStatus.failed;
           task.retryCount = 3;
           expect(task.canRetry, false);
@@ -154,7 +156,7 @@ void main() {
           expect(updated.retryCount, 1);
           expect(updated.errorMessage, 'Test error');
           expect(updated.lastModified, isNotNull);
-          
+
           // Original fields should be preserved
           expect(updated.id, task.id);
           expect(updated.url, task.url);
@@ -317,14 +319,14 @@ void main() {
 
         test('should determine completion status', () {
           expect(progress.isComplete, false);
-          
+
           final completed = progress.copyWith(completedFiles: 10);
           expect(completed.isComplete, true);
         });
 
         test('should detect failed files', () {
           expect(progress.hasFailed, true);
-          
+
           final noFails = progress.copyWith(failedFiles: 0);
           expect(noFails.hasFailed, false);
         });
@@ -505,7 +507,8 @@ void main() {
         task.downloadedBytes = 2 * 1024 * 1024 * 1024; // 2GB
         expect(task.progress, closeTo(0.4, 0.01));
 
-        final formattedSize = CourseDownloadProgress.formatBytes(task.expectedSize);
+        final formattedSize =
+            CourseDownloadProgress.formatBytes(task.expectedSize);
         expect(formattedSize, contains('GB'));
       });
 
@@ -536,7 +539,8 @@ void main() {
           startedAt: DateTime.now(),
         );
 
-        expect(progress.percentage, lessThan(0)); // Will be negative but won't crash
+        expect(progress.percentage,
+            lessThan(0)); // Will be negative but won't crash
       });
     });
   });

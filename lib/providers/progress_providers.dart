@@ -101,11 +101,14 @@ class ProgressUpdateNotifier extends StateNotifier<AsyncValue<void>> {
     final progress = await ref.read(progressProvider(learningObjectId).future);
     if (progress != null) {
       // Restore user preferences
-      ref.read(fontSizeIndexProvider.notifier).setFontSize(progress.fontSizeIndex);
+      ref
+          .read(fontSizeIndexProvider.notifier)
+          .setFontSize(progress.fontSizeIndex);
       ref.read(playbackSpeedProvider.notifier).setSpeed(progress.playbackSpeed);
 
       // Update position (audio service will handle seeking)
-      ref.read(playbackPositionProvider.notifier).state = progress.currentPositionMs;
+      ref.read(playbackPositionProvider.notifier).state =
+          progress.currentPositionMs;
     }
   }
 }

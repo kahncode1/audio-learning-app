@@ -35,12 +35,7 @@ class ProgressService {
   static const Duration _debounceDuration = Duration(seconds: 5);
 
   // Font size configuration
-  static const List<String> fontSizeNames = [
-    'Sm',
-    'Med',
-    'Lg',
-    'XL'
-  ];
+  static const List<String> fontSizeNames = ['Sm', 'Med', 'Lg', 'XL'];
   static const List<double> fontSizeValues = [14.0, 16.0, 18.0, 20.0];
   static const int defaultFontSizeIndex = 1; // Med
 
@@ -436,7 +431,8 @@ class ProgressService {
           }
 
           if (updatedAt != null) {
-            entriesWithTime.add(MapEntry(key, updatedAt.millisecondsSinceEpoch));
+            entriesWithTime
+                .add(MapEntry(key, updatedAt.millisecondsSinceEpoch));
           }
         }
       }
@@ -449,12 +445,14 @@ class ProgressService {
         for (int i = 50; i < entriesWithTime.length; i++) {
           await _prefs.remove(entriesWithTime[i].key);
           // Also remove from cache
-          final cacheKey = entriesWithTime[i].key.substring(_progressPrefix.length);
+          final cacheKey =
+              entriesWithTime[i].key.substring(_progressPrefix.length);
           await _cacheService.remove(cacheKey);
         }
 
         if (kDebugMode) {
-          debugPrint('Cleaned ${entriesWithTime.length - 50} old progress entries');
+          debugPrint(
+              'Cleaned ${entriesWithTime.length - 50} old progress entries');
         }
       }
     } catch (e) {
@@ -466,10 +464,8 @@ class ProgressService {
 
   /// Get cache statistics for progress data
   Future<Map<String, dynamic>> getCacheStatistics() async {
-    final progressKeys = _prefs
-        .getKeys()
-        .where((key) => key.startsWith(_progressPrefix))
-        .length;
+    final progressKeys =
+        _prefs.getKeys().where((key) => key.startsWith(_progressPrefix)).length;
 
     final cacheStats = _cacheService.getStatistics();
 

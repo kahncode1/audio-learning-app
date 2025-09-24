@@ -6,6 +6,8 @@ import '../models/course.dart';
 import '../providers/database_providers.dart';
 import '../providers/audio_providers.dart';
 import '../utils/app_logger.dart';
+import '../widgets/animated_loading_indicator.dart';
+import '../widgets/animated_card.dart';
 
 /// HomePage displays the list of available courses with gradient cards
 class HomePage extends ConsumerStatefulWidget {
@@ -105,7 +107,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           setState(() {
             _downloadProgress = progress.percentage / 100;
             final percentage = progress.percentage.toStringAsFixed(0);
-            _downloadStatus = '${progress.message ?? "Downloading"} ($percentage%)';
+            _downloadStatus =
+                '${progress.message ?? "Downloading"} ($percentage%)';
           });
         }
       });
@@ -217,7 +220,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                         LinearProgressIndicator(
                           value: _downloadProgress,
                           backgroundColor: Colors.grey[300],
-                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+                          valueColor:
+                              const AlwaysStoppedAnimation<Color>(Colors.blue),
                         ),
                       const SizedBox(height: 16),
                     ],
@@ -229,47 +233,55 @@ class _HomePageState extends ConsumerState<HomePage> {
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : const Icon(Icons.download),
-                      label: Text(_isDownloading ? 'Downloading...' : 'Download Test Course'),
+                      label: Text(_isDownloading
+                          ? 'Downloading...'
+                          : 'Download Test Course'),
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
                       ),
                     ),
                   ],
                 ),
               )
             : ListView.builder(
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 16,
-                bottom: shouldShowMiniPlayer ? 116 : 16, // Add space for mini player
-              ),
-              itemCount: courses.length,
-              itemBuilder: (context, index) {
-                final course = courses[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: CourseCard(
-                    course: course,
-                    onTap: () => Navigator.pushNamed(
-                      context,
-                      '/assignments',
-                      arguments: {
-                        'courseNumber': course.courseNumber,
-                        'courseId': course.id,
-                        'courseTitle': course.title,
-                      },
+                padding: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                  bottom: shouldShowMiniPlayer
+                      ? 116
+                      : 16, // Add space for mini player
+                ),
+                itemCount: courses.length,
+                itemBuilder: (context, index) {
+                  final course = courses[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: CourseCard(
+                      course: course,
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        '/assignments',
+                        arguments: {
+                          'courseNumber': course.courseNumber,
+                          'courseId': course.id,
+                          'courseTitle': course.title,
+                        },
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
         loading: () => const Center(
-          child: CircularProgressIndicator(),
+          child: AnimatedLoadingIndicator(
+            message: 'Loading courses...',
+          ),
         ),
         error: (error, stack) => Center(
           child: Text('Error loading courses: $error'),
@@ -313,70 +325,71 @@ class CourseCard extends ConsumerWidget {
         ? 'Not Started'
         : '${completionPercentage.round()}% Complete';
 
-    return Card(
+    return AnimatedCard(
+      onTap: onTap,
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 3,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top gradient bar
-            Container(
-              height: 4,
-              decoration: BoxDecoration(gradient: course.gradient),
+      borderRadius: 12,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top gradient bar
+          Container(
+            height: 4,
+            decoration: BoxDecoration(gradient: course.gradient),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  course.courseNumber,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  course.title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${course.totalAssignments} Assignments • ${course.totalLearningObjects} Learning Objects',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  progressLabel,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: LinearProgressIndicator(
+                    value: completionPercentage / 100,
+                    minHeight: 4,
+                    color: completionPercentage == 0
+                        ? Theme.of(context).dividerColor.withValues(alpha: 0.3)
+                        : Colors.green,
+                    backgroundColor:
+                        Theme.of(context).dividerColor.withValues(alpha: 0.3),
+                  ),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    course.courseNumber,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    course.title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${course.totalAssignments} Assignments • ${course.totalLearningObjects} Learning Objects',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    progressLabel,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
-                  ),
-                  const SizedBox(height: 4),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(2),
-                    child: LinearProgressIndicator(
-                      value: completionPercentage / 100,
-                      minHeight: 4,
-                      color: completionPercentage == 0
-                          ? Theme.of(context).dividerColor.withOpacity(0.3)
-                          : Colors.green,
-                      backgroundColor: Theme.of(context).dividerColor.withOpacity(0.3),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          ),
           ],
         ),
-      ),
     );
   }
 }

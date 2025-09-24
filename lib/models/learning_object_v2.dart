@@ -362,7 +362,8 @@ void validateLearningObjectV2Model() {
   // Test serialization
   final json = learningObject.toJson();
   assert(json['id'] == 'lo-123');
-  assert((json['content'] as Map)['display_text'] == 'Hello world.\nThis is a test.');
+  assert((json['content'] as Map)['display_text'] ==
+      'Hello world.\nThis is a test.');
   assert((json['metadata'] as Map)['word_count'] == 5);
   assert((json['word_timings'] as List).length == 2);
 }

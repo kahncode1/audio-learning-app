@@ -27,7 +27,7 @@ import 'package:flutter/material.dart';
 
 class Course {
   final String id;
-  final int? externalCourseId;  // External system reference
+  final int? externalCourseId; // External system reference
   final String courseNumber;
   final String title;
   final String? description;
@@ -36,8 +36,8 @@ class Course {
   final int estimatedDurationMs;
   final String? thumbnailUrl;
   final int orderIndex;
-  final String gradientStartColor;  // Keep for UI compatibility
-  final String gradientEndColor;    // Keep for UI compatibility
+  final String gradientStartColor; // Keep for UI compatibility
+  final String gradientEndColor; // Keep for UI compatibility
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -231,7 +231,8 @@ void validateCourseModel() {
   assert(json['total_learning_objects'] == 10);
 
   // Test copyWith
-  final updated = course.copyWith(title: 'Updated Title', totalLearningObjects: 15);
+  final updated =
+      course.copyWith(title: 'Updated Title', totalLearningObjects: 15);
   assert(updated.title == 'Updated Title');
   assert(updated.totalLearningObjects == 15);
   assert(updated.id == course.id);

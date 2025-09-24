@@ -51,13 +51,15 @@ class FileSystemManager {
 
   /// Get learning object directory path
   String getLearningObjectDirectory(String courseId, String learningObjectId) {
-    return path.join(getCourseDirectory(courseId), 'learning_objects', learningObjectId);
+    return path.join(
+        getCourseDirectory(courseId), 'learning_objects', learningObjectId);
   }
 
   /// Get full file path for a download task
   String getFilePath(String courseId, String relativePath) {
     _ensureInitialized();
-    return path.join(_documentsDir.path, _coursesFolder, courseId, relativePath);
+    return path.join(
+        _documentsDir.path, _coursesFolder, courseId, relativePath);
   }
 
   /// Get temporary file path
@@ -80,7 +82,8 @@ class FileSystemManager {
   Future<bool> isCourseDownloaded(String courseId) async {
     _ensureInitialized();
 
-    final manifestPath = path.join(getCourseDirectory(courseId), _manifestFileName);
+    final manifestPath =
+        path.join(getCourseDirectory(courseId), _manifestFileName);
     final manifestFile = File(manifestPath);
 
     if (!manifestFile.existsSync()) {
@@ -112,10 +115,12 @@ class FileSystemManager {
   }
 
   /// Create manifest file for downloaded course
-  Future<void> createManifest(String courseId, List<String> files, Map<String, dynamic> metadata) async {
+  Future<void> createManifest(String courseId, List<String> files,
+      Map<String, dynamic> metadata) async {
     _ensureInitialized();
 
-    final manifestPath = path.join(getCourseDirectory(courseId), _manifestFileName);
+    final manifestPath =
+        path.join(getCourseDirectory(courseId), _manifestFileName);
     final manifestFile = File(manifestPath);
 
     final manifest = {
@@ -148,7 +153,6 @@ class FileSystemManager {
   /// Move temporary file to final destination
   Future<void> moveTempFile(String tempPath, String finalPath) async {
     final tempFile = File(tempPath);
-    final finalFile = File(finalPath);
 
     if (tempFile.existsSync()) {
       // Ensure destination directory exists
@@ -246,7 +250,8 @@ class FileSystemManager {
   /// Ensure manager is initialized
   void _ensureInitialized() {
     if (!_initialized) {
-      throw StateError('FileSystemManager not initialized. Call initialize() first.');
+      throw StateError(
+          'FileSystemManager not initialized. Call initialize() first.');
     }
   }
 
@@ -304,13 +309,15 @@ class FileSystemManager {
       final jsonString = await file.readAsString();
       return jsonDecode(jsonString);
     } catch (e) {
-      AppLogger.error('Failed to load JSON data', error: e, data: {'path': filePath});
+      AppLogger.error('Failed to load JSON data',
+          error: e, data: {'path': filePath});
       return null;
     }
   }
 
   /// Save word timings for a learning object
-  Future<void> saveWordTimings(String courseId, String learningObjectId, List<Map<String, dynamic>> wordTimings) async {
+  Future<void> saveWordTimings(String courseId, String learningObjectId,
+      List<Map<String, dynamic>> wordTimings) async {
     final filePath = path.join(
       getLearningObjectDirectory(courseId, learningObjectId),
       'word_timings.json',
@@ -319,7 +326,8 @@ class FileSystemManager {
   }
 
   /// Save sentence timings for a learning object
-  Future<void> saveSentenceTimings(String courseId, String learningObjectId, List<Map<String, dynamic>> sentenceTimings) async {
+  Future<void> saveSentenceTimings(String courseId, String learningObjectId,
+      List<Map<String, dynamic>> sentenceTimings) async {
     final filePath = path.join(
       getLearningObjectDirectory(courseId, learningObjectId),
       'sentence_timings.json',
@@ -328,7 +336,8 @@ class FileSystemManager {
   }
 
   /// Save content metadata for a learning object
-  Future<void> saveContentMetadata(String courseId, String learningObjectId, Map<String, dynamic> metadata) async {
+  Future<void> saveContentMetadata(String courseId, String learningObjectId,
+      Map<String, dynamic> metadata) async {
     final filePath = path.join(
       getLearningObjectDirectory(courseId, learningObjectId),
       'content.json',

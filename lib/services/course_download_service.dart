@@ -91,7 +91,8 @@ class CourseDownloadService {
 
     // Monitor connectivity if WiFi-only is enabled
     if (_settings.wifiOnly) {
-      _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_onConnectivityChanged);
+      _connectivitySubscription =
+          _connectivity.onConnectivityChanged.listen(_onConnectivityChanged);
     }
 
     // Clean up old temp files on startup
@@ -104,7 +105,8 @@ class CourseDownloadService {
   }
 
   /// Get progress stream
-  Stream<CourseDownloadProgress?> get progressStream => _progressController.stream;
+  Stream<CourseDownloadProgress?> get progressStream =>
+      _progressController.stream;
 
   /// Get current progress
   CourseDownloadProgress? get currentProgress => _currentProgress;
@@ -116,7 +118,8 @@ class CourseDownloadService {
   bool get isPaused => _isPaused;
 
   /// Main download method for a course
-  Future<void> downloadCourse(String courseId, String courseName, List<LearningObject> learningObjects) async {
+  Future<void> downloadCourse(String courseId, String courseName,
+      List<LearningObject> learningObjects) async {
     if (_isDownloading) {
       AppLogger.warning('Download already in progress');
       return;
@@ -141,7 +144,8 @@ class CourseDownloadService {
         }
 
         // Calculate total size
-        final totalBytes = _queue.fold<int>(0, (sum, task) => sum + task.expectedSize);
+        final totalBytes =
+            _queue.fold<int>(0, (sum, task) => sum + task.expectedSize);
 
         _currentProgress = CourseDownloadProgress(
           courseId: courseId,
@@ -170,7 +174,6 @@ class CourseDownloadService {
 
       // Start processing queue
       await _processQueue();
-
     } catch (e) {
       AppLogger.error('Download failed', error: e);
       _currentProgress = _currentProgress?.copyWith(
@@ -206,7 +209,6 @@ class CourseDownloadService {
 
         // Update overall progress
         _updateProgress();
-
       } catch (e) {
         AppLogger.error('Failed to download file', error: e, data: {
           'taskId': task.id,
@@ -290,10 +292,14 @@ class CourseDownloadService {
 
           // Update overall progress
           final totalDownloaded = _queue.fold<int>(
-            0,
-            (sum, t) => sum + (t == task ? task.downloadedBytes :
-                              t.isComplete ? t.expectedSize : t.downloadedBytes)
-          );
+              0,
+              (sum, t) =>
+                  sum +
+                  (t == task
+                      ? task.downloadedBytes
+                      : t.isComplete
+                          ? t.expectedSize
+                          : t.downloadedBytes));
 
           _currentProgress = _currentProgress?.copyWith(
             downloadedBytes: totalDownloaded,
@@ -309,7 +315,8 @@ class CourseDownloadService {
       // Verify download size
       final downloadedSize = await tempFile.length();
       if (downloadedSize < task.expectedSize * 0.9) {
-        throw Exception('Downloaded file size mismatch: expected ${task.expectedSize}, got $downloadedSize');
+        throw Exception(
+            'Downloaded file size mismatch: expected ${task.expectedSize}, got $downloadedSize');
       }
 
       // Atomic move to final location
@@ -323,7 +330,6 @@ class CourseDownloadService {
         'size': downloadedSize,
         'path': file.path,
       });
-
     } catch (e) {
       // Clean up on error if configured
       if (_settings.deleteOnError && tempFile.existsSync()) {
@@ -456,7 +462,8 @@ class CourseDownloadService {
 
     // Update connectivity monitoring
     if (settings.wifiOnly && _connectivitySubscription == null) {
-      _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_onConnectivityChanged);
+      _connectivitySubscription =
+          _connectivity.onConnectivityChanged.listen(_onConnectivityChanged);
     } else if (!settings.wifiOnly) {
       _connectivitySubscription?.cancel();
       _connectivitySubscription = null;
@@ -466,14 +473,17 @@ class CourseDownloadService {
   // Private helper methods
 
   /// Create download tasks for a learning object
-  Future<List<DownloadTask>> _createDownloadTasks(String courseId, LearningObject lo) async {
-    final loDir = '${await _getCourseDirectory(courseId)}/learning_objects/${lo.id}';
+  Future<List<DownloadTask>> _createDownloadTasks(
+      String courseId, LearningObject lo) async {
+    final loDir =
+        '${await _getCourseDirectory(courseId)}/learning_objects/${lo.id}';
 
     // Try to fetch CDN URLs from Supabase if available
     Map<String, dynamic>? cdnUrls;
     try {
       if (SupabaseService().isInitialized) {
-        final response = await SupabaseService().client
+        final response = await SupabaseService()
+            .client
             .from('learning_objects')
             .select('audio_url, content_url, timing_url, file_size_bytes')
             .eq('id', lo.id)
@@ -497,9 +507,12 @@ class CourseDownloadService {
 
     // Use CDN URLs if available, otherwise use placeholder URLs
     final baseUrl = cdnUrls != null ? '' : 'https://cdn.example.com/courses';
-    final audioUrl = cdnUrls?['audio_url'] ?? '$baseUrl/$courseId/${lo.id}/audio.mp3';
-    final contentUrl = cdnUrls?['content_url'] ?? '$baseUrl/$courseId/${lo.id}/content.json';
-    final timingUrl = cdnUrls?['timing_url'] ?? '$baseUrl/$courseId/${lo.id}/timing.json';
+    final audioUrl =
+        cdnUrls?['audio_url'] ?? '$baseUrl/$courseId/${lo.id}/audio.mp3';
+    final contentUrl =
+        cdnUrls?['content_url'] ?? '$baseUrl/$courseId/${lo.id}/content.json';
+    final timingUrl =
+        cdnUrls?['timing_url'] ?? '$baseUrl/$courseId/${lo.id}/timing.json';
     final fileSize = cdnUrls?['file_size_bytes'] as int?;
 
     return [
@@ -509,7 +522,8 @@ class CourseDownloadService {
         localPath: '$loDir/audio.mp3',
         learningObjectId: lo.id,
         fileType: FileType.audio,
-        expectedSize: fileSize ?? 3 * 1024 * 1024, // Use actual size or 3MB estimate
+        expectedSize:
+            fileSize ?? 3 * 1024 * 1024, // Use actual size or 3MB estimate
       ),
       DownloadTask(
         id: '${lo.id}_content',
@@ -580,7 +594,8 @@ class CourseDownloadService {
       final appDir = Directory('${_documentsDir.path}/audio_learning');
       if (!await appDir.exists()) return;
 
-      await for (final file in appDir.list(recursive: true, followLinks: false)) {
+      await for (final file
+          in appDir.list(recursive: true, followLinks: false)) {
         if (file is File && file.path.endsWith(_tempExtension)) {
           final stat = await file.stat();
           final age = DateTime.now().difference(stat.modified);
@@ -622,34 +637,31 @@ class CourseDownloadService {
       if (userId == null) return;
 
       // Try to update download_progress table if it exists
-      await SupabaseService().client
-          .from('download_progress')
-          .upsert({
-            'user_id': userId,
-            'learning_object_id': task.learningObjectId,
-            'course_id': _currentProgress?.courseId,
-            'download_status': task.status.toString().split('.').last,
-            'progress_percentage': (task.progress * 100).round(),
-            'bytes_downloaded': task.downloadedBytes,
-            'total_bytes': task.expectedSize,
-            'files_completed': task.isComplete ? 1 : 0,
-            'total_files': 1,
-            'retry_count': task.retryCount,
-            'error_message': task.errorMessage,
-            'last_activity_at': DateTime.now().toIso8601String(),
-            'started_at': task.status == DownloadStatus.downloading
-                ? DateTime.now().toIso8601String()
-                : null,
-            'completed_at': task.isComplete
-                ? DateTime.now().toIso8601String()
-                : null,
-          })
-          .onError((error, stackTrace) {
-            // Table might not exist yet if migration hasn't been applied
-            AppLogger.debug('Download progress sync skipped (table may not exist)', {
-              'error': error.toString(),
-            });
-          });
+      await SupabaseService().client.from('download_progress').upsert({
+        'user_id': userId,
+        'learning_object_id': task.learningObjectId,
+        'course_id': _currentProgress?.courseId,
+        'download_status': task.status.toString().split('.').last,
+        'progress_percentage': (task.progress * 100).round(),
+        'bytes_downloaded': task.downloadedBytes,
+        'total_bytes': task.expectedSize,
+        'files_completed': task.isComplete ? 1 : 0,
+        'total_files': 1,
+        'retry_count': task.retryCount,
+        'error_message': task.errorMessage,
+        'last_activity_at': DateTime.now().toIso8601String(),
+        'started_at': task.status == DownloadStatus.downloading
+            ? DateTime.now().toIso8601String()
+            : null,
+        'completed_at':
+            task.isComplete ? DateTime.now().toIso8601String() : null,
+      }).onError((error, stackTrace) {
+        // Table might not exist yet if migration hasn't been applied
+        AppLogger.debug(
+            'Download progress sync skipped (table may not exist)', {
+          'error': error.toString(),
+        });
+      });
     } catch (e) {
       // Silently fail - this is optional functionality
       AppLogger.debug('Failed to sync download progress to Supabase', {
@@ -666,26 +678,25 @@ class CourseDownloadService {
       final userId = SupabaseService().getCurrentUser()?.id;
       if (userId == null) return;
 
-      await SupabaseService().client
-          .from('course_downloads')
-          .upsert({
-            'user_id': userId,
-            'course_id': _currentProgress!.courseId,
-            'download_status': _currentProgress!.overallStatus.toString().split('.').last,
-            'learning_objects_completed': _currentProgress!.completedFiles ~/ 3, // 3 files per LO
-            'total_learning_objects': _currentProgress!.totalFiles ~/ 3,
-            'total_size_bytes': _currentProgress!.totalBytes,
-            'downloaded_bytes': _currentProgress!.downloadedBytes,
-            'last_activity_at': DateTime.now().toIso8601String(),
-            'completed_at': _currentProgress!.isComplete
-                ? DateTime.now().toIso8601String()
-                : null,
-          })
-          .onError((error, stackTrace) {
-            AppLogger.debug('Course download status sync skipped', {
-              'error': error.toString(),
-            });
-          });
+      await SupabaseService().client.from('course_downloads').upsert({
+        'user_id': userId,
+        'course_id': _currentProgress!.courseId,
+        'download_status':
+            _currentProgress!.overallStatus.toString().split('.').last,
+        'learning_objects_completed':
+            _currentProgress!.completedFiles ~/ 3, // 3 files per LO
+        'total_learning_objects': _currentProgress!.totalFiles ~/ 3,
+        'total_size_bytes': _currentProgress!.totalBytes,
+        'downloaded_bytes': _currentProgress!.downloadedBytes,
+        'last_activity_at': DateTime.now().toIso8601String(),
+        'completed_at': _currentProgress!.isComplete
+            ? DateTime.now().toIso8601String()
+            : null,
+      }).onError((error, stackTrace) {
+        AppLogger.debug('Course download status sync skipped', {
+          'error': error.toString(),
+        });
+      });
     } catch (e) {
       AppLogger.debug('Failed to sync course download status', {
         'error': e.toString(),
@@ -715,7 +726,7 @@ Future<void> validateCourseDownloadService() async {
   debugPrint('✓ Settings update verified');
 
   // Test course download check
-  final isDownloaded = await service.isCourseDownloaded('test_course');
+  await service.isCourseDownloaded('test_course');
   debugPrint('✓ Download check verified');
 
   debugPrint('=== All CourseDownloadService validations passed ===');

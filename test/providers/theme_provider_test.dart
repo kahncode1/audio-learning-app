@@ -39,29 +39,29 @@ void main() {
 
         test('should load saved theme from SharedPreferences', () async {
           SharedPreferences.setMockInitialValues({'theme_mode': 'dark'});
-          
+
           final notifier = ThemeNotifier();
           // Wait for async loading
           await Future.delayed(const Duration(milliseconds: 100));
-          
+
           expect(notifier.state, ThemeMode.dark);
         });
 
         test('should default to system theme if no saved preference', () async {
           SharedPreferences.setMockInitialValues({});
-          
+
           final notifier = ThemeNotifier();
           await Future.delayed(const Duration(milliseconds: 100));
-          
+
           expect(notifier.state, ThemeMode.system);
         });
 
         test('should handle invalid saved theme preference', () async {
           SharedPreferences.setMockInitialValues({'theme_mode': 'invalid'});
-          
+
           final notifier = ThemeNotifier();
           await Future.delayed(const Duration(milliseconds: 100));
-          
+
           expect(notifier.state, ThemeMode.system);
         });
       });
@@ -69,51 +69,51 @@ void main() {
       group('setTheme', () {
         test('should update state to light theme', () async {
           final notifier = ThemeNotifier();
-          
+
           await notifier.setTheme(ThemeMode.light);
-          
+
           expect(notifier.state, ThemeMode.light);
         });
 
         test('should update state to dark theme', () async {
           final notifier = ThemeNotifier();
-          
+
           await notifier.setTheme(ThemeMode.dark);
-          
+
           expect(notifier.state, ThemeMode.dark);
         });
 
         test('should update state to system theme', () async {
           final notifier = ThemeNotifier();
-          
+
           await notifier.setTheme(ThemeMode.system);
-          
+
           expect(notifier.state, ThemeMode.system);
         });
 
         test('should persist light theme to SharedPreferences', () async {
           final notifier = ThemeNotifier();
-          
+
           await notifier.setTheme(ThemeMode.light);
-          
+
           final prefs = await SharedPreferences.getInstance();
           expect(prefs.getString('theme_mode'), 'light');
         });
 
         test('should persist dark theme to SharedPreferences', () async {
           final notifier = ThemeNotifier();
-          
+
           await notifier.setTheme(ThemeMode.dark);
-          
+
           final prefs = await SharedPreferences.getInstance();
           expect(prefs.getString('theme_mode'), 'dark');
         });
 
         test('should persist system theme to SharedPreferences', () async {
           final notifier = ThemeNotifier();
-          
+
           await notifier.setTheme(ThemeMode.system);
-          
+
           final prefs = await SharedPreferences.getInstance();
           expect(prefs.getString('theme_mode'), 'system');
         });
@@ -121,12 +121,12 @@ void main() {
         test('should update state even if persistence fails', () async {
           // Mock SharedPreferences to fail
           SharedPreferences.setMockInitialValues({});
-          
+
           final notifier = ThemeNotifier();
-          
+
           // This should not throw and should still update state
           await notifier.setTheme(ThemeMode.dark);
-          
+
           expect(notifier.state, ThemeMode.dark);
         });
       });
@@ -135,21 +135,21 @@ void main() {
         test('should return "Light" for light theme', () {
           final notifier = ThemeNotifier();
           notifier.state = ThemeMode.light;
-          
+
           expect(notifier.themeName, 'Light');
         });
 
         test('should return "Dark" for dark theme', () {
           final notifier = ThemeNotifier();
           notifier.state = ThemeMode.dark;
-          
+
           expect(notifier.themeName, 'Dark');
         });
 
         test('should return "Auto" for system theme', () {
           final notifier = ThemeNotifier();
           notifier.state = ThemeMode.system;
-          
+
           expect(notifier.themeName, 'Auto');
         });
       });
@@ -158,21 +158,21 @@ void main() {
         test('should return light_mode icon for light theme', () {
           final notifier = ThemeNotifier();
           notifier.state = ThemeMode.light;
-          
+
           expect(notifier.themeIcon, Icons.light_mode);
         });
 
         test('should return dark_mode icon for dark theme', () {
           final notifier = ThemeNotifier();
           notifier.state = ThemeMode.dark;
-          
+
           expect(notifier.themeIcon, Icons.dark_mode);
         });
 
         test('should return brightness_auto icon for system theme', () {
           final notifier = ThemeNotifier();
           notifier.state = ThemeMode.system;
-          
+
           expect(notifier.themeIcon, Icons.brightness_auto);
         });
       });
@@ -182,32 +182,32 @@ void main() {
           // Set theme with first instance
           final notifier1 = ThemeNotifier();
           await notifier1.setTheme(ThemeMode.dark);
-          
+
           // Create new instance (simulating app restart)
           final notifier2 = ThemeNotifier();
           await Future.delayed(const Duration(milliseconds: 100));
-          
+
           expect(notifier2.state, ThemeMode.dark);
         });
 
         test('should cycle through all theme modes', () async {
           final notifier = ThemeNotifier();
-          
+
           // Start with system
           expect(notifier.state, ThemeMode.system);
-          
+
           // Change to light
           await notifier.setTheme(ThemeMode.light);
           expect(notifier.state, ThemeMode.light);
           expect(notifier.themeName, 'Light');
           expect(notifier.themeIcon, Icons.light_mode);
-          
+
           // Change to dark
           await notifier.setTheme(ThemeMode.dark);
           expect(notifier.state, ThemeMode.dark);
           expect(notifier.themeName, 'Dark');
           expect(notifier.themeIcon, Icons.dark_mode);
-          
+
           // Back to system
           await notifier.setTheme(ThemeMode.system);
           expect(notifier.state, ThemeMode.system);
@@ -253,7 +253,8 @@ void main() {
         addTearDown(container.dispose);
 
         final notifier = container.read(themeProvider.notifier);
-        expect(notifier.themeIcon, Icons.brightness_auto); // Default system theme
+        expect(
+            notifier.themeIcon, Icons.brightness_auto); // Default system theme
       });
 
       test('should handle multiple listeners', () async {
@@ -285,7 +286,7 @@ void main() {
       test('should handle SharedPreferences load errors gracefully', () async {
         // This tests the error handling in _loadTheme
         final notifier = ThemeNotifier();
-        
+
         // Should not throw and should default to system
         expect(notifier.state, ThemeMode.system);
       });
@@ -310,7 +311,7 @@ void main() {
         for (final mode in ThemeMode.values) {
           notifier.state = mode;
           final name = notifier.themeName;
-          
+
           switch (mode) {
             case ThemeMode.light:
               expect(name, 'Light');
@@ -332,7 +333,7 @@ void main() {
         for (final mode in ThemeMode.values) {
           notifier.state = mode;
           final icon = notifier.themeIcon;
-          
+
           switch (mode) {
             case ThemeMode.light:
               expect(icon, Icons.light_mode);
@@ -351,9 +352,9 @@ void main() {
     group('SharedPreferences Key', () {
       test('should use consistent key for persistence', () async {
         final notifier = ThemeNotifier();
-        
+
         await notifier.setTheme(ThemeMode.light);
-        
+
         final prefs = await SharedPreferences.getInstance();
         expect(prefs.containsKey('theme_mode'), true);
         expect(prefs.getString('theme_mode'), 'light');

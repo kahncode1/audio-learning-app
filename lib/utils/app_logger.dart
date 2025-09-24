@@ -123,21 +123,24 @@ class AppLogger {
   }
 
   /// Log method entry for debugging
-  static void methodEntry(String className, String methodName, [Map<String, dynamic>? params]) {
+  static void methodEntry(String className, String methodName,
+      [Map<String, dynamic>? params]) {
     if (kDebugMode) {
       debug('→ $className.$methodName', params);
     }
   }
 
   /// Log method exit for debugging
-  static void methodExit(String className, String methodName, [Map<String, dynamic>? result]) {
+  static void methodExit(String className, String methodName,
+      [Map<String, dynamic>? result]) {
     if (kDebugMode) {
       debug('← $className.$methodName', result);
     }
   }
 
   /// Log performance timing
-  static void timing(String operation, Duration duration, [Map<String, dynamic>? context]) {
+  static void timing(String operation, Duration duration,
+      [Map<String, dynamic>? context]) {
     performance(
       '$operation completed',
       {

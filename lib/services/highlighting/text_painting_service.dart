@@ -134,11 +134,9 @@ class TextPaintingService {
     if (_textPainter == null) return null;
 
     try {
-      return _textPainter!.getPositionForOffset(
-        _textPainter!.getOffsetForCaret(
-          TextPosition(offset: offset),
-          Rect.zero,
-        ),
+      return _textPainter!.getOffsetForCaret(
+        TextPosition(offset: offset),
+        Rect.zero,
       );
     } catch (e) {
       return null;

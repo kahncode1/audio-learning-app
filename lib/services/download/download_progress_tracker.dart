@@ -23,7 +23,8 @@ class DownloadProgressTracker {
   late final SharedPreferences _prefs;
 
   /// Get progress stream
-  Stream<CourseDownloadProgress?> get progressStream => _progressController.stream;
+  Stream<CourseDownloadProgress?> get progressStream =>
+      _progressController.stream;
 
   /// Get current progress
   CourseDownloadProgress? get currentProgress => _currentProgress;
@@ -138,6 +139,7 @@ class DownloadProgressTracker {
           break;
         case DownloadStatus.downloading:
         case DownloadStatus.pending:
+        case DownloadStatus.paused:
           downloadedBytes += task.downloadedBytes;
           break;
       }
@@ -164,7 +166,8 @@ class DownloadProgressTracker {
       // Recalculate total downloaded bytes
       final totalDownloaded = _currentProgress!.tasks.fold<int>(
         0,
-        (sum, task) => sum + (task.isComplete ? task.expectedSize : task.downloadedBytes),
+        (sum, task) =>
+            sum + (task.isComplete ? task.expectedSize : task.downloadedBytes),
       );
 
       _currentProgress = _currentProgress!.copyWith(
@@ -182,7 +185,8 @@ class DownloadProgressTracker {
     final hasFailed = _currentProgress!.failedFiles > 0;
     _currentProgress = _currentProgress!.copyWith(
       completedAt: DateTime.now(),
-      overallStatus: hasFailed ? DownloadStatus.failed : DownloadStatus.completed,
+      overallStatus:
+          hasFailed ? DownloadStatus.failed : DownloadStatus.completed,
     );
 
     _progressController.add(_currentProgress);
@@ -253,8 +257,10 @@ class DownloadProgressTracker {
     if (_currentProgress == null) return 'No active download';
 
     final percentage = (getProgressPercentage() * 100).toStringAsFixed(1);
-    final downloadedMB = (_currentProgress!.downloadedBytes / (1024 * 1024)).toStringAsFixed(1);
-    final totalMB = (_currentProgress!.totalBytes / (1024 * 1024)).toStringAsFixed(1);
+    final downloadedMB =
+        (_currentProgress!.downloadedBytes / (1024 * 1024)).toStringAsFixed(1);
+    final totalMB =
+        (_currentProgress!.totalBytes / (1024 * 1024)).toStringAsFixed(1);
 
     return '$percentage% - $downloadedMB MB / $totalMB MB';
   }
@@ -265,7 +271,8 @@ class DownloadProgressTracker {
       return null;
     }
 
-    final remainingBytes = _currentProgress!.totalBytes - _currentProgress!.downloadedBytes;
+    final remainingBytes =
+        _currentProgress!.totalBytes - _currentProgress!.downloadedBytes;
     final secondsRemaining = remainingBytes / _currentProgress!.downloadSpeed;
 
     return Duration(seconds: secondsRemaining.round());

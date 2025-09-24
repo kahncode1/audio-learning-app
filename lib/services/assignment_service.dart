@@ -93,9 +93,8 @@ class AssignmentService {
             .where((p) => p['assignment_id'] == assignment.id)
             .toList();
 
-        final completedCount = assignmentProgress
-            .where((p) => p['is_completed'] == true)
-            .length;
+        final completedCount =
+            assignmentProgress.where((p) => p['is_completed'] == true).length;
 
         return {
           'assignment': assignment,

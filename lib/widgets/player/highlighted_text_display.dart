@@ -78,8 +78,8 @@ class HighlightedTextDisplay extends StatelessWidget {
   TextStyle _getTextStyle(BuildContext context) {
     final baseFontSize = progressService?.currentFontSize ?? 18.0;
     return Theme.of(context).textTheme.bodyLarge!.copyWith(
-      fontSize: baseFontSize,
-    );
+          fontSize: baseFontSize,
+        );
   }
 }
 

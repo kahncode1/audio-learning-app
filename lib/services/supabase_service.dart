@@ -38,7 +38,8 @@ class SupabaseService {
   /// Get Supabase client
   SupabaseClient get client {
     if (_client == null) {
-      throw StateError('SupabaseService not initialized. Call initialize() first.');
+      throw StateError(
+          'SupabaseService not initialized. Call initialize() first.');
     }
     return _client!;
   }

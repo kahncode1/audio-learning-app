@@ -193,9 +193,11 @@ void main() {
       });
 
       test('should have correct font size constants', () {
-        expect(ProgressState.fontSizeNames, ['Small', 'Medium', 'Large', 'X-Large']);
+        expect(ProgressState.fontSizeNames,
+            ['Small', 'Medium', 'Large', 'X-Large']);
         expect(ProgressState.fontSizeValues, [14.0, 16.0, 18.0, 20.0]);
-        expect(ProgressState.fontSizeNames.length, ProgressState.fontSizeValues.length);
+        expect(ProgressState.fontSizeNames.length,
+            ProgressState.fontSizeValues.length);
       });
     });
 
@@ -492,7 +494,10 @@ void main() {
         expect(completed.isCompleted, true);
         expect(completed.isInProgress, false);
         expect(completed.completedAt, isNotNull);
-        expect(completed.completedAt!.isAfter(DateTime.now().subtract(const Duration(seconds: 1))), true);
+        expect(
+            completed.completedAt!
+                .isAfter(DateTime.now().subtract(const Duration(seconds: 1))),
+            true);
       });
 
       test('updatePosition should update position and state', () {

@@ -3,67 +3,64 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:audio_learning_app/screens/assignments_screen.dart';
-import 'package:audio_learning_app/models/learning_object.dart';
-import 'package:audio_learning_app/providers/course_providers.dart';
+import 'package:audio_learning_app/models/learning_object_v2.dart';
+import '../test_data.dart';
+import 'package:audio_learning_app/providers/database_providers.dart';
 
 // Mock classes
-class MockLearningObjectsNotifier extends Mock implements AsyncNotifier<List<LearningObject>> {}
+class MockLearningObjectsNotifier extends Mock
+    implements AsyncNotifier<List<LearningObjectV2>> {}
 
 void main() {
-  late LearningObject completedLearningObject;
-  late LearningObject inProgressLearningObject;
-  late LearningObject notStartedLearningObject;
+  late LearningObjectV2 completedLearningObject;
+  late LearningObjectV2 inProgressLearningObject;
+  late LearningObjectV2 notStartedLearningObject;
 
   setUp(() {
-      completedLearningObject = LearningObject(
-        id: 'completed-id',
-        assignmentId: 'assignment-id',
-        title: 'Completed Learning Object',
-        plainText: 'This is a completed learning object with some content',
-        durationMs: 120000,
-        orderIndex: 1,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        isCompleted: true,
-        isInProgress: false,
-        currentPositionMs: 120000,
-      );
+    completedLearningObject = TestData.createTestLearningObjectV2(
+      id: 'completed-id',
+      assignmentId: 'assignment-id',
+      title: 'Completed Learning Object',
+      displayText: 'This is a completed learning object with some content',
+      totalDurationMs: 120000,
+      orderIndex: 1,
+      isCompleted: true,
+      isInProgress: false,
+      currentPositionMs: 120000,
+    );
 
-      inProgressLearningObject = LearningObject(
-        id: 'in-progress-id',
-        assignmentId: 'assignment-id',
-        title: 'In Progress Learning Object',
-        plainText: 'This is an in-progress learning object with some content',
-        durationMs: 180000,
-        orderIndex: 2,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        isCompleted: false,
-        isInProgress: true,
-        currentPositionMs: 90000,
-      );
+    inProgressLearningObject = TestData.createTestLearningObjectV2(
+      id: 'in-progress-id',
+      assignmentId: 'assignment-id',
+      title: 'In Progress Learning Object',
+      displayText: 'This is an in-progress learning object with some content',
+      totalDurationMs: 180000,
+      orderIndex: 2,
+      isCompleted: false,
+      isInProgress: true,
+      currentPositionMs: 90000,
+    );
 
-      notStartedLearningObject = LearningObject(
-        id: 'not-started-id',
-        assignmentId: 'assignment-id',
-        title: 'Not Started Learning Object',
-        plainText: 'This is a not started learning object with some content',
-        durationMs: 60000,
-        orderIndex: 3,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        isCompleted: false,
-        isInProgress: false,
-        currentPositionMs: 0,
-      );
+    notStartedLearningObject = TestData.createTestLearningObjectV2(
+      id: 'not-started-id',
+      assignmentId: 'assignment-id',
+      title: 'Not Started Learning Object',
+      displayText: 'This is a not started learning object with some content',
+      totalDurationMs: 60000,
+      orderIndex: 3,
+      isCompleted: false,
+      isInProgress: false,
+      currentPositionMs: 0,
+    );
   });
 
-  group('LearningObjectTile Completion UI', () {
-    testWidgets('should display checkmark icon for completed items', (tester) async {
+  group('LearningObjectTileV2 Completion UI', () {
+    testWidgets('should display checkmark icon for completed items',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: completedLearningObject,
               isActive: false,
               onTap: () {},
@@ -74,7 +71,8 @@ void main() {
 
       // Find checkmark icon
       final checkmarkFinder = find.byIcon(Icons.check_circle);
-      expect(checkmarkFinder, findsWidgets); // May find multiple (overlay + trailing)
+      expect(checkmarkFinder,
+          findsWidgets); // May find multiple (overlay + trailing)
 
       // Verify at least one checkmark exists in the ListTile
       final trailingCheckmark = find.descendant(
@@ -84,11 +82,12 @@ void main() {
       expect(trailingCheckmark, findsWidgets);
     });
 
-    testWidgets('should display green background for completed items', (tester) async {
+    testWidgets('should display green background for completed items',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: completedLearningObject,
               isActive: false,
               onTap: () {},
@@ -100,7 +99,7 @@ void main() {
       // Find the Container with background color
       final container = tester.widget<Container>(
         find.descendant(
-          of: find.byType(LearningObjectTile),
+          of: find.byType(LearningObjectTileV2),
           matching: find.byType(Container).first,
         ),
       );
@@ -115,7 +114,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: completedLearningObject,
               isActive: false,
               onTap: () {},
@@ -128,11 +127,12 @@ void main() {
       expect(find.textContaining('Completed'), findsWidgets);
     });
 
-    testWidgets('should display green play icon for completed items', (tester) async {
+    testWidgets('should display green play icon for completed items',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: completedLearningObject,
               isActive: false,
               onTap: () {},
@@ -150,11 +150,12 @@ void main() {
       expect(playIcon.color, const Color(0xFF4CAF50));
     });
 
-    testWidgets('should display "Resume" badge for in-progress items', (tester) async {
+    testWidgets('should display "Resume" badge for in-progress items',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: inProgressLearningObject,
               isActive: false,
               onTap: () {},
@@ -168,10 +169,12 @@ void main() {
 
       // Verify badge styling
       final resumeContainer = tester.widget<Container>(
-        find.ancestor(
-          of: find.text('Resume'),
-          matching: find.byType(Container),
-        ).first,
+        find
+            .ancestor(
+              of: find.text('Resume'),
+              matching: find.byType(Container),
+            )
+            .first,
       );
 
       expect(resumeContainer.decoration, isA<BoxDecoration>());
@@ -183,7 +186,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: inProgressLearningObject,
               isActive: false,
               onTap: () {},
@@ -196,11 +199,12 @@ void main() {
       expect(find.textContaining('In Progress'), findsWidgets);
     });
 
-    testWidgets('should not display any badge for not started items', (tester) async {
+    testWidgets('should not display any badge for not started items',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: notStartedLearningObject,
               isActive: false,
               onTap: () {},
@@ -219,11 +223,12 @@ void main() {
       expect(find.textContaining('In Progress'), findsNothing);
     });
 
-    testWidgets('should apply active styling when item is playing', (tester) async {
+    testWidgets('should apply active styling when item is playing',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: notStartedLearningObject,
               isActive: true,
               onTap: () {},
@@ -254,7 +259,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: notStartedLearningObject,
               isActive: false,
               onTap: () {
@@ -274,7 +279,8 @@ void main() {
   });
 
   group('Assignment Screen Navigation', () {
-    testWidgets('should handle navigation result for completed item', (tester) async {
+    testWidgets('should handle navigation result for completed item',
+        (tester) async {
       // This test would require more complex setup with providers
       // and navigation, so we'll create a simplified version
 
@@ -284,7 +290,8 @@ void main() {
         MaterialApp(
           home: ProviderScope(
             overrides: [
-              learningObjectsProvider('test-assignment').overrideWith((ref) async {
+              assignmentLearningObjectsProvider('test-assignment')
+                  .overrideWith((ref) async {
                 providerInvalidated = true;
                 return [completedLearningObject];
               }),
@@ -341,17 +348,17 @@ void main() {
           home: Scaffold(
             body: Column(
               children: [
-                LearningObjectTile(
+                LearningObjectTileV2(
                   learningObject: completedLearningObject,
                   isActive: false,
                   onTap: () {},
                 ),
-                LearningObjectTile(
+                LearningObjectTileV2(
                   learningObject: inProgressLearningObject,
                   isActive: false,
                   onTap: () {},
                 ),
-                LearningObjectTile(
+                LearningObjectTileV2(
                   learningObject: notStartedLearningObject,
                   isActive: false,
                   onTap: () {},
@@ -379,17 +386,17 @@ void main() {
           home: Scaffold(
             body: Column(
               children: [
-                LearningObjectTile(
+                LearningObjectTileV2(
                   learningObject: completedLearningObject,
                   isActive: false,
                   onTap: () {},
                 ),
-                LearningObjectTile(
+                LearningObjectTileV2(
                   learningObject: inProgressLearningObject,
                   isActive: false,
                   onTap: () {},
                 ),
-                LearningObjectTile(
+                LearningObjectTileV2(
                   learningObject: notStartedLearningObject,
                   isActive: false,
                   onTap: () {},
@@ -417,7 +424,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: LearningObjectTile(
+            body: LearningObjectTileV2(
               learningObject: completedLearningObject,
               isActive: false,
               onTap: () {},

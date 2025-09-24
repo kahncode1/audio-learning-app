@@ -77,12 +77,14 @@ void main() {
       );
 
       expect(
-        () => WordTiming(word: 'test', startMs: -1, endMs: 100, sentenceIndex: 0),
+        () =>
+            WordTiming(word: 'test', startMs: -1, endMs: 100, sentenceIndex: 0),
         throwsAssertionError,
       );
 
       expect(
-        () => WordTiming(word: 'test', startMs: 100, endMs: 50, sentenceIndex: 0),
+        () =>
+            WordTiming(word: 'test', startMs: 100, endMs: 50, sentenceIndex: 0),
         throwsAssertionError,
       );
     });
@@ -96,11 +98,13 @@ void main() {
       testTimings = [
         WordTiming(word: 'This', startMs: 0, endMs: 400, sentenceIndex: 0),
         WordTiming(word: 'is', startMs: 400, endMs: 600, sentenceIndex: 0),
-        WordTiming(word: 'sentence', startMs: 600, endMs: 1000, sentenceIndex: 0),
+        WordTiming(
+            word: 'sentence', startMs: 600, endMs: 1000, sentenceIndex: 0),
         WordTiming(word: 'one.', startMs: 1000, endMs: 1400, sentenceIndex: 0),
         WordTiming(word: 'Here', startMs: 1800, endMs: 2200, sentenceIndex: 1),
         WordTiming(word: 'is', startMs: 2200, endMs: 2400, sentenceIndex: 1),
-        WordTiming(word: 'sentence', startMs: 2400, endMs: 2800, sentenceIndex: 1),
+        WordTiming(
+            word: 'sentence', startMs: 2400, endMs: 2800, sentenceIndex: 1),
         WordTiming(word: 'two.', startMs: 2800, endMs: 3200, sentenceIndex: 1),
       ];
       collection = WordTimingCollection(testTimings);
@@ -111,8 +115,13 @@ void main() {
 
       // Test with invalid data
       final invalidTimings = [
-        WordTiming(word: 'Second', startMs: 1000, endMs: 1500, sentenceIndex: 0),
-        WordTiming(word: 'First', startMs: 0, endMs: 500, sentenceIndex: 0), // Out of order
+        WordTiming(
+            word: 'Second', startMs: 1000, endMs: 1500, sentenceIndex: 0),
+        WordTiming(
+            word: 'First',
+            startMs: 0,
+            endMs: 500,
+            sentenceIndex: 0), // Out of order
       ];
       final invalidCollection = WordTimingCollection(invalidTimings);
       expect(invalidCollection.validateIntegrity(), isFalse);
@@ -171,23 +180,32 @@ void main() {
 
     test('should find active word index correctly', () {
       // Test exact matches
-      expect(collection.findActiveWordIndex(50), equals(0)); // Middle of first word
-      expect(collection.findActiveWordIndex(150), equals(1)); // Middle of second word
+      expect(collection.findActiveWordIndex(50),
+          equals(0)); // Middle of first word
+      expect(collection.findActiveWordIndex(150),
+          equals(1)); // Middle of second word
       expect(collection.findActiveWordIndex(9950), equals(99)); // Last word
 
       // Test edge cases
-      expect(collection.findActiveWordIndex(-100), equals(-1)); // Before any word
-      expect(collection.findActiveWordIndex(10000), equals(-1)); // After all words
+      expect(
+          collection.findActiveWordIndex(-100), equals(-1)); // Before any word
+      expect(
+          collection.findActiveWordIndex(10000), equals(-1)); // After all words
 
       // Test gaps between words
-      expect(collection.findActiveWordIndex(90), equals(-1)); // Gap between word 0 and 1
+      expect(collection.findActiveWordIndex(90),
+          equals(-1)); // Gap between word 0 and 1
     });
 
     test('should find active sentence index correctly', () {
-      expect(collection.findActiveSentenceIndex(50), equals(0)); // First sentence
-      expect(collection.findActiveSentenceIndex(1050), equals(1)); // Second sentence
-      expect(collection.findActiveSentenceIndex(9950), equals(9)); // Last sentence
-      expect(collection.findActiveSentenceIndex(-100), equals(-1)); // Invalid time
+      expect(
+          collection.findActiveSentenceIndex(50), equals(0)); // First sentence
+      expect(collection.findActiveSentenceIndex(1050),
+          equals(1)); // Second sentence
+      expect(
+          collection.findActiveSentenceIndex(9950), equals(9)); // Last sentence
+      expect(
+          collection.findActiveSentenceIndex(-100), equals(-1)); // Invalid time
     });
 
     test('should demonstrate locality caching performance', () {
@@ -223,7 +241,8 @@ void main() {
       }
 
       stopwatch.stop();
-      expect(stopwatch.elapsedMilliseconds, lessThan(50)); // Should be very fast
+      expect(
+          stopwatch.elapsedMilliseconds, lessThan(50)); // Should be very fast
     });
 
     test('should handle adjacent word searches efficiently', () {
@@ -248,23 +267,27 @@ void main() {
       testTimings = [
         WordTiming(word: 'Apple', startMs: 0, endMs: 500, sentenceIndex: 0),
         WordTiming(word: 'banana', startMs: 500, endMs: 1000, sentenceIndex: 0),
-        WordTiming(word: 'Cherry', startMs: 1000, endMs: 1500, sentenceIndex: 0),
+        WordTiming(
+            word: 'Cherry', startMs: 1000, endMs: 1500, sentenceIndex: 0),
         WordTiming(word: 'date', startMs: 2000, endMs: 2500, sentenceIndex: 1),
-        WordTiming(word: 'elderberry', startMs: 2500, endMs: 3000, sentenceIndex: 1),
+        WordTiming(
+            word: 'elderberry', startMs: 2500, endMs: 3000, sentenceIndex: 1),
       ];
       collection = WordTimingCollection(testTimings);
     });
 
     test('should find words by text correctly', () {
       expect(collection.findWordIndexByText('Apple'), equals(0));
-      expect(collection.findWordIndexByText('apple'), equals(0)); // Case insensitive
+      expect(collection.findWordIndexByText('apple'),
+          equals(0)); // Case insensitive
       expect(collection.findWordIndexByText('BANANA'), equals(1));
       expect(collection.findWordIndexByText('elderberry'), equals(4));
       expect(collection.findWordIndexByText('grape'), equals(-1)); // Not found
 
       // Test starting from specific index
       expect(collection.findWordIndexByText('date', startIndex: 2), equals(3));
-      expect(collection.findWordIndexByText('Apple', startIndex: 2), equals(-1));
+      expect(
+          collection.findWordIndexByText('Apple', startIndex: 2), equals(-1));
     });
 
     test('should find words in time range correctly', () {
@@ -334,18 +357,21 @@ void main() {
 
     test('should handle words with zero duration', () {
       final zeroDuration = [
-        WordTiming(word: 'instant', startMs: 1000, endMs: 1000, sentenceIndex: 0)
+        WordTiming(
+            word: 'instant', startMs: 1000, endMs: 1000, sentenceIndex: 0)
       ];
       final collection = WordTimingCollection(zeroDuration);
 
-      expect(collection.findActiveWordIndex(1000), equals(-1)); // Zero duration = never active
+      expect(collection.findActiveWordIndex(1000),
+          equals(-1)); // Zero duration = never active
       expect(collection.totalDurationMs, equals(0));
     });
 
     test('should handle words with same start time', () {
       final sameStart = [
         WordTiming(word: 'first', startMs: 1000, endMs: 1200, sentenceIndex: 0),
-        WordTiming(word: 'second', startMs: 1000, endMs: 1300, sentenceIndex: 0),
+        WordTiming(
+            word: 'second', startMs: 1000, endMs: 1300, sentenceIndex: 0),
       ];
       final collection = WordTimingCollection(sameStart);
 
@@ -366,7 +392,11 @@ void main() {
 
     test('should handle very large timestamps', () {
       final largeTime = [
-        WordTiming(word: 'future', startMs: 999999000, endMs: 999999500, sentenceIndex: 0)
+        WordTiming(
+            word: 'future',
+            startMs: 999999000,
+            endMs: 999999500,
+            sentenceIndex: 0)
       ];
       final collection = WordTimingCollection(largeTime);
 
@@ -411,7 +441,8 @@ void main() {
 
       // Should complete 1000 searches in under 5ms (requirement from PLANNING.md)
       expect(stopwatch.elapsedMicroseconds, lessThan(5000));
-      print('Performance: ${stopwatch.elapsedMicroseconds}μs for 1000 binary searches');
+      print(
+          'Performance: ${stopwatch.elapsedMicroseconds}μs for 1000 binary searches');
     });
 
     test('should meet locality caching performance requirements', () {
@@ -429,7 +460,8 @@ void main() {
       // Should maintain 60fps performance (requirement: <16ms per update)
       final avgTimePerUpdate = stopwatch.elapsedMicroseconds / 3600;
       expect(avgTimePerUpdate, lessThan(16000)); // 16ms in microseconds
-      print('Performance: ${avgTimePerUpdate.toStringAsFixed(1)}μs average per 60fps update');
+      print(
+          'Performance: ${avgTimePerUpdate.toStringAsFixed(1)}μs average per 60fps update');
     });
 
     test('should meet sentence operations performance requirements', () {
@@ -443,8 +475,10 @@ void main() {
 
       stopwatch.stop();
 
-      expect(stopwatch.elapsedMilliseconds, lessThan(10)); // Should be very fast due to caching
-      print('Performance: ${stopwatch.elapsedMicroseconds}μs for 1000 sentence operations');
+      expect(stopwatch.elapsedMilliseconds,
+          lessThan(10)); // Should be very fast due to caching
+      print(
+          'Performance: ${stopwatch.elapsedMicroseconds}μs for 1000 sentence operations');
     });
   });
 }

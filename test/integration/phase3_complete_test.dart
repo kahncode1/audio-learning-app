@@ -51,16 +51,13 @@ void main() {
         print('✓ download_progress table exists');
 
         // Test course_downloads table exists
-        final courseDownloads = await supabaseClient
-            .from('course_downloads')
-            .select('id')
-            .limit(1);
+        final courseDownloads =
+            await supabaseClient.from('course_downloads').select('id').limit(1);
         print('✓ course_downloads table exists');
 
         // Both queries should succeed (even if empty)
         expect(downloadProgress, isA<List>());
         expect(courseDownloads, isA<List>());
-
       } catch (e) {
         if (e.toString().contains('SocketException')) {
           print('⚠️  Cannot connect to Supabase - skipping database tests');
@@ -76,7 +73,8 @@ void main() {
       try {
         final result = await supabaseClient
             .from('learning_objects')
-            .select('id, title, audio_url, content_url, timing_url, file_version, download_status')
+            .select(
+                'id, title, audio_url, content_url, timing_url, file_version, download_status')
             .eq('id', testLearningObjectId)
             .single();
 
@@ -95,7 +93,6 @@ void main() {
         expect(result['download_status'], equals('pending'));
 
         print('✓ All CDN URL fields verified');
-
       } catch (e) {
         if (e.toString().contains('SocketException')) {
           print('⚠️  Cannot connect to Supabase - skipping');
@@ -109,7 +106,8 @@ void main() {
       print('\n=== Testing Local Content Service ===');
 
       // Test audio path generation
-      final audioPath = await localContentService.getAudioPath(testLearningObjectId);
+      final audioPath =
+          await localContentService.getAudioPath(testLearningObjectId);
 
       print('Audio Path: $audioPath');
 
@@ -118,9 +116,11 @@ void main() {
       expect(audioPath, endsWith('.mp3'));
 
       // Test that service can handle missing files gracefully
-      final hasContent = await localContentService.isContentAvailable(testLearningObjectId);
+      final hasContent =
+          await localContentService.isContentAvailable(testLearningObjectId);
       print('Has downloaded content: $hasContent');
-      expect(hasContent, isFalse); // Should be false since nothing downloaded yet
+      expect(
+          hasContent, isFalse); // Should be false since nothing downloaded yet
 
       print('✓ LocalContentService working correctly');
     });
@@ -217,7 +217,8 @@ void main() {
       print('  - Learning Objects: 1');
 
       // Verify course is marked for download
-      final isDownloaded = await downloadService.isCourseDownloaded('mock-course');
+      final isDownloaded =
+          await downloadService.isCourseDownloaded('mock-course');
       print('  - Is downloaded: $isDownloaded');
     });
 
@@ -225,7 +226,8 @@ void main() {
       print('\n=== Testing Error Handling ===');
 
       // Test with invalid learning object ID
-      final hasInvalidContent = await localContentService.isContentAvailable('invalid-id');
+      final hasInvalidContent =
+          await localContentService.isContentAvailable('invalid-id');
       expect(hasInvalidContent, isFalse);
       print('✓ Handles missing content gracefully');
 

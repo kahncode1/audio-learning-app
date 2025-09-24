@@ -204,34 +204,54 @@ class LocalDatabaseService {
     ''');
 
     // Create indexes for performance
-    await db.execute('CREATE INDEX idx_courses_course_number ON courses(course_number)');
-    await db.execute('CREATE INDEX idx_courses_external_id ON courses(external_course_id)');
-    await db.execute('CREATE INDEX idx_courses_order_index ON courses(order_index)');
+    await db.execute(
+        'CREATE INDEX idx_courses_course_number ON courses(course_number)');
+    await db.execute(
+        'CREATE INDEX idx_courses_external_id ON courses(external_course_id)');
+    await db.execute(
+        'CREATE INDEX idx_courses_order_index ON courses(order_index)');
 
-    await db.execute('CREATE INDEX idx_assignments_course_id ON assignments(course_id)');
-    await db.execute('CREATE INDEX idx_assignments_order_index ON assignments(course_id, order_index)');
+    await db.execute(
+        'CREATE INDEX idx_assignments_course_id ON assignments(course_id)');
+    await db.execute(
+        'CREATE INDEX idx_assignments_order_index ON assignments(course_id, order_index)');
 
-    await db.execute('CREATE INDEX idx_learning_objects_assignment_id ON learning_objects(assignment_id)');
-    await db.execute('CREATE INDEX idx_learning_objects_course_id ON learning_objects(course_id)');
-    await db.execute('CREATE INDEX idx_learning_objects_order_index ON learning_objects(assignment_id, order_index)');
+    await db.execute(
+        'CREATE INDEX idx_learning_objects_assignment_id ON learning_objects(assignment_id)');
+    await db.execute(
+        'CREATE INDEX idx_learning_objects_course_id ON learning_objects(course_id)');
+    await db.execute(
+        'CREATE INDEX idx_learning_objects_order_index ON learning_objects(assignment_id, order_index)');
 
-    await db.execute('CREATE INDEX idx_user_progress_user_id ON user_progress(user_id)');
-    await db.execute('CREATE INDEX idx_user_progress_learning_object_id ON user_progress(learning_object_id)');
-    await db.execute('CREATE INDEX idx_user_progress_user_course ON user_progress(user_id, course_id)');
-    await db.execute('CREATE INDEX idx_user_progress_user_assignment ON user_progress(user_id, assignment_id)');
-    await db.execute('CREATE INDEX idx_user_progress_completion ON user_progress(user_id, is_completed)');
+    await db.execute(
+        'CREATE INDEX idx_user_progress_user_id ON user_progress(user_id)');
+    await db.execute(
+        'CREATE INDEX idx_user_progress_learning_object_id ON user_progress(learning_object_id)');
+    await db.execute(
+        'CREATE INDEX idx_user_progress_user_course ON user_progress(user_id, course_id)');
+    await db.execute(
+        'CREATE INDEX idx_user_progress_user_assignment ON user_progress(user_id, assignment_id)');
+    await db.execute(
+        'CREATE INDEX idx_user_progress_completion ON user_progress(user_id, is_completed)');
 
-    await db.execute('CREATE INDEX idx_user_course_progress_user_id ON user_course_progress(user_id)');
-    await db.execute('CREATE INDEX idx_user_course_progress_course_id ON user_course_progress(course_id)');
+    await db.execute(
+        'CREATE INDEX idx_user_course_progress_user_id ON user_course_progress(user_id)');
+    await db.execute(
+        'CREATE INDEX idx_user_course_progress_course_id ON user_course_progress(course_id)');
 
-    await db.execute('CREATE INDEX idx_download_cache_user_id ON download_cache(user_id)');
-    await db.execute('CREATE INDEX idx_download_cache_course_id ON download_cache(course_id)');
-    await db.execute('CREATE INDEX idx_download_cache_status ON download_cache(download_status)');
-    await db.execute('CREATE INDEX idx_download_cache_needs_update ON download_cache(needs_update)');
+    await db.execute(
+        'CREATE INDEX idx_download_cache_user_id ON download_cache(user_id)');
+    await db.execute(
+        'CREATE INDEX idx_download_cache_course_id ON download_cache(course_id)');
+    await db.execute(
+        'CREATE INDEX idx_download_cache_status ON download_cache(download_status)');
+    await db.execute(
+        'CREATE INDEX idx_download_cache_needs_update ON download_cache(needs_update)');
   }
 
   /// Handle database upgrades
-  Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
+  Future<void> _upgradeDatabase(
+      Database db, int oldVersion, int newVersion) async {
     // Handle future migrations here
     // Example:
     // if (oldVersion < 2) {
@@ -282,10 +302,12 @@ class LocalDatabaseService {
       learningObject['metadata'] = jsonEncode(learningObject['metadata']);
     }
     if (learningObject['word_timings'] is List) {
-      learningObject['word_timings'] = jsonEncode(learningObject['word_timings']);
+      learningObject['word_timings'] =
+          jsonEncode(learningObject['word_timings']);
     }
     if (learningObject['sentence_timings'] is List) {
-      learningObject['sentence_timings'] = jsonEncode(learningObject['sentence_timings']);
+      learningObject['sentence_timings'] =
+          jsonEncode(learningObject['sentence_timings']);
     }
 
     return await db.insert(
@@ -335,7 +357,8 @@ class LocalDatabaseService {
   }
 
   /// Get learning objects for an assignment
-  Future<List<Map<String, dynamic>>> getLearningObjects(String assignmentId) async {
+  Future<List<Map<String, dynamic>>> getLearningObjects(
+      String assignmentId) async {
     final db = await database;
     final results = await db.query(
       'learning_objects',
@@ -346,7 +369,8 @@ class LocalDatabaseService {
 
     // Parse JSON strings back to objects
     // Create mutable copies of the results to avoid read-only error
-    final mutableResults = results.map((r) => Map<String, dynamic>.from(r)).toList();
+    final mutableResults =
+        results.map((r) => Map<String, dynamic>.from(r)).toList();
 
     for (final result in mutableResults) {
       if (result['paragraphs'] is String) {
@@ -365,7 +389,8 @@ class LocalDatabaseService {
         result['word_timings'] = jsonDecode(result['word_timings'] as String);
       }
       if (result['sentence_timings'] is String) {
-        result['sentence_timings'] = jsonDecode(result['sentence_timings'] as String);
+        result['sentence_timings'] =
+            jsonDecode(result['sentence_timings'] as String);
       }
     }
 
@@ -373,7 +398,8 @@ class LocalDatabaseService {
   }
 
   /// Get a specific learning object
-  Future<Map<String, dynamic>?> getLearningObject(String learningObjectId) async {
+  Future<Map<String, dynamic>?> getLearningObject(
+      String learningObjectId) async {
     final db = await database;
     final results = await db.query(
       'learning_objects',
@@ -402,7 +428,8 @@ class LocalDatabaseService {
       result['word_timings'] = jsonDecode(result['word_timings'] as String);
     }
     if (result['sentence_timings'] is String) {
-      result['sentence_timings'] = jsonDecode(result['sentence_timings'] as String);
+      result['sentence_timings'] =
+          jsonDecode(result['sentence_timings'] as String);
     }
 
     return result;
@@ -421,7 +448,8 @@ class LocalDatabaseService {
   }
 
   /// Get user progress for a learning object
-  Future<Map<String, dynamic>?> getUserProgress(String userId, String learningObjectId) async {
+  Future<Map<String, dynamic>?> getUserProgress(
+      String userId, String learningObjectId) async {
     final db = await database;
     final results = await db.query(
       'user_progress',
@@ -462,7 +490,8 @@ class LocalDatabaseService {
   }
 
   /// Get download status for a course
-  Future<List<Map<String, dynamic>>> getDownloadStatus(String userId, String courseId) async {
+  Future<List<Map<String, dynamic>>> getDownloadStatus(
+      String userId, String courseId) async {
     final db = await database;
     return await db.query(
       'download_cache',
@@ -503,15 +532,18 @@ class LocalDatabaseService {
 
     // Verify all tables exist
     final tables = [
-      'courses', 'assignments', 'learning_objects',
-      'user_progress', 'user_course_progress', 'download_cache'
+      'courses',
+      'assignments',
+      'learning_objects',
+      'user_progress',
+      'user_course_progress',
+      'download_cache'
     ];
 
     for (final table in tables) {
       final result = await db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-        [table]
-      );
+          "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+          [table]);
       assert(result.isNotEmpty, 'Table $table does not exist');
       print('✓ Table exists: $table');
     }

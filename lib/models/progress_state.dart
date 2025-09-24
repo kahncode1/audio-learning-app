@@ -51,7 +51,8 @@ class ProgressState {
             'Font size index must be valid'),
         assert(id.isNotEmpty, 'ID cannot be empty'),
         assert(userId.isNotEmpty, 'User ID cannot be empty'),
-        assert(learningObjectId.isNotEmpty, 'Learning object ID cannot be empty');
+        assert(
+            learningObjectId.isNotEmpty, 'Learning object ID cannot be empty');
 
   /// Get font size name for display
   String get fontSizeName {

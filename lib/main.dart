@@ -25,12 +25,14 @@ import 'providers/theme_provider.dart';
 
 // Screens
 import 'screens/assignments_screen.dart';
-import 'screens/cdn_download_test_screen.dart';
 import 'screens/course_detail_screen.dart';
 import 'screens/enhanced_audio_player_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/local_content_test_screen.dart';
 import 'screens/settings_screen.dart';
+
+// Debug-only screens
+import 'screens/cdn_download_test_screen.dart' if (dart.library.io) 'screens/cdn_download_test_screen.dart';
+import 'screens/local_content_test_screen.dart' if (dart.library.io) 'screens/local_content_test_screen.dart';
 
 // Theme
 import 'theme/app_theme.dart';
@@ -57,7 +59,8 @@ void main() async {
           tracesSampleRate: kDebugMode ? 1.0 : 0.3,
         );
       } else {
-        AppLogger.warning('Sentry DSN not configured - error tracking disabled');
+        AppLogger.warning(
+            'Sentry DSN not configured - error tracking disabled');
       }
 
       // Set up Flutter error handling
@@ -158,8 +161,11 @@ class AudioLearningApp extends ConsumerWidget {
         '/main': (context) => const MainNavigationScreen(),
         '/home': (context) => const HomePage(),
         '/settings': (context) => const SettingsScreen(),
-        '/local-content-test': (context) => const LocalContentTestScreen(),
-        '/cdn-download-test': (context) => const CDNDownloadTestScreen(),
+        // Debug-only routes
+        if (kDebugMode)
+          '/local-content-test': (context) => const LocalContentTestScreen(),
+        if (kDebugMode)
+          '/cdn-download-test': (context) => const CDNDownloadTestScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/course-detail') {

@@ -6,7 +6,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_factory.dart';
 
@@ -150,10 +149,7 @@ Username: ${user?.username ?? 'Unknown'}
 
         // Test a simple query with RLS to verify JWT is working
         try {
-          final response = await client
-              .from('courses')
-              .select('id, title')
-              .limit(1);
+          await client.from('courses').select('id, title').limit(1);
 
           setState(() {
             _supabaseStatus = '''
@@ -243,7 +239,8 @@ Deep Link Test:
                           const Text('User Pool ID: us-east-1_vAMMFcpew'),
                           const Text('Client ID: 7n2o5r6em0latepiui4rfg6vmi'),
                           const Text('Region: us-east-1'),
-                          const Text('Hosted UI: users.login-test.theinstitutes.org'),
+                          const Text(
+                              'Hosted UI: users.login-test.theinstitutes.org'),
                         ],
                       ),
                     ),
@@ -347,12 +344,16 @@ Deep Link Test:
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           SizedBox(height: 8),
-                          Text('1. Click "Sign In with Cognito" to test OAuth flow'),
-                          Text('2. You should be redirected to Cognito hosted UI'),
-                          Text('3. After login, you return via audiocourses://oauth/callback'),
+                          Text(
+                              '1. Click "Sign In with Cognito" to test OAuth flow'),
+                          Text(
+                              '2. You should be redirected to Cognito hosted UI'),
+                          Text(
+                              '3. After login, you return via audiocourses://oauth/callback'),
                           Text('4. Check that JWT token is received'),
                           Text('5. Verify Supabase connection is established'),
-                          Text('6. Test "Refresh Tokens" to ensure refresh works'),
+                          Text(
+                              '6. Test "Refresh Tokens" to ensure refresh works'),
                           Text('7. Test "Sign Out" to clear all sessions'),
                         ],
                       ),

@@ -49,7 +49,8 @@ class CacheService {
     _prefs = await SharedPreferences.getInstance();
     _loadCacheStats();
     await _loadMemoryCache();
-    debugPrint('CacheService initialized - Items: ${_memoryCache.length}, Hits: $_hits, Misses: $_misses');
+    debugPrint(
+        'CacheService initialized - Items: ${_memoryCache.length}, Hits: $_hits, Misses: $_misses');
   }
 
   /// Load cache statistics from storage
@@ -72,7 +73,8 @@ class CacheService {
 
   /// Load cached items into memory
   Future<void> _loadMemoryCache() async {
-    final keys = _prefs.getKeys().where((key) => key.startsWith(_cachePrefix) && !key.startsWith(_cacheMetaPrefix));
+    final keys = _prefs.getKeys().where((key) =>
+        key.startsWith(_cachePrefix) && !key.startsWith(_cacheMetaPrefix));
 
     // Load items with their access times for proper LRU ordering
     final itemsWithTime = <MapEntry<String, int>>[];
@@ -196,8 +198,11 @@ class CacheService {
 
   /// Enforce persistent cache size limit
   Future<void> _enforcePersistentCacheLimit() async {
-    final cacheKeys = _prefs.getKeys().where((key) =>
-      key.startsWith(_cachePrefix) && !key.startsWith(_cacheMetaPrefix)).toList();
+    final cacheKeys = _prefs
+        .getKeys()
+        .where((key) =>
+            key.startsWith(_cachePrefix) && !key.startsWith(_cacheMetaPrefix))
+        .toList();
 
     if (cacheKeys.length <= maxCacheItems) return;
 
@@ -248,8 +253,11 @@ class CacheService {
     _memoryCache.clear();
 
     // Remove all cache entries
-    final keys = _prefs.getKeys().where((key) =>
-      key.startsWith(_cachePrefix) || key.startsWith(_cacheMetaPrefix)).toList();
+    final keys = _prefs
+        .getKeys()
+        .where((key) =>
+            key.startsWith(_cachePrefix) || key.startsWith(_cacheMetaPrefix))
+        .toList();
 
     for (final key in keys) {
       await _prefs.remove(key);
@@ -286,15 +294,17 @@ class CacheService {
   /// Check if cache contains key
   bool containsKey(String key) {
     return _memoryCache.containsKey(key) ||
-           _prefs.containsKey('$_cachePrefix$key');
+        _prefs.containsKey('$_cachePrefix$key');
   }
 
   /// Get all cached keys
   Set<String> getCachedKeys() {
-    final persistentKeys = _prefs.getKeys()
-      .where((key) => key.startsWith(_cachePrefix) && !key.startsWith(_cacheMetaPrefix))
-      .map((key) => key.substring(_cachePrefix.length))
-      .toSet();
+    final persistentKeys = _prefs
+        .getKeys()
+        .where((key) =>
+            key.startsWith(_cachePrefix) && !key.startsWith(_cacheMetaPrefix))
+        .map((key) => key.substring(_cachePrefix.length))
+        .toSet();
 
     return {..._memoryCache.keys, ...persistentKeys};
   }
@@ -317,7 +327,8 @@ class CacheService {
       if (parts.length >= 2) {
         return {
           'created': DateTime.fromMillisecondsSinceEpoch(int.parse(parts[0])),
-          'lastAccess': DateTime.fromMillisecondsSinceEpoch(int.parse(parts[1])),
+          'lastAccess':
+              DateTime.fromMillisecondsSinceEpoch(int.parse(parts[1])),
           'inMemory': _memoryCache.containsKey(key),
         };
       }
@@ -337,7 +348,8 @@ class CacheService {
     for (final key in keys) {
       final metadata = await getCacheMetadata(key);
       if (metadata.isNotEmpty) {
-        final lastAccess = (metadata['lastAccess'] as DateTime).millisecondsSinceEpoch;
+        final lastAccess =
+            (metadata['lastAccess'] as DateTime).millisecondsSinceEpoch;
         if (now - lastAccess > maxAgeMs) {
           await remove(key);
           removed++;

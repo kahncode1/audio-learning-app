@@ -10,6 +10,7 @@
 ///
 
 import '../utils/app_logger.dart';
+
 /// Expected behavior:
 ///   - Clear exception categorization for better error handling
 ///   - Rich context information for debugging
@@ -55,12 +56,12 @@ abstract class AppException implements Exception {
 
   /// Get technical details for logging
   Map<String, dynamic> get logContext => {
-    'type': runtimeType.toString(),
-    'message': message,
-    if (details != null) 'details': details,
-    if (errorCode != null) 'errorCode': errorCode,
-    if (innerException != null) 'innerException': innerException.toString(),
-  };
+        'type': runtimeType.toString(),
+        'message': message,
+        if (details != null) 'details': details,
+        if (errorCode != null) 'errorCode': errorCode,
+        if (innerException != null) 'innerException': innerException.toString(),
+      };
 }
 
 /// Network-related exceptions
@@ -77,7 +78,8 @@ class NetworkException extends AppException {
   });
 
   /// Create network exception from HTTP status code
-  factory NetworkException.fromStatusCode(int statusCode, {String? url, String? details}) {
+  factory NetworkException.fromStatusCode(int statusCode,
+      {String? url, String? details}) {
     String message;
     switch (statusCode) {
       case 400:
@@ -146,10 +148,10 @@ class NetworkException extends AppException {
 
   @override
   Map<String, dynamic> get logContext => {
-    ...super.logContext,
-    if (statusCode != null) 'statusCode': statusCode,
-    if (url != null) 'url': url,
-  };
+        ...super.logContext,
+        if (statusCode != null) 'statusCode': statusCode,
+        if (url != null) 'url': url,
+      };
 }
 
 /// Cache-related exceptions
@@ -191,14 +193,15 @@ class CacheException extends AppException {
       );
 
   @override
-  String get userMessage => 'Data storage error. Some content may need to be reloaded.';
+  String get userMessage =>
+      'Data storage error. Some content may need to be reloaded.';
 
   @override
   Map<String, dynamic> get logContext => {
-    ...super.logContext,
-    if (cacheKey != null) 'cacheKey': cacheKey,
-    'operation': operation,
-  };
+        ...super.logContext,
+        if (cacheKey != null) 'cacheKey': cacheKey,
+        'operation': operation,
+      };
 }
 
 /// Audio processing exceptions
@@ -261,10 +264,10 @@ class AudioException extends AppException {
 
   @override
   Map<String, dynamic> get logContext => {
-    ...super.logContext,
-    if (audioFormat != null) 'audioFormat': audioFormat,
-    if (source != null) 'source': source,
-  };
+        ...super.logContext,
+        if (audioFormat != null) 'audioFormat': audioFormat,
+        if (source != null) 'source': source,
+      };
 }
 
 /// Text processing and timing exceptions
@@ -281,7 +284,8 @@ class TimingException extends AppException {
   });
 
   /// Word timing processing failure
-  factory TimingException.processingFailed(String contentId, {Exception? cause}) =>
+  factory TimingException.processingFailed(String contentId,
+          {Exception? cause}) =>
       TimingException(
         'Failed to process word timing data',
         contentId: contentId,
@@ -306,14 +310,15 @@ class TimingException extends AppException {
       );
 
   @override
-  String get userMessage => 'Text synchronization error. Highlighting may not work correctly.';
+  String get userMessage =>
+      'Text synchronization error. Highlighting may not work correctly.';
 
   @override
   Map<String, dynamic> get logContext => {
-    ...super.logContext,
-    if (contentId != null) 'contentId': contentId,
-    'operation': operation,
-  };
+        ...super.logContext,
+        if (contentId != null) 'contentId': contentId,
+        'operation': operation,
+      };
 }
 
 /// Authentication and authorization exceptions
@@ -346,7 +351,8 @@ class AuthException extends AppException {
       );
 
   /// Insufficient permissions
-  factory AuthException.insufficientPermissions({String? userId, String? resource}) =>
+  factory AuthException.insufficientPermissions(
+          {String? userId, String? resource}) =>
       AuthException(
         'Insufficient permissions to access resource',
         userId: userId,
@@ -371,10 +377,10 @@ class AuthException extends AppException {
 
   @override
   Map<String, dynamic> get logContext => {
-    ...super.logContext,
-    if (userId != null) 'userId': userId,
-    'authType': authType,
-  };
+        ...super.logContext,
+        if (userId != null) 'userId': userId,
+        'authType': authType,
+      };
 }
 
 /// Configuration and setup exceptions
@@ -389,7 +395,8 @@ class ConfigurationException extends AppException {
   });
 
   /// Missing required configuration
-  factory ConfigurationException.missingKey(String key) => ConfigurationException(
+  factory ConfigurationException.missingKey(String key) =>
+      ConfigurationException(
         'Required configuration missing',
         configKey: key,
         details: 'Configuration key "$key" is not set',
@@ -408,9 +415,9 @@ class ConfigurationException extends AppException {
 
   @override
   Map<String, dynamic> get logContext => {
-    ...super.logContext,
-    'configKey': configKey,
-  };
+        ...super.logContext,
+        'configKey': configKey,
+      };
 }
 
 /// Validation function to test exception hierarchy
@@ -418,7 +425,8 @@ void validateAppExceptions() {
   AppLogger.info('=== AppException Validation ===');
 
   // Test NetworkException
-  final networkEx = NetworkException.fromStatusCode(404, url: 'https://api.example.com');
+  final networkEx =
+      NetworkException.fromStatusCode(404, url: 'https://api.example.com');
   assert(networkEx.statusCode == 404);
   assert(networkEx.userMessage.contains('not found'));
   AppLogger.info('✓ NetworkException working');

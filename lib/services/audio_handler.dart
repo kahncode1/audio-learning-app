@@ -85,8 +85,8 @@ class AudioLearningHandler extends BaseAudioHandler with SeekHandler {
   }
 
   /// Update media item with learning object information
-  void updateMediaItemForLearning(LearningObjectV2 learningObject, {Duration? audioDuration}) {
-
+  void updateMediaItemForLearning(LearningObjectV2 learningObject,
+      {Duration? audioDuration}) {
     // Use actual audio duration if available, otherwise estimate from content
     final duration = audioDuration ?? _estimateDuration(learningObject);
 

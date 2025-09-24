@@ -181,7 +181,7 @@ void validateLearningObjectModel() {
     'assignment_id': 'assignment-456',
     'title': 'Chapter 1: Introduction',
     'content_type': 'text',
-    'ssml_content': null,  // Not used in download-first architecture
+    'ssml_content': null, // Not used in download-first architecture
     'plain_text': 'Hello world',
     'duration_ms': 5000,
     'order_index': 0,

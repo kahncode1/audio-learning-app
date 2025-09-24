@@ -8,14 +8,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 const String supabaseUrl = 'https://cmjdciktvfxiyapdseqn.supabase.co';
-const String supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtamRjaWt0dmZ4aXlhcGRzZXFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYyODU5MzcsImV4cCI6MjA0MTg2MTkzN30.qI37kGFa7p9WRC0G3F8oUdN1604OXZ0l1wVlZsLRmLo';
+const String supabaseKey =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtamRjaWt0dmZ4aXlhcGRzZXFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYyODU5MzcsImV4cCI6MjA0MTg2MTkzN30.qI37kGFa7p9WRC0G3F8oUdN1604OXZ0l1wVlZsLRmLo';
 
 // Test learning object ID
 const String learningObjectId = '63ad7b78-0970-4265-a4fe-51f3fee39d5f';
 const String courseId = 'INS-101';
 
 // Local file paths
-const String basePath = 'assets/test_content/learning_objects/$learningObjectId';
+const String basePath =
+    'assets/test_content/learning_objects/$learningObjectId';
 
 void main() {
   late SupabaseClient supabase;
@@ -67,11 +69,14 @@ void main() {
       // Generate and display CDN URLs
       print('📍 CDN URLs for uploaded files:\n');
       print('Audio URL:');
-      print('  $supabaseUrl/storage/v1/object/public/course-audio/$courseId/$learningObjectId/audio.mp3');
+      print(
+          '  $supabaseUrl/storage/v1/object/public/course-audio/$courseId/$learningObjectId/audio.mp3');
       print('\nContent URL:');
-      print('  $supabaseUrl/storage/v1/object/public/course-content/$courseId/$learningObjectId/content.json');
+      print(
+          '  $supabaseUrl/storage/v1/object/public/course-content/$courseId/$learningObjectId/content.json');
       print('\nTiming URL:');
-      print('  $supabaseUrl/storage/v1/object/public/course-timing/$courseId/$learningObjectId/timing.json');
+      print(
+          '  $supabaseUrl/storage/v1/object/public/course-timing/$courseId/$learningObjectId/timing.json');
 
       print('\n📝 Next step: Update the database with these CDN URLs\n');
     });
@@ -99,9 +104,7 @@ Future<bool> uploadFile({
     print('   File size: ${fileSize}KB');
 
     // Upload file to Supabase Storage
-    final response = await supabase.storage
-        .from(bucket)
-        .uploadBinary(
+    final response = await supabase.storage.from(bucket).uploadBinary(
           storagePath,
           bytes,
           fileOptions: FileOptions(
@@ -114,9 +117,7 @@ Future<bool> uploadFile({
     print('   ✅ Upload successful: $response');
 
     // Verify the file is accessible
-    final publicUrl = supabase.storage
-        .from(bucket)
-        .getPublicUrl(storagePath);
+    final publicUrl = supabase.storage.from(bucket).getPublicUrl(storagePath);
 
     print('   🌐 Public URL: $publicUrl');
 

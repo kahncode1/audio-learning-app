@@ -30,9 +30,11 @@ void main() {
       expect(true, true); // Settings saved successfully
     });
 
-    test('Check if course is downloaded returns false for non-existent course', () async {
+    test('Check if course is downloaded returns false for non-existent course',
+        () async {
       final service = await CourseDownloadService.getInstance();
-      final isDownloaded = await service.isCourseDownloaded('non_existent_course');
+      final isDownloaded =
+          await service.isCourseDownloaded('non_existent_course');
       expect(isDownloaded, false);
     });
 
@@ -43,7 +45,8 @@ void main() {
       service.setCourseId('TEST-101');
 
       // Check if content is available (should check downloaded first, then assets)
-      final isAvailable = await service.isContentAvailable('63ad7b78-0970-4265-a4fe-51f3fee39d5f');
+      final isAvailable = await service
+          .isContentAvailable('63ad7b78-0970-4265-a4fe-51f3fee39d5f');
       expect(isAvailable, true); // Test content exists in assets
     });
 
@@ -51,25 +54,29 @@ void main() {
       final service = LocalContentService.instance;
 
       // Load test content
-      final content = await service.getContent('63ad7b78-0970-4265-a4fe-51f3fee39d5f');
+      final content =
+          await service.getContent('63ad7b78-0970-4265-a4fe-51f3fee39d5f');
       expect(content, isNotNull);
       expect(content['version'], '1.0');
       expect(content['displayText'], isNotNull);
 
       // Load timing data
-      final timing = await service.getTimingData('63ad7b78-0970-4265-a4fe-51f3fee39d5f');
+      final timing =
+          await service.getTimingData('63ad7b78-0970-4265-a4fe-51f3fee39d5f');
       expect(timing, isNotNull);
       expect(timing.words.length, greaterThan(0));
       expect(timing.sentences.length, greaterThan(0));
 
       // Get audio path
-      final audioPath = await service.getAudioPath('63ad7b78-0970-4265-a4fe-51f3fee39d5f');
+      final audioPath =
+          await service.getAudioPath('63ad7b78-0970-4265-a4fe-51f3fee39d5f');
       expect(audioPath, contains('audio.mp3'));
     });
   });
 
   group('Download UI Widget Tests', () {
-    testWidgets('DownloadConfirmationDialog renders correctly', (WidgetTester tester) async {
+    testWidgets('DownloadConfirmationDialog renders correctly',
+        (WidgetTester tester) async {
       final courseInfo = CourseDownloadInfo(
         courseId: 'TEST-101',
         courseName: 'Test Course',
@@ -94,7 +101,8 @@ void main() {
       expect(find.text('Download Now'), findsOneWidget);
     });
 
-    testWidgets('DownloadProgressScreen shows progress indicators', (WidgetTester tester) async {
+    testWidgets('DownloadProgressScreen shows progress indicators',
+        (WidgetTester tester) async {
       final courseInfo = CourseDownloadInfo(
         courseId: 'TEST-101',
         courseName: 'Test Course',
@@ -116,7 +124,8 @@ void main() {
       expect(find.byType(CircularPercentIndicator), findsOneWidget);
     });
 
-    testWidgets('Download reminder dialog shows for deferred downloads', (WidgetTester tester) async {
+    testWidgets('Download reminder dialog shows for deferred downloads',
+        (WidgetTester tester) async {
       final courseInfo = CourseDownloadInfo(
         courseId: 'TEST-101',
         courseName: 'Test Course',
@@ -179,16 +188,20 @@ void main() {
     });
 
     test('CourseDownloadProgress tracks multiple files', () {
-      final tasks = List.generate(10, (i) => DownloadTask(
-        id: 'task_$i',
-        url: 'https://example.com/file_$i.mp3',
-        localPath: '/path/to/file_$i.mp3',
-        learningObjectId: 'lo_${i ~/ 3}',
-        fileType: FileType.values[i % 3],
-        expectedSize: 1000000,
-        downloadedBytes: i < 5 ? 1000000 : i * 100000,
-        status: i < 5 ? DownloadStatus.completed : DownloadStatus.downloading,
-      ));
+      final tasks = List.generate(
+          10,
+          (i) => DownloadTask(
+                id: 'task_$i',
+                url: 'https://example.com/file_$i.mp3',
+                localPath: '/path/to/file_$i.mp3',
+                learningObjectId: 'lo_${i ~/ 3}',
+                fileType: FileType.values[i % 3],
+                expectedSize: 1000000,
+                downloadedBytes: i < 5 ? 1000000 : i * 100000,
+                status: i < 5
+                    ? DownloadStatus.completed
+                    : DownloadStatus.downloading,
+              ));
 
       final progress = CourseDownloadProgress(
         courseId: 'TEST-101',

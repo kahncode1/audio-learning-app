@@ -11,14 +11,14 @@ void main() {
       test('should return same instance on multiple calls', () {
         final config1 = AppConfig();
         final config2 = AppConfig();
-        
+
         expect(identical(config1, config2), isTrue);
       });
 
       test('should maintain state across instances', () {
         final config1 = AppConfig();
         AppConfig.currentAuthToken = 'test-token';
-        
+
         final config2 = AppConfig();
         expect(AppConfig.currentAuthToken, 'test-token');
       });
@@ -58,7 +58,8 @@ void main() {
       test('should delegate to EnvConfig for cognito values', () {
         expect(AppConfig.cognitoUserPoolId, EnvConfig.cognitoUserPoolId);
         expect(AppConfig.cognitoClientId, EnvConfig.cognitoClientId);
-        expect(AppConfig.cognitoIdentityPoolId, EnvConfig.cognitoIdentityPoolId);
+        expect(
+            AppConfig.cognitoIdentityPoolId, EnvConfig.cognitoIdentityPoolId);
         expect(AppConfig.cognitoRegion, EnvConfig.cognitoRegion);
       });
     });
@@ -100,7 +101,7 @@ void main() {
       test('should generate valid amplify config JSON', () {
         final config = AppConfig();
         final amplifyConfig = config.amplifyConfig;
-        
+
         expect(amplifyConfig, isA<String>());
         expect(amplifyConfig, contains('"UserAgent": "aws-amplify-cli/2.0"'));
         expect(amplifyConfig, contains('"Version": "1.0.0"'));
@@ -111,7 +112,7 @@ void main() {
       test('should include cognito configuration in amplify config', () {
         final config = AppConfig();
         final amplifyConfig = config.amplifyConfig;
-        
+
         expect(amplifyConfig, contains(AppConfig.cognitoUserPoolId));
         expect(amplifyConfig, contains(AppConfig.cognitoClientId));
         expect(amplifyConfig, contains(AppConfig.cognitoIdentityPoolId));
@@ -121,26 +122,29 @@ void main() {
       test('should include OAuth configuration', () {
         final config = AppConfig();
         final amplifyConfig = config.amplifyConfig;
-        
+
         expect(amplifyConfig, contains('"OAuth"'));
         expect(amplifyConfig, contains(AppConfig.cognitoRedirectUri));
         expect(amplifyConfig, contains(AppConfig.cognitoSignOutUri));
-        expect(amplifyConfig, contains('"Scopes": ["email", "openid", "profile"]'));
+        expect(amplifyConfig,
+            contains('"Scopes": ["email", "openid", "profile"]'));
       });
 
       test('should include authentication flow settings', () {
         final config = AppConfig();
         final amplifyConfig = config.amplifyConfig;
-        
-        expect(amplifyConfig, contains('"authenticationFlowType": "USER_SRP_AUTH"'));
+
+        expect(amplifyConfig,
+            contains('"authenticationFlowType": "USER_SRP_AUTH"'));
         expect(amplifyConfig, contains('"usernameAttributes": ["EMAIL"]'));
-        expect(amplifyConfig, contains('"signupAttributes": ["EMAIL", "NAME"]'));
+        expect(
+            amplifyConfig, contains('"signupAttributes": ["EMAIL", "NAME"]'));
       });
 
       test('should include password policy settings', () {
         final config = AppConfig();
         final amplifyConfig = config.amplifyConfig;
-        
+
         expect(amplifyConfig, contains('"passwordProtectionSettings"'));
         expect(amplifyConfig, contains('"passwordPolicyMinLength": 8'));
         expect(amplifyConfig, contains('"REQUIRES_LOWERCASE"'));
@@ -152,7 +156,7 @@ void main() {
       test('should include MFA configuration', () {
         final config = AppConfig();
         final amplifyConfig = config.amplifyConfig;
-        
+
         expect(amplifyConfig, contains('"mfaConfiguration": "OPTIONAL"'));
         expect(amplifyConfig, contains('"mfaTypes": ["SMS"]'));
         expect(amplifyConfig, contains('"verificationMechanisms": ["EMAIL"]'));
@@ -163,7 +167,7 @@ void main() {
       test('should provide configuration status', () {
         final config = AppConfig();
         final isConfigured = config.isConfigured;
-        
+
         expect(isConfigured, isA<bool>());
         expect(isConfigured, EnvConfig.isCognitoConfigured);
       });
@@ -206,7 +210,8 @@ void main() {
         // Values should match exactly
         expect(AppConfig.cognitoUserPoolId, EnvConfig.cognitoUserPoolId);
         expect(AppConfig.cognitoClientId, EnvConfig.cognitoClientId);
-        expect(AppConfig.cognitoIdentityPoolId, EnvConfig.cognitoIdentityPoolId);
+        expect(
+            AppConfig.cognitoIdentityPoolId, EnvConfig.cognitoIdentityPoolId);
         expect(AppConfig.cognitoRegion, EnvConfig.cognitoRegion);
         expect(AppConfig.supabaseUrl, EnvConfig.supabaseUrl);
         expect(AppConfig.supabaseAnonKey, EnvConfig.supabaseAnonKey);
@@ -218,7 +223,7 @@ void main() {
       test('should generate valid JSON structure', () {
         final config = AppConfig();
         final amplifyConfig = config.amplifyConfig;
-        
+
         // Should contain proper JSON structure
         expect(amplifyConfig, startsWith('{'));
         expect(amplifyConfig, endsWith('}'));
@@ -231,7 +236,7 @@ void main() {
       test('should have properly nested configuration objects', () {
         final config = AppConfig();
         final amplifyConfig = config.amplifyConfig;
-        
+
         // Check for nested structure
         expect(amplifyConfig, contains('"CognitoUserPool"'));
         expect(amplifyConfig, contains('"CredentialsProvider"'));
@@ -253,10 +258,10 @@ void main() {
       test('should handle static auth token management', () {
         AppConfig.currentAuthToken = null;
         expect(AppConfig.currentAuthToken, isNull);
-        
+
         AppConfig.currentAuthToken = 'static-test-token';
         expect(AppConfig.currentAuthToken, 'static-test-token');
-        
+
         AppConfig.currentAuthToken = '';
         expect(AppConfig.currentAuthToken, '');
       });
@@ -289,10 +294,10 @@ void main() {
     });
 
     group('Thread Safety', () {
-      test('should maintain singleton across multiple accesses', () {
+      test('should maintain singleton across multiple accesses', () async {
         final futures = List.generate(10, (_) async => AppConfig());
         final configs = await Future.wait(futures);
-        
+
         for (int i = 1; i < configs.length; i++) {
           expect(identical(configs[0], configs[i]), isTrue);
         }

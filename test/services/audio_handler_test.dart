@@ -5,7 +5,8 @@ import 'package:mocktail/mocktail.dart';
 import 'dart:async';
 
 import 'package:audio_learning_app/services/audio_handler.dart';
-import 'package:audio_learning_app/models/learning_object.dart';
+import 'package:audio_learning_app/models/learning_object_v2.dart';
+import '../test_data.dart';
 
 // Create mock for AudioPlayer
 class MockAudioPlayer extends Mock implements AudioPlayer {}
@@ -78,16 +79,12 @@ void main() {
 
     group('Media Item Management', () {
       test('should update media item for learning object', () {
-        final learningObject = LearningObject(
+        final learningObject = TestData.createTestLearningObjectV2(
           id: 'test-123',
           assignmentId: 'assignment-1',
           title: 'Test Audio Lesson',
-          contentType: 'audio',
-          ssmlContent: '<speak>Test content with multiple sentences.</speak>',
-          plainText: 'Test content with multiple sentences.',
+          displayText: 'Test content with multiple sentences.',
           orderIndex: 1,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
           isCompleted: false,
           currentPositionMs: 0,
         );
@@ -102,16 +99,12 @@ void main() {
       });
 
       test('should estimate duration when not provided', () {
-        final learningObject = LearningObject(
+        final learningObject = TestData.createTestLearningObjectV2(
           id: 'test-456',
           assignmentId: 'assignment-2',
           title: 'Long Content',
-          contentType: 'audio',
-          ssmlContent: '<speak>' + ('word ' * 300) + '</speak>', // 300 words
-          plainText: 'word ' * 300, // 300 words
+          displayText: 'word ' * 300, // 300 words
           orderIndex: 1,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
           isCompleted: false,
           currentPositionMs: 0,
         );
@@ -120,8 +113,9 @@ void main() {
         handler.updateMediaItemForLearning(learningObject);
 
         // Verify estimation logic
-        final text = learningObject.plainText ?? '';
-        final wordCount = text.split(' ').where((word) => word.isNotEmpty).length;
+        final text = learningObject.displayText ?? '';
+        final wordCount =
+            text.split(' ').where((word) => word.isNotEmpty).length;
         final estimatedMinutes = (wordCount / 150).ceil();
         expect(estimatedMinutes, 2);
       });
@@ -186,7 +180,8 @@ void main() {
       test('skipToNext() should skip forward 30 seconds', () async {
         const currentPosition = Duration(seconds: 60);
         const expectedPosition = Duration(seconds: 90); // 60 + 30
-        const totalDuration = Duration(seconds: 120); // Must be longer than expected position
+        const totalDuration =
+            Duration(seconds: 120); // Must be longer than expected position
 
         when(() => audioPlayer.position).thenReturn(currentPosition);
         when(() => audioPlayer.duration).thenReturn(totalDuration);
@@ -306,60 +301,52 @@ void main() {
 
   group('Edge Cases', () {
     test('should handle empty learning object text', () {
-      final emptyLearningObject = LearningObject(
+      final emptyLearningObject = TestData.createTestLearningObjectV2(
         id: 'empty-1',
         assignmentId: 'assignment-1',
         title: 'Empty Content',
-        contentType: 'audio',
-        ssmlContent: '<speak></speak>',
-        plainText: '', // Empty text
+        displayText: '', // Empty text
         orderIndex: 1,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
         isCompleted: false,
         currentPositionMs: 0,
       );
 
       final handler = AudioLearningHandler(AudioPlayer());
       handler.updateMediaItemForLearning(emptyLearningObject);
-      
+
       // Should handle empty text gracefully (minimum 1 minute duration)
       handler.dispose();
     });
 
     test('should handle null plain text', () {
-      final nullTextObject = LearningObject(
+      final nullTextObject = TestData.createTestLearningObjectV2(
         id: 'null-1',
         assignmentId: 'assignment-1',
         title: 'Null Text',
-        contentType: 'audio',
-        ssmlContent: '<speak>Content</speak>',
-        plainText: null, // Null text
+        displayText: null, // Null text
         orderIndex: 1,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
         isCompleted: false,
         currentPositionMs: 0,
       );
 
       final handler = AudioLearningHandler(AudioPlayer());
       handler.updateMediaItemForLearning(nullTextObject);
-      
+
       // Should handle null text gracefully
       handler.dispose();
     });
 
     test('should handle skip at boundaries', () async {
       final handler = AudioLearningHandler(AudioPlayer());
-      
+
       // Test skip forward at end
       // (Would need mock to simulate being at the end of audio)
       await handler.skipToNext();
-      
+
       // Test skip backward at beginning
       await handler.seek(Duration.zero);
       await handler.skipToPrevious();
-      
+
       handler.dispose();
     });
   });
@@ -370,7 +357,7 @@ void main() {
       // - AudioLearningHandler class exists
       // - Media controls are defined
       // - Audio service configuration is correct
-      
+
       // This would normally be called at runtime in debug mode
       expect(() => validateAudioHandler(), returnsNormally);
     });

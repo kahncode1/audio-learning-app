@@ -32,7 +32,7 @@ void main() {
         expect(course.description, isNull);
         expect(course.gradientStartColor, '#2196F3'); // Default
         expect(course.gradientEndColor, '#1976D2'); // Default
-        expect(course.totalDurationMs, 0); // Default
+        expect(course.estimatedDurationMs, 0); // Default
       });
 
       test('should create Course with optional fields', () {
@@ -44,7 +44,7 @@ void main() {
           description: 'Test Description',
           gradientStartColor: '#FF0000',
           gradientEndColor: '#00FF00',
-          totalDurationMs: 1800000,
+          estimatedDurationMs: 1800000,
           createdAt: now,
           updatedAt: now,
         );
@@ -52,7 +52,7 @@ void main() {
         expect(course.description, 'Test Description');
         expect(course.gradientStartColor, '#FF0000');
         expect(course.gradientEndColor, '#00FF00');
-        expect(course.totalDurationMs, 1800000);
+        expect(course.estimatedDurationMs, 1800000);
       });
     });
 
@@ -63,10 +63,11 @@ void main() {
         expect(course.id, 'test-course-123');
         expect(course.courseNumber, 'CS-101');
         expect(course.title, 'Introduction to Computer Science');
-        expect(course.description, 'A comprehensive introduction to CS concepts');
+        expect(
+            course.description, 'A comprehensive introduction to CS concepts');
         expect(course.gradientStartColor, '#4CAF50');
         expect(course.gradientEndColor, '#2E7D32');
-        expect(course.totalDurationMs, 7200000);
+        expect(course.estimatedDurationMs, 7200000);
         expect(course.createdAt, DateTime.parse('2024-01-15T10:30:00Z'));
         expect(course.updatedAt, DateTime.parse('2024-01-20T14:45:00Z'));
       });
@@ -85,7 +86,7 @@ void main() {
         expect(course.description, isNull);
         expect(course.gradientStartColor, '#2196F3');
         expect(course.gradientEndColor, '#1976D2');
-        expect(course.totalDurationMs, 0);
+        expect(course.estimatedDurationMs, 0);
       });
 
       test('toJson should serialize all fields correctly', () {
@@ -95,7 +96,8 @@ void main() {
         expect(json['id'], 'test-course-123');
         expect(json['course_number'], 'CS-101');
         expect(json['title'], 'Introduction to Computer Science');
-        expect(json['description'], 'A comprehensive introduction to CS concepts');
+        expect(
+            json['description'], 'A comprehensive introduction to CS concepts');
         expect(json['gradient_start_color'], '#4CAF50');
         expect(json['gradient_end_color'], '#2E7D32');
         expect(json['total_duration_ms'], 7200000);
@@ -114,7 +116,7 @@ void main() {
         expect(restored.description, original.description);
         expect(restored.gradientStartColor, original.gradientStartColor);
         expect(restored.gradientEndColor, original.gradientEndColor);
-        expect(restored.totalDurationMs, original.totalDurationMs);
+        expect(restored.estimatedDurationMs, original.estimatedDurationMs);
         expect(restored.createdAt, original.createdAt);
         expect(restored.updatedAt, original.updatedAt);
       });
@@ -203,7 +205,7 @@ void main() {
         expect(copy.id, original.id);
         expect(copy.title, original.title);
         expect(copy.description, original.description);
-        expect(copy.totalDurationMs, original.totalDurationMs);
+        expect(copy.estimatedDurationMs, original.estimatedDurationMs);
       });
     });
 
@@ -284,14 +286,14 @@ void main() {
           id: 'test',
           courseNumber: 'TEST',
           title: 'Test',
-          totalDurationMs: 3600000, // 1 hour
+          estimatedDurationMs: 3600000, // 1 hour
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
 
-        expect(course.totalDurationMs, 3600000);
+        expect(course.estimatedDurationMs, 3600000);
         // Could add a getter for formatted duration
-        final hours = course.totalDurationMs ~/ (1000 * 60 * 60);
+        final hours = course.estimatedDurationMs ~/ (1000 * 60 * 60);
         expect(hours, 1);
       });
 
@@ -300,12 +302,12 @@ void main() {
           id: 'test',
           courseNumber: 'TEST',
           title: 'Test',
-          totalDurationMs: 0,
+          estimatedDurationMs: 0,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
 
-        expect(course.totalDurationMs, 0);
+        expect(course.estimatedDurationMs, 0);
       });
     });
   });

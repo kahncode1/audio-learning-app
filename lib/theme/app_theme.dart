@@ -3,8 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// App Theme Configuration
 ///
-/// Provides light and dark theme configurations following the design specifications.
+/// Provides Material 3 (Material You) light and dark theme configurations.
 /// Uses Literata serif font for improved readability.
+/// Implements dynamic color schemes with proper accessibility contrast.
 class AppTheme {
   // Private constructor to prevent instantiation
   AppTheme._();
@@ -21,7 +22,7 @@ class AppTheme {
   static const Color lightTextPrimary = Color(0xFF0F172A);
   static const Color lightTextSecondary = Color(0xFF475569);
   static const Color lightSentenceHighlight = Color(0xFFE2E8F0);
-  static Color lightWordHighlight = const Color(0xFF3B82F6).withOpacity(0.25);
+  static Color lightWordHighlight = const Color(0xFF3B82F6).withValues(alpha: 0.25);
 
   // Dark theme colors
   static const Color darkBackground = Color(0xFF0F111A);
@@ -30,9 +31,9 @@ class AppTheme {
   static const Color darkTextPrimary = Color(0xFFF1F5F9);
   static const Color darkTextSecondary = Color(0xFFCBD5E1);
   static const Color darkSentenceHighlight = Color(0xFF2D3A4F);
-  static Color darkWordHighlight = const Color(0xFF60A5FA).withOpacity(0.30);
+  static Color darkWordHighlight = const Color(0xFF60A5FA).withValues(alpha: 0.30);
 
-  /// Light theme configuration
+  /// Light theme configuration with Material 3
   static ThemeData get lightTheme {
     final textTheme = GoogleFonts.literataTextTheme().apply(
       bodyColor: lightTextPrimary,
@@ -40,19 +41,24 @@ class AppTheme {
     );
 
     return ThemeData(
+      useMaterial3: true, // Enable Material 3
       brightness: Brightness.light,
       primaryColor: lightPrimary,
       scaffoldBackgroundColor: lightBackground,
-
-      colorScheme: const ColorScheme.light(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: lightPrimary,
+        brightness: Brightness.light,
         primary: lightPrimary,
-        secondary: lightPrimary,
         surface: lightSurface,
+        background: lightBackground,
         onPrimary: Colors.white,
-        onSecondary: Colors.white,
         onSurface: lightTextPrimary,
+        onBackground: lightTextPrimary,
+        secondary: lightPrimary,
+        onSecondary: Colors.white,
+        surfaceVariant: lightSentenceHighlight,
+        onSurfaceVariant: lightTextSecondary,
       ),
-
       textTheme: textTheme.copyWith(
         // Body text with specifications
         bodyLarge: textTheme.bodyLarge?.copyWith(
@@ -86,7 +92,6 @@ class AppTheme {
           letterSpacing: letterSpacing,
         ),
       ),
-
       appBarTheme: AppBarTheme(
         backgroundColor: lightPrimary,
         foregroundColor: Colors.white,
@@ -98,7 +103,6 @@ class AppTheme {
           letterSpacing: letterSpacing,
         ),
       ),
-
       cardTheme: CardThemeData(
         color: lightSurface,
         elevation: 2,
@@ -107,7 +111,6 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
         ),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: lightPrimary,
@@ -118,27 +121,45 @@ class AppTheme {
           ),
         ),
       ),
-
       listTileTheme: const ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       ),
-
       dividerTheme: const DividerThemeData(
         space: 1,
         thickness: 1,
         color: Color(0xFFE2E8F0),
       ),
-
       iconTheme: const IconThemeData(
         color: lightTextPrimary,
         size: 24,
       ),
-
-      useMaterial3: false,
+      // Material 3 components
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: lightPrimary,
+          foregroundColor: Colors.white,
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: lightPrimary,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: CircleBorder(),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: lightSurface,
+        indicatorColor: lightPrimary.withValues(alpha: 0.2),
+        iconTheme: MaterialStateProperty.all(
+          const IconThemeData(size: 24),
+        ),
+        labelTextStyle: MaterialStateProperty.all(
+          textTheme.bodySmall,
+        ),
+      ),
     );
   }
 
-  /// Dark theme configuration
+  /// Dark theme configuration with Material 3
   static ThemeData get darkTheme {
     final textTheme = GoogleFonts.literataTextTheme().apply(
       bodyColor: darkTextPrimary,
@@ -146,19 +167,24 @@ class AppTheme {
     );
 
     return ThemeData(
+      useMaterial3: true, // Enable Material 3
       brightness: Brightness.dark,
       primaryColor: darkPrimary,
       scaffoldBackgroundColor: darkBackground,
-
-      colorScheme: const ColorScheme.dark(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: darkPrimary,
+        brightness: Brightness.dark,
         primary: darkPrimary,
-        secondary: darkPrimary,
         surface: darkSurface,
+        background: darkBackground,
         onPrimary: darkBackground,
-        onSecondary: darkBackground,
         onSurface: darkTextPrimary,
+        onBackground: darkTextPrimary,
+        secondary: darkPrimary,
+        onSecondary: darkBackground,
+        surfaceVariant: darkSentenceHighlight,
+        onSurfaceVariant: darkTextSecondary,
       ),
-
       textTheme: textTheme.copyWith(
         // Body text with specifications
         bodyLarge: textTheme.bodyLarge?.copyWith(
@@ -192,7 +218,6 @@ class AppTheme {
           letterSpacing: letterSpacing,
         ),
       ),
-
       appBarTheme: AppBarTheme(
         backgroundColor: darkSurface,
         foregroundColor: darkTextPrimary,
@@ -204,7 +229,6 @@ class AppTheme {
           letterSpacing: letterSpacing,
         ),
       ),
-
       cardTheme: CardThemeData(
         color: darkSurface,
         elevation: 4,
@@ -213,7 +237,6 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
         ),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: darkPrimary,
@@ -224,35 +247,51 @@ class AppTheme {
           ),
         ),
       ),
-
       listTileTheme: const ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       ),
-
       dividerTheme: const DividerThemeData(
         space: 1,
         thickness: 1,
         color: Color(0xFF334155),
       ),
-
       iconTheme: const IconThemeData(
         color: darkTextPrimary,
         size: 24,
       ),
-
       dialogTheme: DialogThemeData(
         backgroundColor: darkSurface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
       ),
-
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: darkSurface,
         modalBackgroundColor: darkSurface,
       ),
-
-      useMaterial3: false,
+      // Material 3 components
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: darkPrimary,
+          foregroundColor: darkBackground,
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: darkPrimary,
+        foregroundColor: darkBackground,
+        elevation: 4,
+        shape: const CircleBorder(),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: darkSurface,
+        indicatorColor: darkPrimary.withValues(alpha: 0.2),
+        iconTheme: MaterialStateProperty.all(
+          const IconThemeData(size: 24, color: darkTextPrimary),
+        ),
+        labelTextStyle: MaterialStateProperty.all(
+          textTheme.bodySmall,
+        ),
+      ),
     );
   }
 }

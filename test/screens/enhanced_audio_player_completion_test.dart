@@ -8,13 +8,20 @@ import 'package:audio_learning_app/screens/enhanced_audio_player_screen.dart';
 import 'package:audio_learning_app/services/audio_player_service_local.dart';
 import 'package:audio_learning_app/services/progress_service.dart';
 import 'package:audio_learning_app/services/word_timing_service_simplified.dart';
-import 'package:audio_learning_app/models/learning_object.dart';
+import 'package:audio_learning_app/models/learning_object_v2.dart';
+import '../test_data.dart';
 
 // Mock classes
-class MockAudioPlayerServiceLocal extends Mock implements AudioPlayerServiceLocal {}
+class MockAudioPlayerServiceLocal extends Mock
+    implements AudioPlayerServiceLocal {}
+
 class MockProgressService extends Mock implements ProgressService {}
-class MockWordTimingServiceSimplified extends Mock implements WordTimingServiceSimplified {}
+
+class MockWordTimingServiceSimplified extends Mock
+    implements WordTimingServiceSimplified {}
+
 class MockAudioPlayer extends Mock implements AudioPlayer {}
+
 class MockNavigatorObserver extends Mock implements NavigatorObserver {}
 
 void main() {
@@ -22,24 +29,12 @@ void main() {
   late MockProgressService mockProgressService;
   late MockWordTimingServiceSimplified mockWordTimingService;
   late MockNavigatorObserver mockNavigatorObserver;
-  late LearningObject testLearningObject;
+  late LearningObjectV2 testLearningObjectV2;
 
   setUpAll(() {
     registerFallbackValue(ProcessingState.idle);
     registerFallbackValue(Duration.zero);
-    registerFallbackValue(LearningObject(
-      id: 'fallback-id',
-      assignmentId: 'fallback-assignment',
-      title: 'Fallback',
-      plainText: 'Fallback text',
-      durationMs: 0,
-      orderIndex: 0,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-      isCompleted: false,
-      isInProgress: false,
-      currentPositionMs: 0,
-    ));
+    registerFallbackValue(TestData.createTestLearningObjectV2());
   });
 
   setUp(() {
@@ -48,15 +43,13 @@ void main() {
     mockWordTimingService = MockWordTimingServiceSimplified();
     mockNavigatorObserver = MockNavigatorObserver();
 
-    testLearningObject = LearningObject(
+    testLearningObjectV2 = TestData.createTestLearningObjectV2(
       id: 'test-id',
       assignmentId: 'assignment-id',
       title: 'Test Learning Object',
-      plainText: 'Test content for the learning object',
-      durationMs: 60000,
+      displayText: 'Test content for the learning object',
+      totalDurationMs: 60000,
       orderIndex: 1,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
       isCompleted: false,
       isInProgress: false,
       currentPositionMs: 0,
@@ -69,7 +62,8 @@ void main() {
         .thenAnswer((_) => Stream.value(Duration.zero));
     when(() => mockAudioService.isPlayingStream)
         .thenAnswer((_) => Stream.value(false));
-    when(() => mockAudioService.duration).thenReturn(const Duration(seconds: 60));
+    when(() => mockAudioService.duration)
+        .thenReturn(const Duration(seconds: 60));
     when(() => mockAudioService.isPlaying).thenReturn(false);
     when(() => mockAudioService.loadLocalAudio(any())).thenAnswer((_) async {});
     when(() => mockAudioService.play()).thenAnswer((_) async {});
@@ -80,20 +74,21 @@ void main() {
     // It loads timing data through constructor or initialization
 
     when(() => mockProgressService.saveProgress(
-      learningObjectId: any(named: 'learningObjectId'),
-      positionMs: any(named: 'positionMs'),
-      isCompleted: any(named: 'isCompleted'),
-      isInProgress: any(named: 'isInProgress'),
-    )).thenReturn(null);
+          learningObjectId: any(named: 'learningObjectId'),
+          positionMs: any(named: 'positionMs'),
+          isCompleted: any(named: 'isCompleted'),
+          isInProgress: any(named: 'isInProgress'),
+        )).thenReturn(null);
   });
 
   group('Audio Completion Handling', () {
-    testWidgets('should listen to processing state stream on init', (tester) async {
+    testWidgets('should listen to processing state stream on init',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: ProviderScope(
             child: EnhancedAudioPlayerScreen(
-              learningObject: testLearningObject,
+              learningObject: testLearningObjectV2,
               autoPlay: false,
             ),
           ),
@@ -103,7 +98,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify that the processing state stream is being listened to
-      verify(() => mockAudioService.processingStateStream).called(greaterThan(0));
+      verify(() => mockAudioService.processingStateStream)
+          .called(greaterThan(0));
     });
 
     testWidgets('should navigate back when audio completes', (tester) async {
@@ -124,7 +120,7 @@ void main() {
                   MaterialPageRoute(
                     builder: (_) => ProviderScope(
                       child: EnhancedAudioPlayerScreen(
-                        learningObject: testLearningObject,
+                        learningObject: testLearningObjectV2,
                         autoPlay: false,
                       ),
                     ),
@@ -151,23 +147,24 @@ void main() {
       processingStateController.close();
     });
 
-    testWidgets('should mark learning object as completed when audio ends', (tester) async {
+    testWidgets('should mark learning object as completed when audio ends',
+        (tester) async {
       final processingStateController = StreamController<ProcessingState>();
 
       when(() => mockAudioService.processingStateStream)
           .thenAnswer((_) => processingStateController.stream);
       when(() => mockProgressService.saveProgress(
-        learningObjectId: testLearningObject.id,
-        positionMs: 60000,
-        isCompleted: true,
-        isInProgress: false,
-      )).thenReturn(null);
+            learningObjectId: testLearningObjectV2.id,
+            positionMs: 60000,
+            isCompleted: true,
+            isInProgress: false,
+          )).thenReturn(null);
 
       await tester.pumpWidget(
         MaterialApp(
           home: ProviderScope(
             child: EnhancedAudioPlayerScreen(
-              learningObject: testLearningObject,
+              learningObject: testLearningObjectV2,
               autoPlay: false,
             ),
           ),
@@ -182,16 +179,17 @@ void main() {
 
       // Verify progress was saved with completed status
       verify(() => mockProgressService.saveProgress(
-        learningObjectId: testLearningObject.id,
-        positionMs: 60000,
-        isCompleted: true,
-        isInProgress: false,
-      )).called(1);
+            learningObjectId: testLearningObjectV2.id,
+            positionMs: 60000,
+            isCompleted: true,
+            isInProgress: false,
+          )).called(1);
 
       processingStateController.close();
     });
 
-    testWidgets('should return true when navigating back after completion', (tester) async {
+    testWidgets('should return true when navigating back after completion',
+        (tester) async {
       final processingStateController = StreamController<ProcessingState>();
       bool? navigationResult;
 
@@ -208,7 +206,7 @@ void main() {
                   MaterialPageRoute(
                     builder: (_) => ProviderScope(
                       child: EnhancedAudioPlayerScreen(
-                        learningObject: testLearningObject,
+                        learningObject: testLearningObjectV2,
                         autoPlay: false,
                       ),
                     ),
@@ -235,7 +233,8 @@ void main() {
       processingStateController.close();
     });
 
-    testWidgets('should not navigate back for non-completed states', (tester) async {
+    testWidgets('should not navigate back for non-completed states',
+        (tester) async {
       final processingStateController = StreamController<ProcessingState>();
 
       when(() => mockAudioService.processingStateStream)
@@ -246,7 +245,7 @@ void main() {
           navigatorObservers: [mockNavigatorObserver],
           home: ProviderScope(
             child: EnhancedAudioPlayerScreen(
-              learningObject: testLearningObject,
+              learningObject: testLearningObjectV2,
               autoPlay: false,
             ),
           ),
@@ -281,7 +280,7 @@ void main() {
         MaterialApp(
           home: ProviderScope(
             child: EnhancedAudioPlayerScreen(
-              learningObject: testLearningObject,
+              learningObject: testLearningObjectV2,
               autoPlay: false,
             ),
           ),
@@ -307,7 +306,8 @@ void main() {
   });
 
   group('Progress Service Integration', () {
-    testWidgets('should handle null progress service gracefully', (tester) async {
+    testWidgets('should handle null progress service gracefully',
+        (tester) async {
       final processingStateController = StreamController<ProcessingState>();
 
       when(() => mockAudioService.processingStateStream)
@@ -317,7 +317,7 @@ void main() {
         MaterialApp(
           home: ProviderScope(
             child: EnhancedAudioPlayerScreen(
-              learningObject: testLearningObject,
+              learningObject: testLearningObjectV2,
               autoPlay: false,
             ),
           ),
@@ -336,7 +336,8 @@ void main() {
       processingStateController.close();
     });
 
-    testWidgets('should use correct duration when saving progress', (tester) async {
+    testWidgets('should use correct duration when saving progress',
+        (tester) async {
       final processingStateController = StreamController<ProcessingState>();
       const testDuration = Duration(minutes: 3, seconds: 30);
 
@@ -348,7 +349,7 @@ void main() {
         MaterialApp(
           home: ProviderScope(
             child: EnhancedAudioPlayerScreen(
-              learningObject: testLearningObject,
+              learningObject: testLearningObjectV2,
               autoPlay: false,
             ),
           ),
@@ -363,11 +364,11 @@ void main() {
 
       // Verify correct duration was used
       verify(() => mockProgressService.saveProgress(
-        learningObjectId: testLearningObject.id,
-        positionMs: testDuration.inMilliseconds,
-        isCompleted: true,
-        isInProgress: false,
-      )).called(1);
+            learningObjectId: testLearningObjectV2.id,
+            positionMs: testDuration.inMilliseconds,
+            isCompleted: true,
+            isInProgress: false,
+          )).called(1);
 
       processingStateController.close();
     });

@@ -23,7 +23,7 @@ void main() {
     group('authServiceProvider', () {
       test('should provide AuthServiceInterface from factory', () {
         final service = container.read(authServiceProvider);
-        
+
         expect(service, isA<AuthServiceInterface>());
         expect(service, AuthFactory.instance);
       });
@@ -31,13 +31,13 @@ void main() {
       test('should provide same instance on multiple reads', () {
         final service1 = container.read(authServiceProvider);
         final service2 = container.read(authServiceProvider);
-        
+
         expect(identical(service1, service2), isTrue);
       });
 
       test('should have required interface methods', () {
         final service = container.read(authServiceProvider);
-        
+
         // Verify interface methods exist
         expect(service.initialize, isA<Function>());
         expect(service.signIn, isA<Function>());
@@ -60,13 +60,15 @@ void main() {
         // The provider should provide a stream that emits auth state changes
         final authState = container.read(authStateProvider);
         expect(authState, isA<AsyncValue<bool>>());
-        
+
         // Stream provider should handle loading state initially
-        expect(authState.when(
-          data: (value) => value,
-          loading: () => null,
-          error: (_, __) => false,
-        ), anyOf([isNull, isA<bool>()]));
+        expect(
+            authState.when(
+              data: (value) => value,
+              loading: () => null,
+              error: (_, __) => false,
+            ),
+            anyOf([isNull, isA<bool>()]));
       });
     });
 
@@ -78,7 +80,7 @@ void main() {
 
       test('should handle no current user', () {
         final currentUser = container.read(currentUserProvider);
-        
+
         // Should handle the case where no user is signed in
         expect(currentUser, isA<AsyncValue<User?>>());
       });
@@ -86,10 +88,10 @@ void main() {
       test('should create User model from auth user data', () async {
         // This tests the provider logic for converting AuthUser to User
         final currentUser = container.read(currentUserProvider);
-        
+
         // Provider should return AsyncValue
         expect(currentUser, isA<AsyncValue<User?>>());
-        
+
         // Test the data transformation logic exists
         currentUser.when(
           data: (user) {
@@ -116,7 +118,7 @@ void main() {
         // When auth state is loading, should return false
         final isAuthenticated = container.read(isAuthenticatedProvider);
         expect(isAuthenticated, isA<bool>());
-        
+
         // Default behavior should be false for safety
         // (users should not see authenticated content while loading)
         expect(isAuthenticated, isFalse);
@@ -144,7 +146,7 @@ void main() {
         // isAuthenticatedProvider should watch authStateProvider
         final authState = container.read(authStateProvider);
         final isAuthenticated = container.read(isAuthenticatedProvider);
-        
+
         expect(authState, isA<AsyncValue<bool>>());
         expect(isAuthenticated, isA<bool>());
       });
@@ -153,12 +155,12 @@ void main() {
     group('Provider Lifecycle', () {
       test('providers should be disposable', () {
         final testContainer = ProviderContainer();
-        
+
         testContainer.read(authServiceProvider);
         testContainer.read(authStateProvider);
         testContainer.read(currentUserProvider);
         testContainer.read(isAuthenticatedProvider);
-        
+
         expect(() => testContainer.dispose(), returnsNormally);
       });
 
@@ -166,10 +168,10 @@ void main() {
         final testContainer = ProviderContainer();
         final service1 = testContainer.read(authServiceProvider);
         testContainer.dispose();
-        
+
         final newContainer = ProviderContainer();
         final service2 = newContainer.read(authServiceProvider);
-        
+
         // Should get same factory instance
         expect(identical(service1, service2), isTrue);
         newContainer.dispose();
@@ -187,10 +189,10 @@ void main() {
 
       test('isAuthenticatedProvider should handle null/error states', () {
         final isAuthenticated = container.read(isAuthenticatedProvider);
-        
+
         // Should always return a boolean, never null
         expect(isAuthenticated, isA<bool>());
-        
+
         // Should default to false for safety
         expect(isAuthenticated, isFalse);
       });
@@ -199,7 +201,7 @@ void main() {
     group('State Updates', () {
       test('providers should react to auth state changes', () {
         var notificationCount = 0;
-        
+
         container.listen(
           isAuthenticatedProvider,
           (previous, next) => notificationCount++,
@@ -208,7 +210,7 @@ void main() {
         // Read the provider to establish dependency
         final initialState = container.read(isAuthenticatedProvider);
         expect(initialState, isA<bool>());
-        
+
         // Changes in auth state should potentially trigger notifications
         // (Actual testing would require mocking the auth service)
       });
@@ -217,7 +219,7 @@ void main() {
     group('User Model Creation', () {
       test('should create User model with correct fields', () {
         final currentUser = container.read(currentUserProvider);
-        
+
         currentUser.when(
           data: (user) {
             if (user != null) {
@@ -228,7 +230,7 @@ void main() {
               expect(user.organization, isNull); // Set to null in provider
               expect(user.createdAt, isA<DateTime>());
               expect(user.updatedAt, isA<DateTime>());
-              
+
               // Verify that cognitoSub matches id (from AuthUser.userId)
               expect(user.cognitoSub, user.id);
             }
@@ -242,9 +244,9 @@ void main() {
     group('Stream Behavior', () {
       test('authStateProvider should provide auth state stream', () {
         final authState = container.read(authStateProvider);
-        
+
         expect(authState, isA<AsyncValue<bool>>());
-        
+
         // Should handle all possible AsyncValue states
         authState.when(
           data: (isAuth) => expect(isAuth, isA<bool>()),
@@ -261,12 +263,12 @@ void main() {
         final authState = container.read(authStateProvider);
         final currentUser = container.read(currentUserProvider);
         final isAuthenticated = container.read(isAuthenticatedProvider);
-        
+
         expect(service, isNotNull);
         expect(authState, isA<AsyncValue<bool>>());
         expect(currentUser, isA<AsyncValue<User?>>());
         expect(isAuthenticated, isA<bool>());
-        
+
         // isAuthenticated should be consistent with authState
         authState.when(
           data: (authValue) {
@@ -287,7 +289,7 @@ void main() {
       test('should use AuthFactory singleton', () {
         final service = container.read(authServiceProvider);
         final factoryInstance = AuthFactory.instance;
-        
+
         expect(identical(service, factoryInstance), isTrue);
       });
     });

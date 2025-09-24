@@ -9,7 +9,6 @@
 /// - Retry count management
 /// - Queue state persistence
 ///
-import 'dart:collection';
 import '../../models/download_models.dart';
 import '../../models/learning_object_v2.dart';
 import '../../utils/app_logger.dart';
@@ -43,7 +42,8 @@ class DownloadQueueManager {
   }
 
   /// Build queue from learning objects
-  Future<void> buildQueue(String courseId, List<LearningObjectV2> learningObjects) async {
+  Future<void> buildQueue(
+      String courseId, List<LearningObjectV2> learningObjects) async {
     clearQueue();
 
     for (final lo in learningObjects) {
@@ -121,7 +121,9 @@ class DownloadQueueManager {
 
   /// Get failed tasks
   List<DownloadTask> getFailedTasks() {
-    return _queue.where((task) => task.status == DownloadStatus.failed).toList();
+    return _queue
+        .where((task) => task.status == DownloadStatus.failed)
+        .toList();
   }
 
   /// Reset failed tasks for retry
@@ -136,7 +138,8 @@ class DownloadQueueManager {
     }
 
     // Reset to first failed task
-    _currentQueueIndex = _queue.indexWhere((task) => task.status == DownloadStatus.pending);
+    _currentQueueIndex =
+        _queue.indexWhere((task) => task.status == DownloadStatus.pending);
     if (_currentQueueIndex == -1) {
       _currentQueueIndex = 0;
     }
@@ -208,7 +211,8 @@ class DownloadQueueManager {
         courseId: courseId,
         learningObjectId: lo.id,
         url: lo.audioUrl,
-        localPath: 'courses/$courseId/learning_objects/${lo.id}/audio.${lo.audioFormat}',
+        localPath:
+            'courses/$courseId/learning_objects/${lo.id}/audio.${lo.audioFormat}',
         fileType: DownloadFileType.audio,
         expectedSize: lo.audioSizeBytes, // Use actual size from database
         status: DownloadStatus.pending,
@@ -222,12 +226,14 @@ class DownloadQueueManager {
       courseId: courseId,
       learningObjectId: lo.id,
       url: '', // Will be saved directly from memory
-      localPath: 'courses/$courseId/learning_objects/${lo.id}/word_timings.json',
+      localPath:
+          'courses/$courseId/learning_objects/${lo.id}/word_timings.json',
       fileType: DownloadFileType.timing,
       expectedSize: lo.wordTimings.length * 100, // Estimate based on word count
       status: DownloadStatus.pending,
       version: lo.fileVersion,
-      jsonData: lo.wordTimings.map((w) => w.toJson()).toList(), // Store timing data
+      jsonData:
+          lo.wordTimings.map((w) => w.toJson()).toList(), // Store timing data
     ));
 
     // Sentence timings JSON task - save separately for offline access
@@ -236,12 +242,16 @@ class DownloadQueueManager {
       courseId: courseId,
       learningObjectId: lo.id,
       url: '', // Will be saved directly from memory
-      localPath: 'courses/$courseId/learning_objects/${lo.id}/sentence_timings.json',
+      localPath:
+          'courses/$courseId/learning_objects/${lo.id}/sentence_timings.json',
       fileType: DownloadFileType.timing,
-      expectedSize: lo.sentenceTimings.length * 200, // Estimate based on sentence count
+      expectedSize:
+          lo.sentenceTimings.length * 200, // Estimate based on sentence count
       status: DownloadStatus.pending,
       version: lo.fileVersion,
-      jsonData: lo.sentenceTimings.map((s) => s.toJson()).toList(), // Store timing data
+      jsonData: lo.sentenceTimings
+          .map((s) => s.toJson())
+          .toList(), // Store timing data
     ));
 
     // Content metadata JSON task - save for offline access

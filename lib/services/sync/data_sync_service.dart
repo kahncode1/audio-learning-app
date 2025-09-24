@@ -43,7 +43,8 @@ class DataSyncService {
   /// Initialize sync service and start monitoring
   Future<void> initialize(String userId) async {
     // Monitor network status
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((results) {
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen((results) {
       _handleConnectivityChange(results, userId);
     });
 
@@ -57,8 +58,8 @@ class DataSyncService {
     List<ConnectivityResult> results,
     String userId,
   ) async {
-    final isConnected = results.isNotEmpty &&
-                        !results.contains(ConnectivityResult.none);
+    final isConnected =
+        results.isNotEmpty && !results.contains(ConnectivityResult.none);
 
     if (isConnected && _wasOffline) {
       // Network restored - trigger sync
@@ -99,7 +100,6 @@ class DataSyncService {
         status: 'completed',
         message: 'Synchronization complete',
       ));
-
     } catch (e) {
       _emitStatus(SyncStatus(
         status: 'failed',
@@ -134,11 +134,12 @@ class DataSyncService {
 
         // Upload to Supabase
         await _supabase.from('user_progress').upsert(
-          progressData,
-          onConflict: 'user_id,learning_object_id',
-        );
+              progressData,
+              onConflict: 'user_id,learning_object_id',
+            );
       } catch (e) {
-        print('⚠️ Failed to sync progress for ${progress['learning_object_id']}: $e');
+        print(
+            '⚠️ Failed to sync progress for ${progress['learning_object_id']}: $e');
       }
     }
   }
@@ -150,10 +151,8 @@ class DataSyncService {
       message: 'Downloading progress...',
     ));
 
-    final remoteProgress = await _supabase
-        .from('user_progress')
-        .select()
-        .eq('user_id', userId);
+    final remoteProgress =
+        await _supabase.from('user_progress').select().eq('user_id', userId);
 
     for (final progress in remoteProgress as List) {
       final localProgress = await _localDb.getUserProgress(
@@ -163,8 +162,10 @@ class DataSyncService {
 
       // Conflict resolution: Use the most recently updated version
       if (localProgress != null) {
-        final localUpdated = DateTime.tryParse(localProgress['updated_at'] as String? ?? '');
-        final remoteUpdated = DateTime.tryParse(progress['updated_at'] as String? ?? '');
+        final localUpdated =
+            DateTime.tryParse(localProgress['updated_at'] as String? ?? '');
+        final remoteUpdated =
+            DateTime.tryParse(progress['updated_at'] as String? ?? '');
 
         if (localUpdated != null && remoteUpdated != null) {
           if (localUpdated.isAfter(remoteUpdated)) {
@@ -177,7 +178,8 @@ class DataSyncService {
       // Convert boolean values for SQLite
       final progressData = Map<String, dynamic>.from(progress);
       progressData['is_completed'] = progress['is_completed'] == true ? 1 : 0;
-      progressData['is_in_progress'] = progress['is_in_progress'] == true ? 1 : 0;
+      progressData['is_in_progress'] =
+          progress['is_in_progress'] == true ? 1 : 0;
 
       await _localDb.upsertUserProgress(progressData);
     }
@@ -202,11 +204,12 @@ class DataSyncService {
     for (final progress in localCourseProgress) {
       try {
         await _supabase.from('user_course_progress').upsert(
-          progress,
-          onConflict: 'user_id,course_id',
-        );
+              progress,
+              onConflict: 'user_id,course_id',
+            );
       } catch (e) {
-        print('⚠️ Failed to sync course progress for ${progress['course_id']}: $e');
+        print(
+            '⚠️ Failed to sync course progress for ${progress['course_id']}: $e');
       }
     }
 
@@ -244,8 +247,10 @@ class DataSyncService {
             .maybeSingle();
 
         if (remoteCourse != null) {
-          final localUpdated = DateTime.tryParse(localCourse['updated_at'] as String? ?? '');
-          final remoteUpdated = DateTime.tryParse(remoteCourse['updated_at'] as String? ?? '');
+          final localUpdated =
+              DateTime.tryParse(localCourse['updated_at'] as String? ?? '');
+          final remoteUpdated =
+              DateTime.tryParse(remoteCourse['updated_at'] as String? ?? '');
 
           if (localUpdated != null && remoteUpdated != null) {
             if (remoteUpdated.isAfter(localUpdated)) {
@@ -284,17 +289,20 @@ class DataSyncService {
 
     // Convert booleans for SQLite
     if (progressData['is_completed'] != null) {
-      progressData['is_completed'] = progressData['is_completed'] == true ? 1 : 0;
+      progressData['is_completed'] =
+          progressData['is_completed'] == true ? 1 : 0;
     }
     if (progressData['is_in_progress'] != null) {
-      progressData['is_in_progress'] = progressData['is_in_progress'] == true ? 1 : 0;
+      progressData['is_in_progress'] =
+          progressData['is_in_progress'] == true ? 1 : 0;
     }
 
     await _localDb.upsertUserProgress(progressData);
 
     // Try to sync to remote if online
     final connectivity = await _connectivity.checkConnectivity();
-    if (connectivity.isNotEmpty && !connectivity.contains(ConnectivityResult.none)) {
+    if (connectivity.isNotEmpty &&
+        !connectivity.contains(ConnectivityResult.none)) {
       try {
         // Convert back for Supabase
         final remoteData = Map<String, dynamic>.from(progressData);
@@ -302,9 +310,9 @@ class DataSyncService {
         remoteData['is_in_progress'] = progressData['is_in_progress'] == 1;
 
         await _supabase.from('user_progress').upsert(
-          remoteData,
-          onConflict: 'user_id,learning_object_id',
-        );
+              remoteData,
+              onConflict: 'user_id,learning_object_id',
+            );
       } catch (e) {
         // Failed to sync remotely, but local save succeeded
         print('⚠️ Failed to sync progress remotely (will retry later): $e');
@@ -318,11 +326,13 @@ class DataSyncService {
     required String learningObjectId,
   }) async {
     // Try to get from local first
-    final localProgress = await _localDb.getUserProgress(userId, learningObjectId);
+    final localProgress =
+        await _localDb.getUserProgress(userId, learningObjectId);
 
     // If offline or we have local data, return it
     final connectivity = await _connectivity.checkConnectivity();
-    if (connectivity.contains(ConnectivityResult.none) || localProgress != null) {
+    if (connectivity.contains(ConnectivityResult.none) ||
+        localProgress != null) {
       return localProgress;
     }
 
@@ -338,8 +348,10 @@ class DataSyncService {
       if (remoteProgress != null) {
         // Save to local for offline access
         final progressData = Map<String, dynamic>.from(remoteProgress);
-        progressData['is_completed'] = remoteProgress['is_completed'] == true ? 1 : 0;
-        progressData['is_in_progress'] = remoteProgress['is_in_progress'] == true ? 1 : 0;
+        progressData['is_completed'] =
+            remoteProgress['is_completed'] == true ? 1 : 0;
+        progressData['is_in_progress'] =
+            remoteProgress['is_in_progress'] == true ? 1 : 0;
         await _localDb.upsertUserProgress(progressData);
       }
 
@@ -438,8 +450,8 @@ class SyncStatus {
   }) : timestamp = DateTime.now();
 
   Map<String, dynamic> toJson() => {
-    'status': status,
-    'message': message,
-    'timestamp': timestamp.toIso8601String(),
-  };
+        'status': status,
+        'message': message,
+        'timestamp': timestamp.toIso8601String(),
+      };
 }

@@ -14,7 +14,6 @@ import 'dart:io';
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import '../../models/download_models.dart';
 import '../../services/dio_provider.dart';
 import '../../utils/app_logger.dart';
 
@@ -53,7 +52,6 @@ class NetworkDownloader {
     CancelToken? cancelToken,
   }) async {
     final tempFile = File(tempPath);
-    final finalFile = File(savePath);
 
     // Create cancel token if not provided
     _currentCancelToken = cancelToken ?? CancelToken();
@@ -133,17 +131,20 @@ class NetworkDownloader {
     } on DioException catch (e) {
       if (e.type == DioExceptionType.cancel) {
         AppLogger.info('Download cancelled', {'url': url});
-        throw DownloadException('Download cancelled', DownloadErrorType.cancelled);
+        throw DownloadException(
+            'Download cancelled', DownloadErrorType.cancelled);
       } else if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         AppLogger.error('Download timeout', error: e);
         throw DownloadException('Download timeout', DownloadErrorType.timeout);
       } else if (e.type == DioExceptionType.connectionError) {
         AppLogger.error('Connection error', error: e);
-        throw DownloadException('Connection error', DownloadErrorType.networkError);
+        throw DownloadException(
+            'Connection error', DownloadErrorType.networkError);
       } else {
         AppLogger.error('Download failed', error: e);
-        throw DownloadException(e.message ?? 'Download failed', DownloadErrorType.unknown);
+        throw DownloadException(
+            e.message ?? 'Download failed', DownloadErrorType.unknown);
       }
     } catch (e) {
       AppLogger.error('Unexpected download error', error: e);
@@ -170,8 +171,8 @@ class NetworkDownloader {
   Future<bool> isConnected() async {
     final results = await _connectivity.checkConnectivity();
     return results.any((result) =>
-      result != ConnectivityResult.none && result != ConnectivityResult.bluetooth
-    );
+        result != ConnectivityResult.none &&
+        result != ConnectivityResult.bluetooth);
   }
 
   /// Start monitoring connectivity changes
@@ -199,7 +200,8 @@ class NetworkDownloader {
       );
       return response.statusCode == 200;
     } catch (e) {
-      AppLogger.warning('URL test failed', data: {'url': url, 'error': e.toString()});
+      AppLogger.warning('URL test failed',
+          {'url': url, 'error': e.toString()});
       return false;
     }
   }
@@ -214,7 +216,7 @@ class NetworkDownloader {
         return int.tryParse(contentLength);
       }
     } catch (e) {
-      AppLogger.warning('Failed to get file size', data: {'url': url});
+      AppLogger.warning('Failed to get file size', {'url': url});
     }
     return null;
   }
@@ -226,7 +228,7 @@ class NetworkDownloader {
       final acceptRanges = response.headers.value('accept-ranges');
       return acceptRanges == 'bytes';
     } catch (e) {
-      AppLogger.warning('Failed to check resume support', data: {'url': url});
+      AppLogger.warning('Failed to check resume support', {'url': url});
       return false;
     }
   }

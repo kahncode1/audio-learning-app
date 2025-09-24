@@ -152,7 +152,7 @@ void main() {
         // Listen to auth state changes
         final stream = authService.authStateChanges;
         expect(stream, isA<Stream<bool>>());
-        
+
         // Would emit true when signed in, false when signed out
       });
 
@@ -220,7 +220,7 @@ void main() {
         authService.dispose();
         // Should cancel timers and close streams
         expect(authService, isNotNull);
-        
+
         // Create new instance for other tests
         authService = AuthService();
       });

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/env_config.dart';
@@ -70,7 +71,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
 
           // Developer section - only show in debug mode
-          if (EnvConfig.isDevelopment) ...[
+          if (kDebugMode && EnvConfig.isDevelopment) ...[
             const Divider(thickness: 2),
             const Padding(
               padding: EdgeInsets.all(16.0),

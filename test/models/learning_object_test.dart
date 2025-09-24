@@ -73,11 +73,14 @@ void main() {
         expect(learningObject.assignmentId, 'assign-123');
         expect(learningObject.title, 'Introduction to Risk Assessment');
         expect(learningObject.contentType, 'audio');
-        expect(learningObject.ssmlContent, '<speak>This is SSML content.</speak>');
+        expect(
+            learningObject.ssmlContent, '<speak>This is SSML content.</speak>');
         expect(learningObject.plainText, 'This is plain text content.');
         expect(learningObject.orderIndex, 1);
-        expect(learningObject.createdAt, DateTime.parse('2024-03-10T14:30:00Z'));
-        expect(learningObject.updatedAt, DateTime.parse('2024-03-15T10:15:00Z'));
+        expect(
+            learningObject.createdAt, DateTime.parse('2024-03-10T14:30:00Z'));
+        expect(
+            learningObject.updatedAt, DateTime.parse('2024-03-15T10:15:00Z'));
         expect(learningObject.isCompleted, true);
         expect(learningObject.currentPositionMs, 30000);
       });
@@ -310,10 +313,11 @@ void main() {
         );
 
         expect(learningObject.currentPositionMs, 123456);
-        
+
         // Calculate progress percentage (example)
         const totalDurationMs = 300000; // 5 minutes
-        final progressPercent = (learningObject.currentPositionMs / totalDurationMs * 100).round();
+        final progressPercent =
+            (learningObject.currentPositionMs / totalDurationMs * 100).round();
         expect(progressPercent, 41);
       });
     });

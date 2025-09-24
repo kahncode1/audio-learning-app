@@ -45,15 +45,18 @@ void main() {
 
       // Verify all tables exist
       final tables = [
-        'courses', 'assignments', 'learning_objects',
-        'user_progress', 'user_course_progress', 'download_cache'
+        'courses',
+        'assignments',
+        'learning_objects',
+        'user_progress',
+        'user_course_progress',
+        'download_cache'
       ];
 
       for (final table in tables) {
         final result = await db.rawQuery(
-          "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-          [table]
-        );
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            [table]);
         expect(result.isNotEmpty, true, reason: 'Table $table should exist');
       }
     });
@@ -121,7 +124,8 @@ void main() {
       expect(assignments[0]['learning_object_count'], equals(3));
     });
 
-    test('should store and retrieve learning object with timing data', () async {
+    test('should store and retrieve learning object with timing data',
+        () async {
       // Setup course and assignment
       await localDb.upsertCourse({
         'id': 'test-course-003',
@@ -163,11 +167,46 @@ void main() {
           'language': 'en',
         },
         'word_timings': [
-          {'word': 'This', 'start_ms': 0, 'end_ms': 200, 'char_start': 0, 'char_end': 4, 'sentence_index': 0},
-          {'word': 'is', 'start_ms': 200, 'end_ms': 350, 'char_start': 5, 'char_end': 7, 'sentence_index': 0},
-          {'word': 'the', 'start_ms': 350, 'end_ms': 500, 'char_start': 8, 'char_end': 11, 'sentence_index': 0},
-          {'word': 'test', 'start_ms': 500, 'end_ms': 750, 'char_start': 12, 'char_end': 16, 'sentence_index': 0},
-          {'word': 'content.', 'start_ms': 750, 'end_ms': 1000, 'char_start': 17, 'char_end': 25, 'sentence_index': 0},
+          {
+            'word': 'This',
+            'start_ms': 0,
+            'end_ms': 200,
+            'char_start': 0,
+            'char_end': 4,
+            'sentence_index': 0
+          },
+          {
+            'word': 'is',
+            'start_ms': 200,
+            'end_ms': 350,
+            'char_start': 5,
+            'char_end': 7,
+            'sentence_index': 0
+          },
+          {
+            'word': 'the',
+            'start_ms': 350,
+            'end_ms': 500,
+            'char_start': 8,
+            'char_end': 11,
+            'sentence_index': 0
+          },
+          {
+            'word': 'test',
+            'start_ms': 500,
+            'end_ms': 750,
+            'char_start': 12,
+            'char_end': 16,
+            'sentence_index': 0
+          },
+          {
+            'word': 'content.',
+            'start_ms': 750,
+            'end_ms': 1000,
+            'char_start': 17,
+            'char_end': 25,
+            'sentence_index': 0
+          },
         ],
         'sentence_timings': [
           {
@@ -209,7 +248,8 @@ void main() {
 
       expect(retrieved['sentence_timings'], isList);
       expect((retrieved['sentence_timings'] as List).length, equals(1));
-      expect((retrieved['sentence_timings'] as List)[0]['text'], equals('This is the test content.'));
+      expect((retrieved['sentence_timings'] as List)[0]['text'],
+          equals('This is the test content.'));
     });
 
     test('should track user progress offline', () async {
@@ -269,7 +309,8 @@ void main() {
         'playback_speed': 1.5,
         'play_count': 3,
         'total_play_time_ms': 1350,
-        'started_at': DateTime.now().subtract(Duration(minutes: 5)).toIso8601String(),
+        'started_at':
+            DateTime.now().subtract(Duration(minutes: 5)).toIso8601String(),
         'last_played_at': DateTime.now().toIso8601String(),
         'created_at': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
@@ -279,7 +320,8 @@ void main() {
       await localDb.upsertUserProgress(testProgress);
 
       // Retrieve progress
-      final retrieved = await localDb.getUserProgress('test-user-001', 'test-lo-002');
+      final retrieved =
+          await localDb.getUserProgress('test-user-001', 'test-lo-002');
       expect(retrieved, isNotNull);
       expect(retrieved!['completion_percentage'], equals(45));
       expect(retrieved['current_position_ms'], equals(450));
@@ -342,7 +384,8 @@ void main() {
       );
 
       // Get download status
-      final status = await localDb.getDownloadStatus('test-user-001', 'test-course-005');
+      final status =
+          await localDb.getDownloadStatus('test-user-001', 'test-course-005');
       expect(status.length, equals(1));
       expect(status[0]['download_status'], equals('completed'));
       expect(status[0]['download_progress'], equals(100));
@@ -396,7 +439,8 @@ void main() {
       expect(retrieved, isNotNull);
       expect(retrieved!['current_position_ms'], equals(5000));
       expect(retrieved['last_word_index'], equals(10));
-      expect(retrieved['is_in_progress'], equals(1)); // SQLite stores as integer
+      expect(
+          retrieved['is_in_progress'], equals(1)); // SQLite stores as integer
       expect(retrieved['completion_percentage'], equals(50));
     });
 
@@ -443,7 +487,8 @@ void main() {
 
     test('should check if course is downloaded', () async {
       // Initially not downloaded
-      final isDownloaded = await downloadService.isCourseDownloaded('non-existent-course');
+      final isDownloaded =
+          await downloadService.isCourseDownloaded('non-existent-course');
       expect(isDownloaded, false);
 
       // Add a course
@@ -457,7 +502,8 @@ void main() {
       });
 
       // Still not fully downloaded (no learning objects)
-      final partiallyDownloaded = await downloadService.isCourseDownloaded('test-course-006');
+      final partiallyDownloaded =
+          await downloadService.isCourseDownloaded('test-course-006');
       expect(partiallyDownloaded, false);
 
       // Add complete data
@@ -492,7 +538,8 @@ void main() {
       });
 
       // Now fully downloaded
-      final fullyDownloaded = await downloadService.isCourseDownloaded('test-course-006');
+      final fullyDownloaded =
+          await downloadService.isCourseDownloaded('test-course-006');
       expect(fullyDownloaded, true);
     });
 

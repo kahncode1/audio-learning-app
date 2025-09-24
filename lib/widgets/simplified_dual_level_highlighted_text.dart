@@ -27,6 +27,7 @@ import '../services/word_timing_service_simplified.dart';
 import '../models/word_timing.dart';
 import '../utils/app_logger.dart';
 import '../theme/app_theme.dart';
+import 'optimized_highlight_painter.dart';
 
 /// Simplified widget for dual-level highlighting with optimal performance
 class SimplifiedDualLevelHighlightedText extends ConsumerStatefulWidget {
@@ -96,11 +97,13 @@ class _SimplifiedDualLevelHighlightedTextState
       if (mounted && wordIndex != _currentWordIndex) {
         // Detect large jumps (seeks/fast-forward)
         // A jump of more than 50 words indicates a seek operation
-        if (_currentWordIndex >= 0 && (wordIndex - _currentWordIndex).abs() > 50) {
+        if (_currentWordIndex >= 0 &&
+            (wordIndex - _currentWordIndex).abs() > 50) {
           // Only set the window start time if we're not already in a seek window
           // This prevents extending the window on rapid consecutive seeks
           if (_seekWindowStartTime == null ||
-              DateTime.now().difference(_seekWindowStartTime!).inMilliseconds > 500) {
+              DateTime.now().difference(_seekWindowStartTime!).inMilliseconds >
+                  500) {
             _seekWindowStartTime = DateTime.now();
             AppLogger.info('🎨 WIDGET: Seek window opened', {
               'oldIndex': _currentWordIndex,
@@ -111,7 +114,9 @@ class _SimplifiedDualLevelHighlightedTextState
             AppLogger.info('🎨 WIDGET: Additional seek in active window', {
               'oldIndex': _currentWordIndex,
               'newIndex': wordIndex,
-              'windowAge': DateTime.now().difference(_seekWindowStartTime!).inMilliseconds,
+              'windowAge': DateTime.now()
+                  .difference(_seekWindowStartTime!)
+                  .inMilliseconds,
             });
           }
         }
@@ -125,7 +130,8 @@ class _SimplifiedDualLevelHighlightedTextState
       }
     });
 
-    _sentenceSubscription = _timingService.currentSentenceStream.listen((sentenceIndex) {
+    _sentenceSubscription =
+        _timingService.currentSentenceStream.listen((sentenceIndex) {
       if (mounted && sentenceIndex != _currentSentenceIndex) {
         AppLogger.info('🎨 WIDGET: Sentence index update received', {
           'oldIndex': _currentSentenceIndex,
@@ -141,11 +147,12 @@ class _SimplifiedDualLevelHighlightedTextState
       // Get cached timings or fetch if needed
       var timings = _timingService.getCachedTimings(widget.contentId);
       if (timings == null || timings.isEmpty) {
-        timings = await _timingService.fetchTimings(widget.contentId, widget.text);
+        timings =
+            await _timingService.fetchTimings(widget.contentId, widget.text);
       }
 
       if (mounted && timings.isNotEmpty) {
-        final nonNullTimings = timings;  // Create non-nullable local variable
+        final nonNullTimings = timings; // Create non-nullable local variable
         AppLogger.info('🎨 WIDGET: Timing data loaded', {
           'contentId': widget.contentId,
           'wordCount': nonNullTimings.length,
@@ -172,7 +179,8 @@ class _SimplifiedDualLevelHighlightedTextState
     final scrollController = widget.scrollController!;
 
     // Ensure we have a valid position
-    if (!scrollController.hasClients || !scrollController.position.hasContentDimensions) {
+    if (!scrollController.hasClients ||
+        !scrollController.position.hasContentDimensions) {
       return;
     }
 
@@ -258,9 +266,30 @@ class _SimplifiedDualLevelHighlightedTextState
       }
     }
 
-    return _textPainter.getBoxesForSelection(
+    // Use cached implementation consistent with OptimizedHighlightPainter
+    return _getCachedTextBoxes(start, end);
+  }
+
+  // Get cached TextBoxes for a selection (mirror of OptimizedHighlightPainter method)
+  List<TextBox> _getCachedTextBoxes(int start, int end) {
+    final cacheKey = '${widget.text.hashCode}_${widget.baseStyle.fontSize?.hashCode ?? 0}_${start}_$end';
+
+    if (OptimizedHighlightPainter.textBoxCache.containsKey(cacheKey)) {
+      return OptimizedHighlightPainter.textBoxCache[cacheKey]!;
+    }
+
+    final boxes = _textPainter.getBoxesForSelection(
       TextSelection(baseOffset: start, extentOffset: end),
     );
+
+    // Use the same cache as OptimizedHighlightPainter
+    if (OptimizedHighlightPainter.textBoxCache.length >= OptimizedHighlightPainter.maxCacheSize) {
+      final oldestKey = OptimizedHighlightPainter.textBoxCache.keys.first;
+      OptimizedHighlightPainter.textBoxCache.remove(oldestKey);
+    }
+
+    OptimizedHighlightPainter.textBoxCache[cacheKey] = boxes;
+    return boxes;
   }
 
   // Calculate appropriate scroll duration based on distance
@@ -315,7 +344,8 @@ class _SimplifiedDualLevelHighlightedTextState
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               color: Colors.grey.shade200,
               border: Border(
@@ -349,13 +379,15 @@ class _SimplifiedDualLevelHighlightedTextState
         }
 
         final theme = Theme.of(context);
-        final sentenceColor = widget.sentenceHighlightColor ?? theme.sentenceHighlight;
+        final sentenceColor =
+            widget.sentenceHighlightColor ?? theme.sentenceHighlight;
         final wordColor = widget.wordHighlightColor ?? theme.wordHighlight;
 
         // Check if we're within the fixed seek window (500ms)
         // The window doesn't extend - it's exactly 500ms from when the first seek was detected
         final bool isWithinSeekWindow = _seekWindowStartTime != null &&
-            DateTime.now().difference(_seekWindowStartTime!).inMilliseconds < 500;
+            DateTime.now().difference(_seekWindowStartTime!).inMilliseconds <
+                500;
 
         return CustomPaint(
           size: Size(constraints.maxWidth, _textPainter.height),
@@ -376,6 +408,9 @@ class _SimplifiedDualLevelHighlightedTextState
   }
 
   void _updateTextPainter(double maxWidth) {
+    // Clear TextBox cache when text or font changes to ensure accuracy
+    OptimizedHighlightPainter.clearTextBoxCache();
+
     // Set up the TextPainter once with the full text
     // This will never be modified during paint cycles
     _textPainter.text = TextSpan(text: widget.text, style: widget.baseStyle);
@@ -388,9 +423,8 @@ class _SimplifiedDualLevelHighlightedTextState
     }
 
     // Check if all word timings have character positions
-    return _timingCollection!.timings.every((timing) =>
-      timing.charStart != null && timing.charEnd != null
-    );
+    return _timingCollection!.timings
+        .every((timing) => timing.charStart != null && timing.charEnd != null);
   }
 
   @override
@@ -402,185 +436,6 @@ class _SimplifiedDualLevelHighlightedTextState
   }
 }
 
-/// Optimized painter using three-layer system with single TextPainter
-class OptimizedHighlightPainter extends CustomPainter {
-  final String text;
-  final TextPainter textPainter;
-  final WordTimingCollection timingCollection;
-  final int currentWordIndex;
-  final int currentSentenceIndex;
-  final TextStyle baseStyle;
-  final Color sentenceHighlightColor;
-  final Color wordHighlightColor;
-  final bool justSeeked;
-
-  OptimizedHighlightPainter({
-    required this.text,
-    required this.textPainter,
-    required this.timingCollection,
-    required this.currentWordIndex,
-    required this.currentSentenceIndex,
-    required this.baseStyle,
-    required this.sentenceHighlightColor,
-    required this.wordHighlightColor,
-    this.justSeeked = false,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Three-layer paint system for optimal visual hierarchy
-
-    // Layer 1: Sentence background highlight
-    if (currentSentenceIndex >= 0) {
-      _paintSentenceHighlight(canvas);
-    }
-
-    // Layer 2: Current word highlight
-    if (currentWordIndex >= 0 && currentWordIndex < timingCollection.timings.length) {
-      _paintWordHighlight(canvas);
-    }
-
-    // Layer 3: Text content
-    _paintText(canvas);
-  }
-
-  void _paintSentenceHighlight(Canvas canvas) {
-    final sentenceWords = timingCollection.getWordsInSentence(currentSentenceIndex);
-    if (sentenceWords.isEmpty) return;
-
-    // Prefer a continuous highlight using a single selection range per line.
-    // Compute the character range for the entire sentence (end is exclusive).
-    int? startChar;
-    int? endExclusive;
-    for (int i = 0; i < sentenceWords.length; i++) {
-      final w = sentenceWords[i];
-      if (w.charStart == null) continue;
-      final (int s, int e) = _getWordSelection(
-        timingCollection.timings.indexOf(w),
-      );
-      startChar = startChar == null ? s : (s < startChar ? s : startChar);
-      endExclusive = endExclusive == null ? e : (e > endExclusive ? e : endExclusive);
-    }
-
-    final paint = Paint()
-      ..color = sentenceHighlightColor
-      ..style = PaintingStyle.fill;
-
-    if (startChar != null && endExclusive != null && endExclusive >= startChar) {
-      final boxes = textPainter.getBoxesForSelection(
-        TextSelection(baseOffset: startChar, extentOffset: endExclusive),
-      );
-
-      for (final box in boxes) {
-        final rect = Rect.fromLTRB(box.left, box.top, box.right, box.bottom).inflate(1);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(rect, const Radius.circular(2)),
-          paint,
-        );
-      }
-    } else {
-      // Fallback: per-word rectangles (rare; when char positions are missing)
-      for (final word in sentenceWords) {
-        final wordIndex = timingCollection.timings.indexOf(word);
-        if (wordIndex >= 0) {
-          final rect = _getWordRect(wordIndex);
-          if (rect != null) {
-            canvas.drawRRect(
-              RRect.fromRectAndRadius(rect.inflate(1), const Radius.circular(2)),
-              paint,
-            );
-          }
-        }
-      }
-    }
-  }
-
-  void _paintWordHighlight(Canvas canvas) {
-    final rect = _getWordRect(currentWordIndex);
-    if (rect == null) return;
-
-    final paint = Paint()
-      ..color = wordHighlightColor
-      ..style = PaintingStyle.fill;
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect.inflate(1), const Radius.circular(2)),
-      paint,
-    );
-  }
-
-  void _paintText(Canvas canvas) {
-    // Ultra-simple: just paint the pre-configured TextPainter
-    // NO modifications, NO layout calls, NO text changes
-    // The highlighting effect comes from the colored rectangles behind the text
-    textPainter.paint(canvas, Offset.zero);
-  }
-
-  Rect? _getWordRect(int wordIndex) {
-    if (wordIndex < 0 || wordIndex >= timingCollection.timings.length) return null;
-
-    final word = timingCollection.timings[wordIndex];
-    // If we have no character positions from API, we cannot draw a precise
-    // rectangle. Return null to skip highlighting for this word.
-    if (word.charStart == null) {
-      return null;
-    }
-
-    // Get the character positions from the lookup table
-    final (int start, int end) = _getWordSelection(wordIndex);
-
-    // Use TextPainter to obtain the bounding box for the computed range
-    final boxes = textPainter.getBoxesForSelection(
-      TextSelection(baseOffset: start, extentOffset: end),
-    );
-
-    if (boxes.isNotEmpty) {
-      double left = boxes.first.left;
-      double top = boxes.first.top;
-      double right = boxes.first.right;
-      double bottom = boxes.first.bottom;
-
-      for (final b in boxes) {
-        if (b.left < left) left = b.left;
-        if (b.top < top) top = b.top;
-        if (b.right > right) right = b.right;
-        if (b.bottom > bottom) bottom = b.bottom;
-      }
-
-      return Rect.fromLTRB(left, top, right, bottom);
-    }
-
-    return null;
-  }
-
-  // Get the selection range for a word using direct character positions from the lookup table
-  (int, int) _getWordSelection(int wordIndex) {
-    final word = timingCollection.timings[wordIndex];
-    final textLen = text.length;
-
-    // Use the character positions from our pre-processed lookup table
-    // These positions are already validated and correct
-    int start = (word.charStart ?? 0).clamp(0, textLen);
-    int end = (word.charEnd ?? (start + word.word.length)).clamp(0, textLen);
-
-    return (start, end);
-  }
-
-  @override
-  bool shouldRepaint(OptimizedHighlightPainter oldDelegate) {
-    // Force repaint after seek to clear any visual artifacts
-    if (justSeeked) {
-      return true;
-    }
-
-    // Repaint when highlighting changes or style changes
-    return currentWordIndex != oldDelegate.currentWordIndex ||
-           currentSentenceIndex != oldDelegate.currentSentenceIndex ||
-           text != oldDelegate.text ||
-           baseStyle != oldDelegate.baseStyle ||
-           baseStyle.fontSize != oldDelegate.baseStyle.fontSize;
-  }
-}
 
 /// Performance validation for the simplified widget
 Future<void> validateSimplifiedHighlighting() async {
@@ -589,12 +444,14 @@ Future<void> validateSimplifiedHighlighting() async {
   AppLogger.info('Validating simplified dual-level highlighting');
 
   // Test binary search performance
-  final testTimings = List.generate(1000, (i) => WordTiming(
-    word: 'word$i',
-    startMs: i * 100,
-    endMs: (i + 1) * 100,
-    sentenceIndex: i ~/ 10,
-  ));
+  final testTimings = List.generate(
+      1000,
+      (i) => WordTiming(
+            word: 'word$i',
+            startMs: i * 100,
+            endMs: (i + 1) * 100,
+            sentenceIndex: i ~/ 10,
+          ));
 
   final collection = WordTimingCollection(testTimings);
 
@@ -606,7 +463,7 @@ Future<void> validateSimplifiedHighlighting() async {
   searchStopwatch.stop();
 
   assert(searchStopwatch.elapsedMicroseconds < 1000,
-    'Binary search should complete 1000 searches in <1ms, took ${searchStopwatch.elapsedMicroseconds}μs');
+      'Binary search should complete 1000 searches in <1ms, took ${searchStopwatch.elapsedMicroseconds}μs');
 
   AppLogger.performance('Binary search performance', {
     'searches': 1000,

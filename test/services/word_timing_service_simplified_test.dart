@@ -195,7 +195,8 @@ void main() {
         for (final boundary in boundaries) {
           expect(boundary.text, isNotEmpty);
           expect(boundary.startWordIndex, greaterThanOrEqualTo(0));
-          expect(boundary.endWordIndex, greaterThanOrEqualTo(boundary.startWordIndex));
+          expect(boundary.endWordIndex,
+              greaterThanOrEqualTo(boundary.startWordIndex));
           expect(boundary.startTime, greaterThanOrEqualTo(0));
           expect(boundary.endTime, greaterThan(boundary.startTime));
         }

@@ -144,7 +144,8 @@ class UserProgressService {
             onConflict: 'user_id,learning_object_id',
           );
 
-      debugPrint('Saved progress for learning object: ${_pendingProgress!.learningObjectId}');
+      debugPrint(
+          'Saved progress for learning object: ${_pendingProgress!.learningObjectId}');
       _pendingProgress = null;
     } catch (e) {
       debugPrint('Error saving progress: $e');

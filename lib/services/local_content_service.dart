@@ -140,7 +140,8 @@ class LocalContentService {
         'path': _documentsDir?.path,
       });
     } catch (e) {
-      AppLogger.warning('LocalContentService: Could not get documents directory', {
+      AppLogger.warning(
+          'LocalContentService: Could not get documents directory', {
         'error': e.toString(),
       });
     }
@@ -152,7 +153,8 @@ class LocalContentService {
   }
 
   /// Get the path to a downloaded file
-  Future<String?> _getDownloadedFilePath(String learningObjectId, String fileName) async {
+  Future<String?> _getDownloadedFilePath(
+      String learningObjectId, String fileName) async {
     if (_documentsDir == null || _courseId == null) {
       await _initializeDocumentsDir();
       if (_documentsDir == null) return null;
@@ -161,7 +163,8 @@ class LocalContentService {
     // Default course ID if not set (for testing)
     final courseId = _courseId ?? 'INS-101';
 
-    final path = '${_documentsDir!.path}/audio_learning/courses/$courseId/learning_objects/$learningObjectId/$fileName';
+    final path =
+        '${_documentsDir!.path}/audio_learning/courses/$courseId/learning_objects/$learningObjectId/$fileName';
     final file = File(path);
 
     if (await file.exists()) {
@@ -180,7 +183,8 @@ class LocalContentService {
   Future<String> getAudioPath(String learningObjectId) async {
     try {
       // Check for downloaded file first
-      final downloadedPath = await _getDownloadedFilePath(learningObjectId, 'audio.mp3');
+      final downloadedPath =
+          await _getDownloadedFilePath(learningObjectId, 'audio.mp3');
       if (downloadedPath != null) {
         return downloadedPath;
       }
@@ -211,7 +215,8 @@ class LocalContentService {
   Future<Map<String, dynamic>> getContent(String learningObjectId) async {
     try {
       // Check for downloaded file first
-      final downloadedPath = await _getDownloadedFilePath(learningObjectId, 'content.json');
+      final downloadedPath =
+          await _getDownloadedFilePath(learningObjectId, 'content.json');
       String jsonString;
 
       if (downloadedPath != null) {
@@ -254,17 +259,20 @@ class LocalContentService {
       try {
         final content = await getContent(learningObjectId);
         if (content.containsKey('timing')) {
-          AppLogger.info('LocalContentService: Found embedded timing in content.json');
+          AppLogger.info(
+              'LocalContentService: Found embedded timing in content.json');
           final timingJson = content['timing'] as Map<String, dynamic>;
           return _parseTimingData(timingJson, learningObjectId);
         }
       } catch (e) {
         // Content might not have timing, continue to check for separate file
-        AppLogger.debug('LocalContentService: No embedded timing, checking for separate file');
+        AppLogger.debug(
+            'LocalContentService: No embedded timing, checking for separate file');
       }
 
       // Fall back to separate timing.json file (legacy format)
-      final downloadedPath = await _getDownloadedFilePath(learningObjectId, 'timing.json');
+      final downloadedPath =
+          await _getDownloadedFilePath(learningObjectId, 'timing.json');
       String jsonString;
       String? lookupJsonString;
 
@@ -274,7 +282,8 @@ class LocalContentService {
         jsonString = await file.readAsString();
 
         // Try to load position lookup table
-        final lookupPath = downloadedPath.replaceAll('timing.json', 'position_lookup.json');
+        final lookupPath =
+            downloadedPath.replaceAll('timing.json', 'position_lookup.json');
         final lookupFile = File(lookupPath);
         if (await lookupFile.exists()) {
           lookupJsonString = await lookupFile.readAsString();
@@ -286,16 +295,19 @@ class LocalContentService {
 
         // Try to load position lookup table from assets
         try {
-          final lookupAssetPath = '$_testContentPath/$learningObjectId/position_lookup.json';
+          final lookupAssetPath =
+              '$_testContentPath/$learningObjectId/position_lookup.json';
           lookupJsonString = await rootBundle.loadString(lookupAssetPath);
         } catch (e) {
           // Lookup table is optional, fallback to binary search
-          AppLogger.info('LocalContentService: No position lookup table found, will use binary search');
+          AppLogger.info(
+              'LocalContentService: No position lookup table found, will use binary search');
         }
       }
 
       final timingJson = json.decode(jsonString) as Map<String, dynamic>;
-      return _parseTimingData(timingJson, learningObjectId, lookupJsonString: lookupJsonString);
+      return _parseTimingData(timingJson, learningObjectId,
+          lookupJsonString: lookupJsonString);
     } catch (e) {
       AppLogger.error(
         'LocalContentService: Failed to load timing data',
@@ -322,7 +334,8 @@ class LocalContentService {
           endMs: wordData['endMs'] as int,
           charStart: wordData['charStart'] as int,
           charEnd: wordData['charEnd'] as int,
-          sentenceIndex: wordData['sentenceIndex'] as int? ?? 0, // Use sentenceIndex from JSON
+          sentenceIndex: wordData['sentenceIndex'] as int? ??
+              0, // Use sentenceIndex from JSON
         ));
       }
     }
@@ -360,7 +373,8 @@ class LocalContentService {
     // Load and set position lookup table if available
     if (lookupJsonString != null) {
       try {
-        final lookupJson = json.decode(lookupJsonString) as Map<String, dynamic>;
+        final lookupJson =
+            json.decode(lookupJsonString) as Map<String, dynamic>;
         final lookupTable = PositionLookupTable.fromJson(lookupJson);
         timingData.setLookupTable(lookupTable);
 
@@ -370,7 +384,8 @@ class LocalContentService {
           'interval': '${lookupTable.interval}ms',
         });
       } catch (e) {
-        AppLogger.warning('LocalContentService: Failed to load position lookup table', {
+        AppLogger.warning(
+            'LocalContentService: Failed to load position lookup table', {
           'error': e.toString(),
         });
       }
@@ -393,7 +408,8 @@ class LocalContentService {
   Future<bool> isContentAvailable(String learningObjectId) async {
     try {
       // Check for downloaded content first
-      final downloadedPath = await _getDownloadedFilePath(learningObjectId, 'content.json');
+      final downloadedPath =
+          await _getDownloadedFilePath(learningObjectId, 'content.json');
       if (downloadedPath != null) {
         return true;
       }
@@ -511,7 +527,9 @@ class TimingData {
       final index = _wordCollection!.findActiveSentenceIndex(positionMs);
 
       // If no sentence found but position is past all sentences, return last sentence
-      if (index == -1 && positionMs >= totalDurationMs && sentences.isNotEmpty) {
+      if (index == -1 &&
+          positionMs >= totalDurationMs &&
+          sentences.isNotEmpty) {
         return sentences.length - 1;
       }
 
@@ -573,7 +591,8 @@ Future<void> validateLocalContentService() async {
       // Test 2: Load audio path
       final audioPath = await service.getAudioPath(testId);
       assert(audioPath.isNotEmpty, 'Audio path must not be empty');
-      assert(audioPath.contains('audio.mp3'), 'Audio path must point to MP3 file');
+      assert(
+          audioPath.contains('audio.mp3'), 'Audio path must point to MP3 file');
       AppLogger.info('✓ Audio path loading passed: $audioPath');
 
       // Test 3: Load content

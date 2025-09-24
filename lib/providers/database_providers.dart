@@ -22,7 +22,8 @@ import '../services/user_progress_service.dart';
 import '../services/user_settings_service.dart';
 import '../services/sync/data_sync_service.dart';
 import '../services/download/course_download_api_service.dart';
-export '../services/download/course_download_api_service.dart' show DownloadProgress;
+export '../services/download/course_download_api_service.dart'
+    show DownloadProgress;
 import '../models/course.dart';
 import '../models/assignment.dart';
 import '../models/learning_object_v2.dart';
@@ -64,12 +65,13 @@ final dataSyncServiceProvider = Provider<DataSyncService>((ref) {
 });
 
 /// Course download API service provider
-final courseDownloadApiServiceProvider = Provider<CourseDownloadApiService>((ref) {
+final courseDownloadApiServiceProvider =
+    Provider<CourseDownloadApiService>((ref) {
   return CourseDownloadApiService();
 });
 
 /// Provider for courses from local database
-final localCoursesProvider = FutureProvider<List<Course>>((ref) async {
+final localCoursesProvider = FutureProvider.autoDispose<List<Course>>((ref) async {
   final localDb = ref.watch(localDatabaseServiceProvider);
   final coursesData = await localDb.getCourses();
 
@@ -78,7 +80,8 @@ final localCoursesProvider = FutureProvider<List<Course>>((ref) async {
 });
 
 /// Provider for assignments of a specific course
-final courseAssignmentsProvider = FutureProvider.family<List<Assignment>, String>((ref, courseId) async {
+final courseAssignmentsProvider =
+    FutureProvider.autoDispose.family<List<Assignment>, String>((ref, courseId) async {
   final localDb = ref.watch(localDatabaseServiceProvider);
   final assignmentsData = await localDb.getAssignments(courseId);
 
@@ -87,16 +90,21 @@ final courseAssignmentsProvider = FutureProvider.family<List<Assignment>, String
 });
 
 /// Provider for learning objects of a specific assignment
-final assignmentLearningObjectsProvider = FutureProvider.family<List<LearningObjectV2>, String>((ref, assignmentId) async {
+final assignmentLearningObjectsProvider =
+    FutureProvider.autoDispose.family<List<LearningObjectV2>, String>(
+        (ref, assignmentId) async {
   final localDb = ref.watch(localDatabaseServiceProvider);
   final learningObjectsData = await localDb.getLearningObjects(assignmentId);
 
   // Convert database rows to LearningObjectV2 models
-  return learningObjectsData.map((data) => LearningObjectV2.fromJson(data)).toList();
+  return learningObjectsData
+      .map((data) => LearningObjectV2.fromJson(data))
+      .toList();
 });
 
 /// Provider for user progress on a specific learning object
-final userProgressProvider = FutureProvider.family<UserProgress?, String>((ref, learningObjectId) async {
+final userProgressProvider =
+    FutureProvider.autoDispose.family<UserProgress?, String>((ref, learningObjectId) async {
   final userProgressService = ref.watch(userProgressServiceProvider);
 
   // Fetch progress directly using the service
@@ -104,7 +112,8 @@ final userProgressProvider = FutureProvider.family<UserProgress?, String>((ref, 
 });
 
 /// Provider for course completion percentage
-final courseCompletionProvider = FutureProvider.family<double, String>((ref, courseId) async {
+final courseCompletionProvider =
+    FutureProvider.family<double, String>((ref, courseId) async {
   final localDb = ref.watch(localDatabaseServiceProvider);
 
   // Get the current user ID (you'll need to get this from auth)
@@ -132,7 +141,8 @@ final courseCompletionProvider = FutureProvider.family<double, String>((ref, cou
 });
 
 /// Provider for downloading a course
-final downloadCourseProvider = FutureProvider.family<void, String>((ref, courseId) async {
+final downloadCourseProvider =
+    FutureProvider.family<void, String>((ref, courseId) async {
   final downloadService = ref.watch(courseDownloadApiServiceProvider);
 
   // Get the current user ID (you'll need to get this from auth)
@@ -145,7 +155,7 @@ final downloadCourseProvider = FutureProvider.family<void, String>((ref, courseI
 });
 
 /// Provider for download progress stream
-final downloadProgressProvider = StreamProvider<DownloadProgress?>((ref) {
+final downloadProgressProvider = StreamProvider.autoDispose<DownloadProgress?>((ref) {
   final downloadService = ref.watch(courseDownloadApiServiceProvider);
   return downloadService.progressStream;
 });
@@ -161,7 +171,8 @@ final syncDataProvider = FutureProvider<void>((ref) async {
 });
 
 /// Provider for current user settings
-final userSettingsProvider = StateNotifierProvider<UserSettingsNotifier, UserSettingsState>((ref) {
+final userSettingsProvider =
+    StateNotifierProvider<UserSettingsNotifier, UserSettingsState>((ref) {
   return UserSettingsNotifier(ref.watch(userSettingsServiceProvider));
 });
 

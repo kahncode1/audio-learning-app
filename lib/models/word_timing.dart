@@ -19,8 +19,8 @@ class WordTiming {
   final int startMs;
   final int endMs;
   final int sentenceIndex;
-  final int? charStart;  // Character position in original text
-  final int? charEnd;    // Character position in original text
+  final int? charStart; // Character position in original text
+  final int? charEnd; // Character position in original text
 
   WordTiming({
     required this.word,
@@ -32,7 +32,8 @@ class WordTiming {
   })  : assert(word.isNotEmpty, 'Word cannot be empty'),
         assert(startMs >= 0, 'Start time must be non-negative'),
         assert(endMs >= 0, 'End time must be non-negative'),
-        assert(endMs >= startMs, 'End time must be after or equal to start time'),
+        assert(
+            endMs >= startMs, 'End time must be after or equal to start time'),
         assert(sentenceIndex >= 0, 'Sentence index must be non-negative');
 
   /// Duration of this word in milliseconds
@@ -160,7 +161,8 @@ class WordTimingCollection {
       final words = entry.value;
       if (words.isNotEmpty) {
         words.sort((a, b) => a.startMs.compareTo(b.startMs));
-        _sentenceBoundariesCache![entry.key] = (words.first.startMs, words.last.endMs);
+        _sentenceBoundariesCache![entry.key] =
+            (words.first.startMs, words.last.endMs);
       }
     }
   }
@@ -200,7 +202,9 @@ class WordTimingCollection {
         }
 
         // Search forward
-        for (int i = 1; i <= searchRange && _lastSearchIndex + i < timings.length; i++) {
+        for (int i = 1;
+            i <= searchRange && _lastSearchIndex + i < timings.length;
+            i++) {
           final timing = timings[_lastSearchIndex + i];
           if (timing.isActiveAt(timeMs)) {
             _lastSearchIndex = _lastSearchIndex + i;
@@ -250,15 +254,13 @@ class WordTimingCollection {
     if (_sentenceCache == null || !_sentenceCache!.containsKey(sentenceIndex)) {
       return [];
     }
-    return List.from(_sentenceCache![sentenceIndex]!); // Return copy to prevent modification
+    return List.from(
+        _sentenceCache![sentenceIndex]!); // Return copy to prevent modification
   }
 
   /// Get sentence boundaries using cached results for O(1) performance
   (int startMs, int endMs)? getSentenceBoundaries(int sentenceIndex) {
-    if (_sentenceBoundariesCache == null || !_sentenceBoundariesCache!.containsKey(sentenceIndex)) {
-      return null;
-    }
-    return _sentenceBoundariesCache![sentenceIndex];
+    return _sentenceBoundariesCache?[sentenceIndex];
   }
 
   /// Find word index by text content (for tap-to-seek functionality)
@@ -297,7 +299,8 @@ class WordTimingCollection {
   /// Get number of sentences
   int get sentenceCount {
     if (timings.isEmpty) return 0;
-    return timings.map((t) => t.sentenceIndex).reduce((a, b) => a > b ? a : b) + 1;
+    return timings.map((t) => t.sentenceIndex).reduce((a, b) => a > b ? a : b) +
+        1;
   }
 
   /// Reset locality cache (call when seeking to distant position)
@@ -387,7 +390,8 @@ void validateWordTimingModel() {
   }
   stopwatch.stop();
   assert(stopwatch.elapsedMicroseconds < 5000); // Should be very fast
-  AppLogger.info('✅ Optimized binary search: ${stopwatch.elapsedMicroseconds}μs for 1000 searches');
+  AppLogger.info(
+      '✅ Optimized binary search: ${stopwatch.elapsedMicroseconds}μs for 1000 searches');
 
   // Test specific searches
   assert(collection.findActiveWordIndex(250) == 0);
@@ -441,8 +445,11 @@ void validateWordTimingModel() {
   }
   localityStopwatch.stop();
 
-  assert(localityStopwatch.elapsedMicroseconds < 1000); // Should be extremely fast
-  AppLogger.info('✅ Locality caching: ${localityStopwatch.elapsedMicroseconds}μs for sequential access');
+  assert(
+      localityStopwatch.elapsedMicroseconds < 1000); // Should be extremely fast
+  AppLogger.info(
+      '✅ Locality caching: ${localityStopwatch.elapsedMicroseconds}μs for sequential access');
 
-  AppLogger.info('✅ WordTiming validation complete - all optimizations working');
+  AppLogger.info(
+      '✅ WordTiming validation complete - all optimizations working');
 }

@@ -8,7 +8,8 @@ import 'package:audio_learning_app/screens/local_content_test_screen.dart';
 /// Purpose: Tests the download-first architecture implementation
 /// This test runs with the actual app configuration and assets.
 void main() {
-  testWidgets('LocalContentTestScreen loads and displays test content', (WidgetTester tester) async {
+  testWidgets('LocalContentTestScreen loads and displays test content',
+      (WidgetTester tester) async {
     // Build the test screen
     await tester.pumpWidget(
       const ProviderScope(
@@ -24,10 +25,11 @@ void main() {
 
     // Find and tap the load content button
     final loadButton = find.byWidgetPredicate(
-      (widget) => widget is ElevatedButton &&
+      (widget) =>
+          widget is ElevatedButton &&
           widget.child is Row &&
-          (widget.child as Row).children.any((child) =>
-              child is Text && child.data == 'Load Test Content'),
+          (widget.child as Row).children.any(
+              (child) => child is Text && child.data == 'Load Test Content'),
     );
     expect(loadButton, findsOneWidget);
 

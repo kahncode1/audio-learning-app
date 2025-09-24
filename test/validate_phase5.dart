@@ -63,15 +63,18 @@ Future<void> validateLocalDatabase() async {
 
     // Test table creation
     final tables = [
-      'courses', 'assignments', 'learning_objects',
-      'user_progress', 'user_course_progress', 'download_cache'
+      'courses',
+      'assignments',
+      'learning_objects',
+      'user_progress',
+      'user_course_progress',
+      'download_cache'
     ];
 
     for (final table in tables) {
       final result = await db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-        [table]
-      );
+          "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+          [table]);
       if (result.isNotEmpty) {
         print('  ✓ Table "$table" exists');
       }
@@ -131,11 +134,12 @@ Future<void> validateLocalDatabase() async {
     }
 
     // Clean up test data
-    await db.delete('learning_objects', where: 'id = ?', whereArgs: ['validation-test-lo']);
-    await db.delete('courses', where: 'id = ?', whereArgs: ['validation-test-course']);
+    await db.delete('learning_objects',
+        where: 'id = ?', whereArgs: ['validation-test-lo']);
+    await db.delete('courses',
+        where: 'id = ?', whereArgs: ['validation-test-course']);
 
     await localDb.close();
-
   } catch (e) {
     print('  ❌ Error: $e');
   }

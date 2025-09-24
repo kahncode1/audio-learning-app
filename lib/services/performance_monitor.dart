@@ -23,7 +23,6 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import '../utils/app_logger.dart';
@@ -86,7 +85,8 @@ class PerformanceMonitor {
   }
 
   /// Track word lookup performance
-  static Future<T> trackWordLookupTime<T>(Future<T> Function() operation) async {
+  static Future<T> trackWordLookupTime<T>(
+      Future<T> Function() operation) async {
     if (!_instance._isTracking) return operation();
 
     final stopwatch = Stopwatch()..start();
@@ -235,7 +235,8 @@ class PerformanceMonitor {
     if (!Platform.isAndroid && !Platform.isIOS) return 0;
 
     try {
-      final info = await Process.run('ps', ['-o', 'rss=', '-p', pid.toString()]);
+      final info =
+          await Process.run('ps', ['-o', 'rss=', '-p', pid.toString()]);
       if (info.exitCode == 0) {
         final kb = int.tryParse(info.stdout.toString().trim()) ?? 0;
         return kb / 1024; // Convert KB to MB
@@ -375,7 +376,8 @@ void validatePerformanceMonitor() async {
   // Test singleton pattern
   final monitor1 = PerformanceMonitor();
   final monitor2 = PerformanceMonitor();
-  assert(identical(monitor1, monitor2), 'PerformanceMonitor should be a singleton');
+  assert(identical(monitor1, monitor2),
+      'PerformanceMonitor should be a singleton');
 
   // Test metric recording
   PerformanceMonitor.startTracking();

@@ -22,14 +22,16 @@ import 'supabase_service.dart';
 import '../models/learning_object_v2.dart';
 
 class LearningObjectService {
-  static final LearningObjectService _instance = LearningObjectService._internal();
+  static final LearningObjectService _instance =
+      LearningObjectService._internal();
   factory LearningObjectService() => _instance;
   LearningObjectService._internal();
 
   final SupabaseService _supabaseService = SupabaseService();
 
   /// Fetch all learning objects for an assignment
-  Future<List<LearningObjectV2>> fetchLearningObjects(String assignmentId) async {
+  Future<List<LearningObjectV2>> fetchLearningObjects(
+      String assignmentId) async {
     try {
       final response = await _supabaseService.client
           .from('learning_objects')
@@ -66,7 +68,8 @@ class LearningObjectService {
   }
 
   /// Fetch learning objects for a course
-  Future<List<LearningObjectV2>> fetchLearningObjectsForCourse(String courseId) async {
+  Future<List<LearningObjectV2>> fetchLearningObjectsForCourse(
+      String courseId) async {
     try {
       final response = await _supabaseService.client
           .from('learning_objects')
@@ -169,7 +172,8 @@ class LearningObjectService {
       final learningObjects = await fetchLearningObjectsForCourse(courseId);
 
       // Store in local cache (implementation would depend on cache service)
-      debugPrint('Prefetched ${learningObjects.length} learning objects for course $courseId');
+      debugPrint(
+          'Prefetched ${learningObjects.length} learning objects for course $courseId');
 
       // TODO: Implement local storage/caching
     } catch (e) {

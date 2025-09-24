@@ -106,8 +106,7 @@ class UserSettingsService {
       if (userId != null) {
         await _supabaseService.client
             .from('user_settings')
-            .update({'theme_name': newTheme})
-            .eq('user_id', userId);
+            .update({'theme_name': newTheme}).eq('user_id', userId);
       }
 
       // Update cache
@@ -129,13 +128,10 @@ class UserSettingsService {
       final userId = await _getCurrentUserId();
       if (userId != null) {
         // Update in database
-        await _supabaseService.client
-            .from('user_settings')
-            .update({
-              'preferences': updatedSettings.preferences,
-              'updated_at': DateTime.now().toIso8601String(),
-            })
-            .eq('user_id', userId);
+        await _supabaseService.client.from('user_settings').update({
+          'preferences': updatedSettings.preferences,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('user_id', userId);
       }
 
       // Update cache
@@ -210,9 +206,12 @@ class UserSettingsService {
       await prefs.setString('theme_name', settings.themeName);
       await prefs.setDouble('font_size', settings.getFontSize());
       await prefs.setBool('auto_play', settings.getAutoPlay());
-      await prefs.setDouble('playback_speed', settings.getDefaultPlaybackSpeed());
-      await prefs.setString('word_highlight_color', settings.getWordHighlightColor());
-      await prefs.setString('sentence_highlight_color', settings.getSentenceHighlightColor());
+      await prefs.setDouble(
+          'playback_speed', settings.getDefaultPlaybackSpeed());
+      await prefs.setString(
+          'word_highlight_color', settings.getWordHighlightColor());
+      await prefs.setString(
+          'sentence_highlight_color', settings.getSentenceHighlightColor());
     } catch (e) {
       debugPrint('Error caching settings locally: $e');
     }
@@ -226,8 +225,10 @@ class UserSettingsService {
       final fontSize = prefs.getDouble('font_size') ?? 16.0;
       final autoPlay = prefs.getBool('auto_play') ?? true;
       final playbackSpeed = prefs.getDouble('playback_speed') ?? 1.0;
-      final wordHighlightColor = prefs.getString('word_highlight_color') ?? '#FFEB3B';
-      final sentenceHighlightColor = prefs.getString('sentence_highlight_color') ?? '#FFE0B2';
+      final wordHighlightColor =
+          prefs.getString('word_highlight_color') ?? '#FFEB3B';
+      final sentenceHighlightColor =
+          prefs.getString('sentence_highlight_color') ?? '#FFE0B2';
 
       return UserSettings(
         id: 'local',

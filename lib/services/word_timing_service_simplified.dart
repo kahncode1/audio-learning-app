@@ -4,7 +4,6 @@ import 'package:rxdart/rxdart.dart';
 import '../models/word_timing.dart';
 import '../utils/app_logger.dart';
 import 'local_content_service.dart';
-import 'performance_monitor.dart';
 
 /// WordTimingServiceSimplified - Simplified word timing service for pre-processed data
 ///
@@ -36,94 +35,99 @@ class WordTimingServiceSimplified {
   String? _currentLearningObjectId;
 
   // Stream controllers for compatibility with original service
-  final BehaviorSubject<int> _currentWordIndexSubject = BehaviorSubject.seeded(-1);
-  final BehaviorSubject<int> _currentSentenceIndexSubject = BehaviorSubject.seeded(0);
+  final BehaviorSubject<int> _currentWordIndexSubject =
+      BehaviorSubject.seeded(-1);
+  final BehaviorSubject<int> _currentSentenceIndexSubject =
+      BehaviorSubject.seeded(0);
 
-  WordTimingServiceSimplified._() : _localContentService = LocalContentService();
+  WordTimingServiceSimplified._()
+      : _localContentService = LocalContentService();
 
   /// Get singleton instance
   static WordTimingServiceSimplified get instance {
-  _instance ??= WordTimingServiceSimplified._();
-  return _instance!;
+    _instance ??= WordTimingServiceSimplified._();
+    return _instance!;
   }
 
   /// Load timing data for a learning object
   ///
   /// This replaces the complex fetchTimings method
   Future<List<WordTiming>> loadTimings(String learningObjectId) async {
-  try {
-    AppLogger.info('Loading timing data', {
-      'learningObjectId': learningObjectId,
-      'cached': _timingCache.containsKey(learningObjectId),
-    });
-
-    // Check memory cache first
-    if (_timingCache.containsKey(learningObjectId)) {
-      final cached = _timingCache[learningObjectId]!;
-      _currentTimingData = cached;
-      _currentLearningObjectId = learningObjectId;
-
-      AppLogger.info('Using cached timing data', {
-        'wordCount': cached.words.length,
-        'sentenceCount': cached.sentences.length,
+    try {
+      AppLogger.info('Loading timing data', {
+        'learningObjectId': learningObjectId,
+        'cached': _timingCache.containsKey(learningObjectId),
       });
 
-      return cached.words;
-    }
+      // Check memory cache first
+      if (_timingCache.containsKey(learningObjectId)) {
+        final cached = _timingCache[learningObjectId]!;
+        _currentTimingData = cached;
+        _currentLearningObjectId = learningObjectId;
 
-    // Load from local content service
-    final timingData = await _localContentService.getTimingData(learningObjectId);
+        AppLogger.info('Using cached timing data', {
+          'wordCount': cached.words.length,
+          'sentenceCount': cached.sentences.length,
+        });
 
-    // Cache in memory
-    _timingCache[learningObjectId] = timingData;
-    _currentTimingData = timingData;
-    _currentLearningObjectId = learningObjectId;
-
-    // Implement simple LRU cache eviction (keep last 10 items)
-    if (_timingCache.length > 10) {
-      final keysToRemove = _timingCache.keys.take(_timingCache.length - 10).toList();
-      for (final key in keysToRemove) {
-        _timingCache.remove(key);
+        return cached.words;
       }
 
-      AppLogger.info('Evicted old timing data from cache', {
-        'removed': keysToRemove.length,
-        'remaining': _timingCache.length,
+      // Load from local content service
+      final timingData =
+          await _localContentService.getTimingData(learningObjectId);
+
+      // Cache in memory
+      _timingCache[learningObjectId] = timingData;
+      _currentTimingData = timingData;
+      _currentLearningObjectId = learningObjectId;
+
+      // Implement simple LRU cache eviction (keep last 10 items)
+      if (_timingCache.length > 10) {
+        final keysToRemove =
+            _timingCache.keys.take(_timingCache.length - 10).toList();
+        for (final key in keysToRemove) {
+          _timingCache.remove(key);
+        }
+
+        AppLogger.info('Evicted old timing data from cache', {
+          'removed': keysToRemove.length,
+          'remaining': _timingCache.length,
+        });
+      }
+
+      AppLogger.info('Loaded timing data', {
+        'learningObjectId': learningObjectId,
+        'wordCount': timingData.words.length,
+        'sentenceCount': timingData.sentences.length,
+        'duration': '${timingData.totalDurationMs / 1000}s',
       });
+
+      return timingData.words;
+    } catch (e) {
+      AppLogger.error(
+        'Failed to load timing data',
+        error: e,
+        data: {'learningObjectId': learningObjectId},
+      );
+      return [];
     }
-
-    AppLogger.info('Loaded timing data', {
-      'learningObjectId': learningObjectId,
-      'wordCount': timingData.words.length,
-      'sentenceCount': timingData.sentences.length,
-      'duration': '${timingData.totalDurationMs / 1000}s',
-    });
-
-    return timingData.words;
-  } catch (e) {
-    AppLogger.error(
-      'Failed to load timing data',
-      error: e,
-      data: {'learningObjectId': learningObjectId},
-    );
-    return [];
-  }
   }
 
   /// Get cached timing data (no async needed)
   List<WordTiming>? getCachedTimings(String learningObjectId) {
-  final cached = _timingCache[learningObjectId];
-  return cached?.words;
+    final cached = _timingCache[learningObjectId];
+    return cached?.words;
   }
 
   /// Set cached timings (for compatibility with AudioPlayerService)
   void setCachedTimings(String learningObjectId, List<WordTiming> timings) {
-  // This is called by AudioPlayerService after loading
-  // We don't need to do anything since data is already in cache
-  AppLogger.debug('setCachedTimings called (no-op in simplified version)', {
-    'learningObjectId': learningObjectId,
-    'count': timings.length,
-  });
+    // This is called by AudioPlayerService after loading
+    // We don't need to do anything since data is already in cache
+    AppLogger.debug('setCachedTimings called (no-op in simplified version)', {
+      'learningObjectId': learningObjectId,
+      'count': timings.length,
+    });
   }
 
   /// Get the current word index based on playback position
@@ -149,101 +153,105 @@ class WordTimingServiceSimplified {
 
   /// Get the current sentence index based on playback position
   int getCurrentSentenceIndex(int positionMs) {
-  if (_currentTimingData == null) return -1;
-  return _currentTimingData!.getCurrentSentenceIndex(positionMs);
+    if (_currentTimingData == null) return -1;
+    return _currentTimingData!.getCurrentSentenceIndex(positionMs);
   }
 
   /// Get sentence boundaries for a learning object
   ///
   /// Returns pre-processed sentence data (no runtime detection needed)
-  Future<List<SentenceBoundary>> getSentenceBoundaries(String learningObjectId) async {
-  try {
-    // Ensure timing data is loaded
-    if (!_timingCache.containsKey(learningObjectId)) {
-      await loadTimings(learningObjectId);
-    }
+  Future<List<SentenceBoundary>> getSentenceBoundaries(
+      String learningObjectId) async {
+    try {
+      // Ensure timing data is loaded
+      if (!_timingCache.containsKey(learningObjectId)) {
+        await loadTimings(learningObjectId);
+      }
 
-    final timingData = _timingCache[learningObjectId];
-    if (timingData == null) {
+      final timingData = _timingCache[learningObjectId];
+      if (timingData == null) {
+        return [];
+      }
+
+      // Convert SentenceTiming to SentenceBoundary for compatibility
+      return timingData.sentences.map((sentence) {
+        return SentenceBoundary(
+          text: sentence.text,
+          startWordIndex: sentence.wordStartIndex,
+          endWordIndex: sentence.wordEndIndex,
+          startTime: sentence.startTime,
+          endTime: sentence.endTime,
+        );
+      }).toList();
+    } catch (e) {
+      AppLogger.error(
+        'Failed to get sentence boundaries',
+        error: e,
+        data: {'learningObjectId': learningObjectId},
+      );
       return [];
     }
-
-    // Convert SentenceTiming to SentenceBoundary for compatibility
-    return timingData.sentences.map((sentence) {
-      return SentenceBoundary(
-        text: sentence.text,
-        startWordIndex: sentence.wordStartIndex,
-        endWordIndex: sentence.wordEndIndex,
-        startTime: sentence.startTime,
-        endTime: sentence.endTime,
-      );
-    }).toList();
-  } catch (e) {
-    AppLogger.error(
-      'Failed to get sentence boundaries',
-      error: e,
-      data: {'learningObjectId': learningObjectId},
-    );
-    return [];
-  }
   }
 
   /// Clear all cached timing data
-  void clearCache() {
-  _timingCache.clear();
-  _currentTimingData = null;
-  _currentLearningObjectId = null;
+  void clearCache({bool skipLogging = false}) {
+    _timingCache.clear();
+    _currentTimingData = null;
+    _currentLearningObjectId = null;
 
-  AppLogger.info('Timing cache cleared');
+    // Skip logging in performance tests or when explicitly requested
+    if (!skipLogging && kDebugMode) {
+      AppLogger.info('Timing cache cleared');
+    }
   }
 
   /// Clear timing data for a specific learning object
   void clearTimingsForObject(String learningObjectId) {
-  _timingCache.remove(learningObjectId);
+    _timingCache.remove(learningObjectId);
 
-  if (_currentLearningObjectId == learningObjectId) {
-    _currentTimingData = null;
-    _currentLearningObjectId = null;
-  }
+    if (_currentLearningObjectId == learningObjectId) {
+      _currentTimingData = null;
+      _currentLearningObjectId = null;
+    }
 
-  AppLogger.info('Cleared timing data', {
-    'learningObjectId': learningObjectId,
-  });
+    AppLogger.info('Cleared timing data', {
+      'learningObjectId': learningObjectId,
+    });
   }
 
   /// Get word at specific index (for highlighting)
   WordTiming? getWordAtIndex(int index) {
-  if (_currentTimingData == null ||
-      index < 0 ||
-      index >= _currentTimingData!.words.length) {
-    return null;
-  }
-  return _currentTimingData!.words[index];
+    if (_currentTimingData == null ||
+        index < 0 ||
+        index >= _currentTimingData!.words.length) {
+      return null;
+    }
+    return _currentTimingData!.words[index];
   }
 
   /// Get all words for current learning object
   List<WordTiming> getCurrentWords() {
-  return _currentTimingData?.words ?? [];
+    return _currentTimingData?.words ?? [];
   }
 
   /// Get all sentences for current learning object
   List<SentenceTiming> getCurrentSentences() {
-  return _currentTimingData?.sentences ?? [];
+    return _currentTimingData?.sentences ?? [];
   }
 
   /// Get display text for a learning object
   Future<String> getDisplayText(String learningObjectId) async {
-  try {
-    final content = await _localContentService.getContent(learningObjectId);
-    return LocalContentService.getDisplayText(content);
-  } catch (e) {
-    AppLogger.error(
-      'Failed to get display text',
-      error: e,
-      data: {'learningObjectId': learningObjectId},
-    );
-    return '';
-  }
+    try {
+      final content = await _localContentService.getContent(learningObjectId);
+      return LocalContentService.getDisplayText(content);
+    } catch (e) {
+      AppLogger.error(
+        'Failed to get display text',
+        error: e,
+        data: {'learningObjectId': learningObjectId},
+      );
+      return '';
+    }
   }
 
   /// Get timing data for a learning object (for HighlightCalculator)
@@ -255,7 +263,8 @@ class WordTimingServiceSimplified {
       }
 
       // Load from local content service
-      final timingData = await _localContentService.getTimingData(learningObjectId);
+      final timingData =
+          await _localContentService.getTimingData(learningObjectId);
 
       // Cache in memory
       _timingCache[learningObjectId] = timingData;
@@ -278,8 +287,10 @@ class WordTimingServiceSimplified {
   /// Update position and emit current word/sentence indices
   void updatePosition(int positionMs, String learningObjectId) {
     // Log timing data state
-    if (_currentTimingData == null || _currentLearningObjectId != learningObjectId) {
-      AppLogger.warning('🔴 HIGHLIGHT: updatePosition called but timing data not ready', {
+    if (_currentTimingData == null ||
+        _currentLearningObjectId != learningObjectId) {
+      AppLogger.warning(
+          '🔴 HIGHLIGHT: updatePosition called but timing data not ready', {
         'positionMs': positionMs,
         'learningObjectId': learningObjectId,
         'hasTimingData': _currentTimingData != null,
@@ -310,7 +321,8 @@ class WordTimingServiceSimplified {
 
   // Track last reset time to prevent cache thrashing during rapid seeks
   DateTime? _lastCacheReset;
-  static const int _cacheResetDebounceMs = 50; // Reduced to handle rapid seeks better
+  static const int _cacheResetDebounceMs =
+      50; // Reduced to handle rapid seeks better
 
   /// Reset the locality cache for accurate lookups after seeks
   /// Should be called when a seek operation is performed
@@ -320,7 +332,8 @@ class WordTimingServiceSimplified {
       // Always reset cache for seeks - debounce is now shorter
       final now = DateTime.now();
       if (_lastCacheReset != null) {
-        final timeSinceLastReset = now.difference(_lastCacheReset!).inMilliseconds;
+        final timeSinceLastReset =
+            now.difference(_lastCacheReset!).inMilliseconds;
         if (timeSinceLastReset < _cacheResetDebounceMs) {
           // Still reset but don't log to avoid spam
           _currentTimingData!.resetLocalityCache();
@@ -343,15 +356,16 @@ class WordTimingServiceSimplified {
   Stream<int> get currentSentenceStream => _currentSentenceIndexSubject.stream;
 
   /// Alias for loadTimings to maintain compatibility
-  Future<List<WordTiming>> fetchTimings(String learningObjectId, String text) async {
-  // Ignore text parameter in simplified version (we load from pre-processed files)
-  return await loadTimings(learningObjectId);
+  Future<List<WordTiming>> fetchTimings(
+      String learningObjectId, String text) async {
+    // Ignore text parameter in simplified version (we load from pre-processed files)
+    return await loadTimings(learningObjectId);
   }
 
   /// Dispose resources
   void dispose() {
-  _currentWordIndexSubject.close();
-  _currentSentenceIndexSubject.close();
+    _currentWordIndexSubject.close();
+    _currentSentenceIndexSubject.close();
   }
 }
 
@@ -364,11 +378,11 @@ class SentenceBoundary {
   final int endTime;
 
   SentenceBoundary({
-  required this.text,
-  required this.startWordIndex,
-  required this.endWordIndex,
-  required this.startTime,
-  required this.endTime,
+    required this.text,
+    required this.startWordIndex,
+    required this.endWordIndex,
+    required this.startTime,
+    required this.endTime,
   });
 }
 
@@ -389,7 +403,8 @@ Future<void> validateWordTimingServiceSimplified() async {
 
     // Test 2: Check sentence indices
     final hasValidSentenceIndices = words.every((w) => w.sentenceIndex >= 0);
-    assert(hasValidSentenceIndices, 'All words must have valid sentence indices');
+    assert(
+        hasValidSentenceIndices, 'All words must have valid sentence indices');
     debugPrint('✓ Sentence indices valid');
 
     // Test 3: Get sentence boundaries

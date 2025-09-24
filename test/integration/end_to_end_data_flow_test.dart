@@ -52,7 +52,8 @@ void main() {
         'course_id': 'course-001',
         'title': 'What is Risk?',
         'order_index': 0,
-        'display_text': 'Risk is the possibility of loss. Insurance helps manage risk.',
+        'display_text':
+            'Risk is the possibility of loss. Insurance helps manage risk.',
         'paragraphs': [
           'Risk is the possibility of loss.',
           'Insurance helps manage risk.',
@@ -69,12 +70,54 @@ void main() {
           'language': 'en',
         },
         'word_timings': [
-          {'word': 'Risk', 'start_ms': 0, 'end_ms': 400, 'char_start': 0, 'char_end': 4, 'sentence_index': 0},
-          {'word': 'is', 'start_ms': 400, 'end_ms': 600, 'char_start': 5, 'char_end': 7, 'sentence_index': 0},
-          {'word': 'the', 'start_ms': 600, 'end_ms': 800, 'char_start': 8, 'char_end': 11, 'sentence_index': 0},
-          {'word': 'possibility', 'start_ms': 800, 'end_ms': 1400, 'char_start': 12, 'char_end': 23, 'sentence_index': 0},
-          {'word': 'of', 'start_ms': 1400, 'end_ms': 1600, 'char_start': 24, 'char_end': 26, 'sentence_index': 0},
-          {'word': 'loss', 'start_ms': 1600, 'end_ms': 2000, 'char_start': 27, 'char_end': 31, 'sentence_index': 0},
+          {
+            'word': 'Risk',
+            'start_ms': 0,
+            'end_ms': 400,
+            'char_start': 0,
+            'char_end': 4,
+            'sentence_index': 0
+          },
+          {
+            'word': 'is',
+            'start_ms': 400,
+            'end_ms': 600,
+            'char_start': 5,
+            'char_end': 7,
+            'sentence_index': 0
+          },
+          {
+            'word': 'the',
+            'start_ms': 600,
+            'end_ms': 800,
+            'char_start': 8,
+            'char_end': 11,
+            'sentence_index': 0
+          },
+          {
+            'word': 'possibility',
+            'start_ms': 800,
+            'end_ms': 1400,
+            'char_start': 12,
+            'char_end': 23,
+            'sentence_index': 0
+          },
+          {
+            'word': 'of',
+            'start_ms': 1400,
+            'end_ms': 1600,
+            'char_start': 24,
+            'char_end': 26,
+            'sentence_index': 0
+          },
+          {
+            'word': 'loss',
+            'start_ms': 1600,
+            'end_ms': 2000,
+            'char_start': 27,
+            'char_end': 31,
+            'sentence_index': 0
+          },
         ],
         'sentence_timings': [
           {
@@ -167,7 +210,7 @@ void main() {
       expect(progress.currentPositionMs, equals(1500));
       expect(progress.lastWordIndex, equals(3));
       expect(progress.getProgressPercentage(learningObject.totalDurationMs),
-             equals(30.0)); // 1500/5000 = 30%
+          equals(30.0)); // 1500/5000 = 30%
 
       // Verify settings
       expect(settings.getFontSize(), equals(18.0));
@@ -182,8 +225,10 @@ void main() {
 
       // Verify sentence highlight
       final currentSentence = learningObject.sentenceTimings[0];
-      expect(currentSentence.wordStartIndex, lessThanOrEqualTo(currentWordIndex));
-      expect(currentSentence.wordEndIndex, greaterThanOrEqualTo(currentWordIndex));
+      expect(
+          currentSentence.wordStartIndex, lessThanOrEqualTo(currentWordIndex));
+      expect(
+          currentSentence.wordEndIndex, greaterThanOrEqualTo(currentWordIndex));
 
       // Simulate UI update
       final highlightColor = settings.getWordHighlightColor();

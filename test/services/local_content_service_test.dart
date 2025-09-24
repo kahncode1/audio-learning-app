@@ -16,7 +16,8 @@ void main() {
 
     setUpAll(() {
       // Set up the test asset bundle to load test content
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
         const MethodChannel('flutter/assets'),
         (MethodCall methodCall) async {
           if (methodCall.method == 'list') {
@@ -133,8 +134,10 @@ void main() {
           expect(word.startMs, greaterThanOrEqualTo(0));
           expect(word.endMs, greaterThan(word.startMs));
           expect(word.sentenceIndex, greaterThanOrEqualTo(0));
-          expect(word.charStart != null ? word.charStart! : 0, greaterThanOrEqualTo(0));
-          expect(word.charEnd != null ? word.charEnd! : 0, greaterThanOrEqualTo(word.charStart ?? 0));
+          expect(word.charStart != null ? word.charStart! : 0,
+              greaterThanOrEqualTo(0));
+          expect(word.charEnd != null ? word.charEnd! : 0,
+              greaterThanOrEqualTo(word.charStart ?? 0));
         }
       });
 
@@ -146,7 +149,8 @@ void main() {
           expect(sentence.startTime, greaterThanOrEqualTo(0));
           expect(sentence.endTime, greaterThan(sentence.startTime));
           expect(sentence.wordStartIndex, greaterThanOrEqualTo(0));
-          expect(sentence.wordEndIndex, greaterThanOrEqualTo(sentence.wordStartIndex));
+          expect(sentence.wordEndIndex,
+              greaterThanOrEqualTo(sentence.wordStartIndex));
         }
       });
 
@@ -160,7 +164,8 @@ void main() {
 
         // Check sentence word ranges
         for (final sentence in timingData.sentences) {
-          final wordsInSentence = sentence.wordEndIndex - sentence.wordStartIndex + 1;
+          final wordsInSentence =
+              sentence.wordEndIndex - sentence.wordStartIndex + 1;
           expect(wordsInSentence, greaterThan(0));
         }
       });
@@ -177,11 +182,13 @@ void main() {
         expect(midIndex, lessThan(timingData.words.length));
 
         // Test at end
-        final endIndex = timingData.getCurrentWordIndex(timingData.totalDurationMs);
+        final endIndex =
+            timingData.getCurrentWordIndex(timingData.totalDurationMs);
         expect(endIndex, equals(timingData.words.length - 1));
 
         // Test beyond end
-        final beyondIndex = timingData.getCurrentWordIndex(timingData.totalDurationMs + 1000);
+        final beyondIndex =
+            timingData.getCurrentWordIndex(timingData.totalDurationMs + 1000);
         expect(beyondIndex, equals(-1));
       });
 
@@ -197,7 +204,8 @@ void main() {
         expect(midIndex, lessThan(timingData.sentences.length));
 
         // Test at end
-        final endIndex = timingData.getCurrentSentenceIndex(timingData.totalDurationMs);
+        final endIndex =
+            timingData.getCurrentSentenceIndex(timingData.totalDurationMs);
         expect(endIndex, equals(timingData.sentences.length - 1));
       });
     });

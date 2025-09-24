@@ -37,9 +37,7 @@ class CourseService {
           .select()
           .order('order_index');
 
-      return (response as List)
-          .map((json) => Course.fromJson(json))
-          .toList();
+      return (response as List).map((json) => Course.fromJson(json)).toList();
     } catch (e) {
       debugPrint('Error fetching available courses: $e');
       rethrow;
@@ -96,9 +94,7 @@ class CourseService {
         throw Exception('User not authenticated');
       }
 
-      await _supabaseService.client
-          .from('user_course_enrollments')
-          .insert({
+      await _supabaseService.client.from('user_course_enrollments').insert({
         'user_id': userId,
         'course_id': courseId,
         'enrolled_at': DateTime.now().toIso8601String(),

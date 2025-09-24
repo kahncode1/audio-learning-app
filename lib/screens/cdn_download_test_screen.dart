@@ -18,7 +18,8 @@ class CDNDownloadTestScreen extends ConsumerStatefulWidget {
   const CDNDownloadTestScreen({super.key});
 
   @override
-  ConsumerState<CDNDownloadTestScreen> createState() => _CDNDownloadTestScreenState();
+  ConsumerState<CDNDownloadTestScreen> createState() =>
+      _CDNDownloadTestScreenState();
 }
 
 class _CDNDownloadTestScreenState extends ConsumerState<CDNDownloadTestScreen> {
@@ -84,21 +85,25 @@ class _CDNDownloadTestScreenState extends ConsumerState<CDNDownloadTestScreen> {
   Future<void> _checkExistingDownloads() async {
     try {
       final appDir = await getApplicationDocumentsDirectory();
-      final courseDir = Directory('${appDir.path}/courses/INS-101/learning_objects/63ad7b78-0970-4265-a4fe-51f3fee39d5f');
+      final courseDir = Directory(
+          '${appDir.path}/courses/INS-101/learning_objects/63ad7b78-0970-4265-a4fe-51f3fee39d5f');
 
       if (courseDir.existsSync()) {
         final audioFile = File('${courseDir.path}/audio.mp3');
         final contentFile = File('${courseDir.path}/content.json');
         final timingFile = File('${courseDir.path}/timing.json');
 
-        if (audioFile.existsSync() && contentFile.existsSync() && timingFile.existsSync()) {
+        if (audioFile.existsSync() &&
+            contentFile.existsSync() &&
+            timingFile.existsSync()) {
           setState(() {
             _statusMessage = 'Downloaded content found! Ready to play offline.';
           });
         }
       }
     } catch (e) {
-      AppLogger.warning('Failed to check existing downloads', {'error': e.toString()});
+      AppLogger.warning(
+          'Failed to check existing downloads', {'error': e.toString()});
     }
   }
 
@@ -110,7 +115,8 @@ class _CDNDownloadTestScreenState extends ConsumerState<CDNDownloadTestScreen> {
     try {
       // Copy test files to a temporary location that simulates CDN
       final appDir = await getApplicationDocumentsDirectory();
-      final cdnSimDir = Directory('${appDir.path}/cdn_simulation/INS-101/63ad7b78-0970-4265-a4fe-51f3fee39d5f');
+      final cdnSimDir = Directory(
+          '${appDir.path}/cdn_simulation/INS-101/63ad7b78-0970-4265-a4fe-51f3fee39d5f');
       await cdnSimDir.create(recursive: true);
 
       // Note: In a real scenario, these would be uploaded to Supabase Storage
@@ -118,7 +124,8 @@ class _CDNDownloadTestScreenState extends ConsumerState<CDNDownloadTestScreen> {
 
       setState(() {
         _hasSimulatedUpload = true;
-        _statusMessage = 'CDN simulation ready! Files are "uploaded" (simulated).';
+        _statusMessage =
+            'CDN simulation ready! Files are "uploaded" (simulated).';
       });
 
       AppLogger.info('CDN upload simulated', {
@@ -238,7 +245,9 @@ class _CDNDownloadTestScreenState extends ConsumerState<CDNDownloadTestScreen> {
                     Text(
                       _statusMessage,
                       style: TextStyle(
-                        color: _statusMessage.contains('Error') ? Colors.red : Colors.black87,
+                        color: _statusMessage.contains('Error')
+                            ? Colors.red
+                            : Colors.black87,
                       ),
                     ),
                   ],
@@ -264,10 +273,15 @@ class _CDNDownloadTestScreenState extends ConsumerState<CDNDownloadTestScreen> {
                       ),
                       const SizedBox(height: 8),
                       LinearProgressIndicator(
-                        value: _downloadProgress!.completedFiles / (_downloadProgress!.totalFiles > 0 ? _downloadProgress!.totalFiles : 1),
+                        value: _downloadProgress!.completedFiles /
+                            (_downloadProgress!.totalFiles > 0
+                                ? _downloadProgress!.totalFiles
+                                : 1),
                         backgroundColor: Colors.grey[300],
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          _downloadProgress!.hasFailed ? Colors.red : Colors.blue,
+                          _downloadProgress!.hasFailed
+                              ? Colors.red
+                              : Colors.blue,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -279,7 +293,8 @@ class _CDNDownloadTestScreenState extends ConsumerState<CDNDownloadTestScreen> {
                         const SizedBox(height: 4),
                         Text(
                           'Downloaded: ${(_downloadProgress!.downloadedBytes / 1024 / 1024).toStringAsFixed(2)} MB',
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                       ],
                     ],
@@ -328,14 +343,19 @@ class _CDNDownloadTestScreenState extends ConsumerState<CDNDownloadTestScreen> {
               ElevatedButton.icon(
                 onPressed: _hasSimulatedUpload ? null : _simulateCDNUpload,
                 icon: const Icon(Icons.cloud_upload),
-                label: Text(_hasSimulatedUpload ? 'CDN Ready (Simulated)' : 'Simulate CDN Upload'),
+                label: Text(_hasSimulatedUpload
+                    ? 'CDN Ready (Simulated)'
+                    : 'Simulate CDN Upload'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _hasSimulatedUpload ? Colors.green : Colors.blue,
+                  backgroundColor:
+                      _hasSimulatedUpload ? Colors.green : Colors.blue,
                 ),
               ),
               const SizedBox(height: 8),
               ElevatedButton.icon(
-                onPressed: (_isDownloading || !_hasSimulatedUpload) ? null : _startDownload,
+                onPressed: (_isDownloading || !_hasSimulatedUpload)
+                    ? null
+                    : _startDownload,
                 icon: const Icon(Icons.download),
                 label: const Text('Download from CDN'),
                 style: ElevatedButton.styleFrom(
@@ -344,7 +364,9 @@ class _CDNDownloadTestScreenState extends ConsumerState<CDNDownloadTestScreen> {
               ),
               const SizedBox(height: 8),
               ElevatedButton.icon(
-                onPressed: (_downloadProgress?.isComplete ?? false) ? _testOfflinePlayback : null,
+                onPressed: (_downloadProgress?.isComplete ?? false)
+                    ? _testOfflinePlayback
+                    : null,
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Test Offline Playback'),
                 style: ElevatedButton.styleFrom(

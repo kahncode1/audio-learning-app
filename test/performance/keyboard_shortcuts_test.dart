@@ -26,7 +26,8 @@ void main() {
 
   group('Keyboard Shortcuts Performance Tests', () {
     group('Response Time Measurements', () {
-      testWidgets('spacebar play/pause should respond within 50ms', (tester) async {
+      testWidgets('spacebar play/pause should respond within 50ms',
+          (tester) async {
         // Build a test widget with keyboard listener
         await tester.pumpWidget(
           MaterialApp(
@@ -47,7 +48,8 @@ void main() {
 
         // Verify response time is under 50ms
         expect(stopwatch.elapsedMilliseconds, lessThan(50),
-            reason: 'Spacebar response time exceeded 50ms: ${stopwatch.elapsedMilliseconds}ms');
+            reason:
+                'Spacebar response time exceeded 50ms: ${stopwatch.elapsedMilliseconds}ms');
 
         // Verify the action was triggered
         verify(() => mockAudioService.togglePlayPause()).called(1);
@@ -71,7 +73,8 @@ void main() {
         stopwatchForward.stop();
 
         expect(stopwatchForward.elapsedMilliseconds, lessThan(50),
-            reason: 'Right arrow response time exceeded 50ms: ${stopwatchForward.elapsedMilliseconds}ms');
+            reason:
+                'Right arrow response time exceeded 50ms: ${stopwatchForward.elapsedMilliseconds}ms');
 
         verify(() => mockAudioService.skipForward()).called(1);
 
@@ -84,7 +87,8 @@ void main() {
         stopwatchBackward.stop();
 
         expect(stopwatchBackward.elapsedMilliseconds, lessThan(50),
-            reason: 'Left arrow response time exceeded 50ms: ${stopwatchBackward.elapsedMilliseconds}ms');
+            reason:
+                'Left arrow response time exceeded 50ms: ${stopwatchBackward.elapsedMilliseconds}ms');
 
         verify(() => mockAudioService.skipBackward()).called(1);
       });
@@ -110,7 +114,8 @@ void main() {
 
         // All key presses should be handled within reasonable time
         expect(stopwatch.elapsedMilliseconds, lessThan(500),
-            reason: 'Rapid key handling took too long: ${stopwatch.elapsedMilliseconds}ms');
+            reason:
+                'Rapid key handling took too long: ${stopwatch.elapsedMilliseconds}ms');
 
         // Verify all presses were handled
         verify(() => mockAudioService.togglePlayPause()).called(10);
@@ -118,7 +123,8 @@ void main() {
     });
 
     group('Focus Management', () {
-      testWidgets('shortcuts should work when player is focused', (tester) async {
+      testWidgets('shortcuts should work when player is focused',
+          (tester) async {
         final focusNode = FocusNode();
 
         await tester.pumpWidget(
@@ -144,7 +150,8 @@ void main() {
         verify(() => mockAudioService.togglePlayPause()).called(1);
       });
 
-      testWidgets('shortcuts should not work when player is not focused', (tester) async {
+      testWidgets('shortcuts should not work when player is not focused',
+          (tester) async {
         final playerFocusNode = FocusNode();
         final otherFocusNode = FocusNode();
 
@@ -243,11 +250,13 @@ void main() {
             home: Stack(
               children: [
                 // Heavy background widgets
-                ...List.generate(100, (index) => Container(
-                  key: ValueKey(index),
-                  color: Colors.blue.withOpacity(0.01),
-                  child: Text('Background $index'),
-                )),
+                ...List.generate(
+                    100,
+                    (index) => Container(
+                          key: ValueKey(index),
+                          color: Colors.blue.withOpacity(0.01),
+                          child: Text('Background $index'),
+                        )),
                 // Keyboard shortcut widget
                 KeyboardShortcutWidget(
                   audioService: mockAudioService,
@@ -267,7 +276,8 @@ void main() {
 
         // Should still respond within 50ms
         expect(stopwatch.elapsedMilliseconds, lessThan(50),
-            reason: 'Response time with heavy UI exceeded 50ms: ${stopwatch.elapsedMilliseconds}ms');
+            reason:
+                'Response time with heavy UI exceeded 50ms: ${stopwatch.elapsedMilliseconds}ms');
 
         verify(() => mockAudioService.togglePlayPause()).called(1);
       });
@@ -312,7 +322,8 @@ void main() {
         stopwatch.stop();
 
         expect(stopwatch.elapsedMilliseconds, lessThan(50),
-            reason: 'Response during animation exceeded 50ms: ${stopwatch.elapsedMilliseconds}ms');
+            reason:
+                'Response during animation exceeded 50ms: ${stopwatch.elapsedMilliseconds}ms');
 
         verify(() => mockAudioService.togglePlayPause()).called(1);
 
@@ -350,7 +361,8 @@ void main() {
         stopwatch.stop();
 
         expect(stopwatch.elapsedMilliseconds, lessThan(50),
-            reason: 'Response after extended use exceeded 50ms: ${stopwatch.elapsedMilliseconds}ms');
+            reason:
+                'Response after extended use exceeded 50ms: ${stopwatch.elapsedMilliseconds}ms');
       });
     });
   });

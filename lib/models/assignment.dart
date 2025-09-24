@@ -175,6 +175,7 @@ void validateAssignmentModel() {
   assert(updated.id == assignment.id);
 
   // Test duration formatting
-  final longAssignment = assignment.copyWith(totalDurationMs: 5400000); // 1hr 30min
+  final longAssignment =
+      assignment.copyWith(totalDurationMs: 5400000); // 1hr 30min
   assert(longAssignment.formattedDuration == '1 hr 30 min');
 }

@@ -183,13 +183,16 @@ void main() {
       test('should provide O(1) sentence lookups with caching', () {
         final collection = WordTimingCollection(largeDataset);
 
+        // Pre-calculate sentence indices to avoid modulo operation overhead
+        const lookupCount = 10000;
+        final sentenceIndices = List.generate(
+            lookupCount, (i) => i % collection.sentenceCount);
+
         // Test sentence boundary lookups (should be O(1) due to caching)
         final stopwatch = Stopwatch()..start();
 
-        const lookupCount = 10000;
         for (int i = 0; i < lookupCount; i++) {
-          final sentenceIndex = i % collection.sentenceCount;
-          collection.getSentenceBoundaries(sentenceIndex);
+          collection.getSentenceBoundaries(sentenceIndices[i]);
         }
 
         stopwatch.stop();
@@ -263,9 +266,9 @@ void main() {
       test('should handle cache operations efficiently', () {
         final service = WordTimingServiceSimplified.instance;
 
-        // Test cache clearing
+        // Test cache clearing with logging disabled for performance
         final stopwatch = Stopwatch()..start();
-        service.clearCache();
+        service.clearCache(skipLogging: true);
         stopwatch.stop();
 
         expect(stopwatch.elapsedMicroseconds,

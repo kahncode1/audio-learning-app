@@ -86,8 +86,8 @@ void main() {
       print('  ✓ Queue built with ${queueManager.queue.length} tasks');
 
       // Verify tasks were created with correct fields
-      final audioTask = queueManager.queue
-          .firstWhere((t) => t.fileType == FileType.audio);
+      final audioTask =
+          queueManager.queue.firstWhere((t) => t.fileType == FileType.audio);
       assert(audioTask.url == testLO.audioUrl);
       assert(audioTask.expectedSize == testLO.audioSizeBytes);
       assert(audioTask.version == testLO.fileVersion);

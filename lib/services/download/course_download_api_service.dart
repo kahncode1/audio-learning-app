@@ -88,11 +88,13 @@ class CourseDownloadApiService {
         message: 'Downloading learning objects...',
       ));
 
-      final totalLearningObjects = courseData['total_learning_objects'] as int? ?? 0;
+      final totalLearningObjects =
+          courseData['total_learning_objects'] as int? ?? 0;
       int downloadedCount = 0;
 
       for (final assignment in assignments) {
-        final learningObjects = await _downloadLearningObjects(assignment['id']);
+        final learningObjects =
+            await _downloadLearningObjects(assignment['id']);
 
         for (final lo in learningObjects) {
           await _localDb.upsertLearningObject(lo);
@@ -101,13 +103,15 @@ class CourseDownloadApiService {
           await _createDownloadCacheEntry(userId, lo['id'], courseId);
 
           downloadedCount++;
-          final progress = 25 + (downloadedCount / totalLearningObjects * 65).round();
+          final progress =
+              25 + (downloadedCount / totalLearningObjects * 65).round();
 
           _emitProgress(DownloadProgress(
             courseId: courseId,
             status: 'downloading',
             percentage: progress.clamp(25, 90),
-            message: 'Downloading learning object ${downloadedCount} of $totalLearningObjects...',
+            message:
+                'Downloading learning object ${downloadedCount} of $totalLearningObjects...',
           ));
         }
       }
@@ -119,7 +123,6 @@ class CourseDownloadApiService {
         percentage: 100,
         message: 'Course download complete!',
       ));
-
     } catch (e) {
       _emitProgress(DownloadProgress(
         courseId: courseId,
@@ -149,7 +152,8 @@ class CourseDownloadApiService {
   }
 
   /// Download all assignments for a course
-  Future<List<Map<String, dynamic>>> _downloadAssignments(String courseId) async {
+  Future<List<Map<String, dynamic>>> _downloadAssignments(
+      String courseId) async {
     final response = await _supabase
         .from('assignments')
         .select()
@@ -168,7 +172,8 @@ class CourseDownloadApiService {
   }
 
   /// Download all learning objects for an assignment
-  Future<List<Map<String, dynamic>>> _downloadLearningObjects(String assignmentId) async {
+  Future<List<Map<String, dynamic>>> _downloadLearningObjects(
+      String assignmentId) async {
     final response = await _supabase
         .from('learning_objects')
         .select()
@@ -225,8 +230,10 @@ class CourseDownloadApiService {
     if (remoteCourse == null) return false;
 
     // Compare updated_at timestamps
-    final localUpdated = DateTime.tryParse(localCourse['updated_at'] as String? ?? '');
-    final remoteUpdated = DateTime.tryParse(remoteCourse['updated_at'] as String? ?? '');
+    final localUpdated =
+        DateTime.tryParse(localCourse['updated_at'] as String? ?? '');
+    final remoteUpdated =
+        DateTime.tryParse(remoteCourse['updated_at'] as String? ?? '');
 
     if (localUpdated == null || remoteUpdated == null) return true;
 
@@ -368,11 +375,13 @@ class CourseDownloadApiService {
       final contentData = {
         'version': 2,
         'display_text': displayText,
-        'metadata': metadata ?? {
-          'word_count': displayText.split(' ').length,
-          'character_count': displayText.length,
-          'estimated_reading_time': '${(displayText.split(' ').length / 200).ceil()} min',
-        },
+        'metadata': metadata ??
+            {
+              'word_count': displayText.split(' ').length,
+              'character_count': displayText.length,
+              'estimated_reading_time':
+                  '${(displayText.split(' ').length / 200).ceil()} min',
+            },
       };
       await contentFile.writeAsString(json.encode(contentData));
 
@@ -380,7 +389,8 @@ class CourseDownloadApiService {
         'learningObjectId': learningObjectId,
         'path': contentDir.path,
         'hasDisplayText': displayText.isNotEmpty,
-        'hasWordTimings': (learningObject['word_timings'] as List?)?.isNotEmpty ?? false,
+        'hasWordTimings':
+            (learningObject['word_timings'] as List?)?.isNotEmpty ?? false,
       });
     } catch (e) {
       AppLogger.error('Failed to save content data', error: e, data: {
@@ -402,7 +412,8 @@ class CourseDownloadApiService {
     // Check if all learning objects are downloaded
     final assignments = await _localDb.getAssignments(courseId);
     for (final assignment in assignments) {
-      final learningObjects = await _localDb.getLearningObjects(assignment['id']);
+      final learningObjects =
+          await _localDb.getLearningObjects(assignment['id']);
       if (learningObjects.isEmpty) return false;
     }
 
@@ -460,7 +471,8 @@ class CourseDownloadApiService {
 /// Download progress model
 class DownloadProgress {
   final String courseId;
-  final String status; // 'starting', 'checking', 'downloading', 'completed', 'failed'
+  final String
+      status; // 'starting', 'checking', 'downloading', 'completed', 'failed'
   final int percentage;
   final String message;
 
@@ -472,9 +484,9 @@ class DownloadProgress {
   });
 
   Map<String, dynamic> toJson() => {
-    'courseId': courseId,
-    'status': status,
-    'percentage': percentage,
-    'message': message,
-  };
+        'courseId': courseId,
+        'status': status,
+        'percentage': percentage,
+        'message': message,
+      };
 }

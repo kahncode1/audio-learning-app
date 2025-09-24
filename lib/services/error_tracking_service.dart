@@ -43,9 +43,11 @@ class ErrorTrackingService {
         options.environment = _environment;
         options.tracesSampleRate = tracesSampleRate;
         options.debug = kDebugMode;
-        options.sendDefaultPii = false; // Don't send personally identifiable information
+        options.sendDefaultPii =
+            false; // Don't send personally identifiable information
         options.attachScreenshot = false; // Don't attach screenshots by default
-        options.attachViewHierarchy = true; // Attach view hierarchy for debugging
+        options.attachViewHierarchy =
+            true; // Attach view hierarchy for debugging
 
         // Set release name
         options.release = 'audio-learning-app@1.0.0';
@@ -91,7 +93,8 @@ class ErrorTrackingService {
     String? message,
   }) async {
     if (!_initialized) {
-      AppLogger.error('ErrorTrackingService not initialized', error: error, stackTrace: stackTrace);
+      AppLogger.error('ErrorTrackingService not initialized',
+          error: error, stackTrace: stackTrace);
       return;
     }
 
@@ -244,11 +247,13 @@ void validateErrorTrackingService() {
 
   // Test initialization check
   assert(!ErrorTrackingService.isInitialized,
-    'Service should not be initialized before calling initialize()');
+      'Service should not be initialized before calling initialize()');
 
   // Test environment detection
-  assert(ErrorTrackingService.environment == (kDebugMode ? 'development' : 'production'),
-    'Environment should be correctly detected');
+  assert(
+      ErrorTrackingService.environment ==
+          (kDebugMode ? 'development' : 'production'),
+      'Environment should be correctly detected');
 
   AppLogger.info('ErrorTrackingService validation passed');
 }

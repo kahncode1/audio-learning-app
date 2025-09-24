@@ -1,168 +1,166 @@
 /// Player Controls Widget
 ///
-/// Purpose: Audio player control interface
-/// Provides play/pause, seek, speed adjustment controls
+/// Purpose: Reusable audio player controls with play/pause, skip, speed, and font size
+/// Dependencies:
+/// - flutter_riverpod: ^2.4.9 (for state management)
+/// - just_audio: ^0.9.36 (for audio types)
+/// - ../../services/audio_player_service_local.dart (for audio control)
+/// - ../../services/progress_service.dart (for font size management)
 ///
 /// Features:
-/// - FloatingActionButton for play/pause
-/// - Skip forward/backward controls
-/// - Playback speed adjustment
-/// - Interactive seek bar with time labels
-/// - Responsive to stream updates
-///
-import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
-import '../../services/audio_player_service_local.dart';
-import '../../utils/app_logger.dart';
+/// - Play/pause button with FloatingActionButton style
+/// - Skip forward/backward 30 seconds
+/// - Speed adjustment (0.5x to 2.0x)
+/// - Font size cycling (Small/Medium/Large)
+/// - Compact, responsive layout
 
-class PlayerControlsWidget extends StatelessWidget {
-  final AudioPlayerServiceLocal audioService;
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/audio_player_service_local.dart';
+import '../../services/progress_service.dart';
+
+class PlayerControlsWidget extends ConsumerStatefulWidget {
   final VoidCallback? onInteraction;
 
   const PlayerControlsWidget({
     super.key,
-    required this.audioService,
     this.onInteraction,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Full-width progress bar
-        _buildSeekBar(context),
-        // Control buttons row
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // Speed control
-              _buildSpeedControl(context),
-              // Skip backward
-              _buildSkipBackward(context),
-              // Play/Pause FAB
-              _buildPlayPauseButton(context),
-              // Skip forward
-              _buildSkipForward(context),
-            ],
-          ),
-        ),
-      ],
-    );
+  ConsumerState<PlayerControlsWidget> createState() => _PlayerControlsWidgetState();
+}
+
+class _PlayerControlsWidgetState extends ConsumerState<PlayerControlsWidget> {
+  late final AudioPlayerServiceLocal _audioService;
+  ProgressService? _progressService;
+
+  @override
+  void initState() {
+    super.initState();
+    _audioService = AudioPlayerServiceLocal.instance;
+    _initProgressService();
   }
 
-  Widget _buildSeekBar(BuildContext context) {
-    return StreamBuilder<Duration>(
-      stream: audioService.positionStream,
-      builder: (context, positionSnapshot) {
-        if (positionSnapshot.hasError) {
-          AppLogger.error('Position stream error', error: positionSnapshot.error);
-          return const SizedBox.shrink();
-        }
-        final position = positionSnapshot.data ?? Duration.zero;
+  Future<void> _initProgressService() async {
+    final service = await ProgressService.getInstance();
+    if (mounted) {
+      setState(() {
+        _progressService = service;
+      });
+    }
+  }
 
-        return StreamBuilder<Duration>(
-          stream: audioService.durationStream,
-          builder: (context, durationSnapshot) {
-            if (durationSnapshot.hasError) {
-              AppLogger.error('Duration stream error', error: durationSnapshot.error);
-              return const SizedBox.shrink();
-            }
-            final duration = durationSnapshot.data ?? Duration.zero;
+  void _handleInteraction() {
+    widget.onInteraction?.call();
+  }
 
-            return Column(
-              children: [
-                // Full-width seek bar
-                SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    trackHeight: 3.0,
-                    thumbShape: const RoundSliderThumbShape(
-                      enabledThumbRadius: 6.0,
-                    ),
-                    overlayShape: const RoundSliderOverlayShape(
-                      overlayRadius: 12.0,
-                    ),
-                    trackShape: const RectangularSliderTrackShape(),
-                  ),
-                  child: SizedBox(
-                    height: 20,
-                    child: Slider(
-                      value: duration.inMilliseconds > 0 &&
-                             position.inMilliseconds <= duration.inMilliseconds
-                          ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
-                          : 0.0,
-                      onChanged: (value) {
-                        final newPosition = Duration(
-                          milliseconds: (duration.inMilliseconds * value).round(),
-                        );
-                        audioService.seekToPosition(newPosition);
-                        onInteraction?.call();
-                      },
-                      activeColor: Theme.of(context).primaryColor,
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          // Speed control
+          _buildSpeedControl(context),
+
+          // Skip backward
+          Semantics(
+            label: 'Skip backward 30 seconds',
+            button: true,
+            child: IconButton(
+              icon: Icon(
+                Icons.replay_30,
+                color: Colors.grey.shade500,
+                weight: 300,
+              ),
+              iconSize: 40,
+              onPressed: () {
+                _audioService.skipBackward();
+                _handleInteraction();
+              },
+              tooltip: 'Skip back 30s (←)',
+            ),
+          ),
+
+          // Play/Pause with FloatingActionButton
+          StreamBuilder<bool>(
+            stream: _audioService.isPlayingStream,
+            builder: (context, snapshot) {
+              final isPlaying = snapshot.data ?? false;
+              return Semantics(
+                label: isPlaying ? 'Pause audio' : 'Play audio',
+                button: true,
+                child: SizedBox(
+                  height: 48,
+                  width: 48,
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      _audioService.togglePlayPause();
+                      _handleInteraction();
+                    },
+                    tooltip: 'Play/Pause (Space)',
+                    elevation: 2,
+                    child: Icon(
+                      isPlaying ? Icons.pause : Icons.play_arrow,
+                      size: 28,
                     ),
                   ),
                 ),
-                // Time labels
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 2, 24, 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _formatDuration(position),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
-                      ),
-                      Text(
-                        _formatDuration(duration - position),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
+              );
+            },
+          ),
+
+          // Skip forward
+          Semantics(
+            label: 'Skip forward 30 seconds',
+            button: true,
+            child: IconButton(
+              icon: Icon(
+                Icons.forward_30,
+                color: Colors.grey.shade500,
+                weight: 300,
+              ),
+              iconSize: 40,
+              onPressed: () {
+                _audioService.skipForward();
+                _handleInteraction();
+              },
+              tooltip: 'Skip forward 30s (→)',
+            ),
+          ),
+
+          // Font size control
+          _buildFontSizeControl(context),
+        ],
+      ),
     );
   }
 
   Widget _buildSpeedControl(BuildContext context) {
     return StreamBuilder<double>(
-      stream: audioService.speedStream,
+      stream: _audioService.speedStream,
       builder: (context, snapshot) {
         final speed = snapshot.data ?? 1.0;
-        final speeds = [0.8, 1.0, 1.25, 1.5, 1.75, 2.0];
-        final speedIndex = speeds.indexOf(speed);
-
-        return Tooltip(
-          message: 'Playback Speed',
-          child: Container(
-            width: 65,
-            height: 40,
-            decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).dividerColor),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () {
-                  final nextIndex = (speedIndex + 1) % speeds.length;
-                  audioService.setPlaybackSpeed(speeds[nextIndex]);
-                  onInteraction?.call();
-                },
-                child: Center(
-                  child: Text(
-                    '${speed}x',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+        return Semantics(
+          label: 'Playback speed ${speed}x. Tap to change',
+          button: true,
+          child: SizedBox(
+            width: 50,
+            height: 28,
+            child: TextButton(
+              onPressed: () {
+                _audioService.cycleSpeed();
+                _handleInteraction();
+              },
+              style: _getButtonStyle(context),
+              child: Text(
+                '${speed}x',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(fontSize: 11),
               ),
             ),
           ),
@@ -171,89 +169,56 @@ class PlayerControlsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSkipBackward(BuildContext context) {
-    return Tooltip(
-      message: 'Skip Back 30s (←)',
-      child: IconButton(
-        iconSize: 40,
-        icon: const Icon(Icons.replay_30),
-        onPressed: () {
-          audioService.skipBackward();
-          onInteraction?.call();
-        },
-      ),
-    );
-  }
-
-  Widget _buildPlayPauseButton(BuildContext context) {
-    return StreamBuilder<bool>(
-      stream: audioService.playingStream,
+  Widget _buildFontSizeControl(BuildContext context) {
+    return StreamBuilder<int>(
+      stream: _progressService?.fontSizeIndexStream ?? Stream.value(1),
       builder: (context, snapshot) {
-        final isPlaying = snapshot.data ?? false;
-
-        return StreamBuilder<ProcessingState>(
-          stream: audioService.processingStateStream,
-          builder: (context, stateSnapshot) {
-            final processingState = stateSnapshot.data ?? ProcessingState.idle;
-            final isLoading = processingState == ProcessingState.loading ||
-                             processingState == ProcessingState.buffering;
-
-            return Tooltip(
-              message: isPlaying ? 'Pause (Space)' : 'Play (Space)',
-              child: SizedBox(
-                width: 64,
-                height: 64,
-                child: FloatingActionButton(
-                  onPressed: isLoading
-                      ? null
-                      : () {
-                          if (isPlaying) {
-                            audioService.pausePlayback();
-                          } else {
-                            audioService.resumePlayback();
-                          }
-                          onInteraction?.call();
-                        },
-                  elevation: 4,
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 28,
-                          height: 28,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Icon(
-                          isPlaying ? Icons.pause : Icons.play_arrow,
-                          size: 36,
-                        ),
-                ),
+        final fontSizeName = _progressService?.currentFontSizeName ?? 'Medium';
+        return Semantics(
+          label: 'Font size $fontSizeName. Tap to change',
+          button: true,
+          child: SizedBox(
+            width: 50,
+            height: 28,
+            child: TextButton(
+              onPressed: () async {
+                await _progressService?.cycleFontSize();
+                if (mounted) {
+                  setState(() {}); // Refresh UI
+                }
+                _handleInteraction();
+              },
+              style: _getButtonStyle(context),
+              child: Text(
+                fontSizeName,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(fontSize: 11),
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
   }
 
-  Widget _buildSkipForward(BuildContext context) {
-    return Tooltip(
-      message: 'Skip Forward 30s (→)',
-      child: IconButton(
-        iconSize: 40,
-        icon: const Icon(Icons.forward_30),
-        onPressed: () {
-          audioService.skipForward();
-          onInteraction?.call();
-        },
-      ),
+  ButtonStyle _getButtonStyle(BuildContext context) {
+    return TextButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      minimumSize: const Size(50, 28),
+      backgroundColor: Theme.of(context).brightness == Brightness.light
+          ? Colors.grey.shade200
+          : Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+      foregroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Theme.of(context).colorScheme.primary
+          : null,
     );
   }
 
-  String _formatDuration(Duration duration) {
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  @override
+  void dispose() {
+    // Don't dispose services - they're singletons
+    super.dispose();
   }
 }

@@ -30,10 +30,14 @@ A Flutter-based mobile application with offline-first architecture that enables 
 - **Platforms:** iOS (14+) and Android (API 21+)
 - **Backend:** Supabase with PostgreSQL and Row Level Security
   - See: `/documentation/apis/supabase-backend.md`
+- **Storage:** Supabase Storage with global CDN for audio files
+  - Public bucket: `audio-files` (50MB limit, MP3 only)
+  - Automatic CDN distribution via Cloudflare
+  - See: `/preprocessing_pipeline/UPLOAD_TO_SUPABASE.md`
 - **Authentication:** AWS Cognito SSO (fully implemented, no mock auth)
   - See: `/documentation/apis/aws-cognito-sso.md`
 - **Audio:** Local MP3 playback with pre-processed content
-  - Pre-generated audio files stored in device storage
+  - Audio files downloaded from Supabase Storage CDN
   - JSON-based timing data for word/sentence synchronization
   - Instant playback with no buffering required
 - **State Management:** Riverpod 2.4.9
@@ -102,6 +106,7 @@ audio_learning_app/
 - **Pipeline Guide:** `/preprocessing_pipeline/README.md` - Complete preprocessing overview
 - **Schema Definition:** `/preprocessing_pipeline/SCHEMA.md` - JSON schema with snake_case fields
 - **Usage Guide:** `/preprocessing_pipeline/USAGE.md` - Step-by-step preprocessing instructions
+- **Upload Guide:** `/preprocessing_pipeline/UPLOAD_TO_SUPABASE.md` - Audio file upload to CDN
 - **Architecture:** `/DOWNLOAD_ARCHITECTURE_PLAN.md` - System design documentation
 
 Full documentation: `/DOWNLOAD_ARCHITECTURE_PLAN.md`
@@ -211,18 +216,24 @@ See: `/references/code-patterns.md` for examples
 ### Test Database Content
 For development and testing, the following test data is available in Supabase:
 
-- **Course**: "Insurance Case Management" (Course Number: INS-101)
-- **Assignment**: "Establishing a Case Reserve"
+- **Course**: "Insurance Fundamentals" (Course ID: `cb236d98-dbb8-4810-b205-17e8091dcf69`)
+  - Course Number: INS-101
+  - Multiple assignments with learning objects
+  - Audio URLs configured for Supabase Storage CDN
 - **Learning Object**: ID `63ad7b78-0970-4265-a4fe-51f3fee39d5f`
-  - Contains valid SSML content for Speechify API testing
-  - Uses proper SSML tags: `<emphasis>`, `<break>`, `<prosody>`, `<sub>`
-  - Includes full case reserve lesson with word timing markers
+  - Title: "How Insurance Facilitates Society"
+  - Contains valid content and timing data
+  - Audio URL points to Supabase Storage
 
 ### Test Access
-- **"Test with Database" button** in HomePage
-  - Fetches test learning object directly from Supabase
-  - Bypasses authentication using temporary RLS policy
-  - **⚠️ Remove before production** (see MOCK_AUTH_REMOVAL_GUIDE.md)
+- **"Download Test Course" button** in HomePage
+  - Downloads complete course from Supabase (INS-101)
+  - Includes all assignments and learning objects
+  - Downloads audio files from CDN (when available)
+  - Progress tracking with percentage display
+- **"Delete Downloads" button** for testing
+  - Clears local database and downloaded files
+  - Useful for testing fresh downloads
 
 ### Temporary RLS Policy
 ```sql

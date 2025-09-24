@@ -18,7 +18,6 @@ class DioProvider {
   static DioProvider? _instance;
   static Dio? _dio;
 
-
   // Private constructor
   DioProvider._();
 
@@ -78,7 +77,6 @@ class DioProvider {
     _dio!.interceptors.add(_RetryInterceptor(_dio!));
   }
 
-
   /// Get cache statistics (placeholder for future implementation)
   static Map<String, dynamic> getCacheStatistics() {
     return {
@@ -98,9 +96,9 @@ class DioProvider {
   /// Clear all cached responses (placeholder for future implementation)
   static Future<void> clearCache() async {
     // Cache removed - this is a no-op for now
-    AppLogger.info('Cache clearing requested (cache not currently implemented)');
+    AppLogger.info(
+        'Cache clearing requested (cache not currently implemented)');
   }
-
 
   /// Reset the singleton instances (mainly for testing)
   @visibleForTesting
@@ -239,4 +237,3 @@ void validateDioProvider() {
 
   AppLogger.info('All DioProvider validations passed');
 }
-

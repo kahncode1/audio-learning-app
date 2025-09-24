@@ -9,8 +9,6 @@
 /// - Handle timing synchronization
 /// - Validate character positions
 ///
-import '../../models/word_timing.dart';
-import '../../models/sentence_timing.dart';
 import '../../services/word_timing_service_simplified.dart';
 import '../../services/local_content_service.dart'; // For TimingData
 import '../../utils/app_logger.dart';
@@ -66,12 +64,12 @@ class HighlightCalculator {
 
   /// Find current word index for position
   int findCurrentWordIndex(int positionMs) {
-    if (_timingData?.words == null || _timingData!.words!.isEmpty) {
+    if (_timingData?.words == null || _timingData!.words.isEmpty) {
       return -1;
     }
 
     // Binary search for efficiency
-    final words = _timingData!.words!;
+    final words = _timingData!.words;
     int left = 0;
     int right = words.length - 1;
     int result = -1;
@@ -96,12 +94,12 @@ class HighlightCalculator {
 
   /// Find current sentence index for position
   int findCurrentSentenceIndex(int positionMs) {
-    if (_timingData?.sentences == null || _timingData!.sentences!.isEmpty) {
+    if (_timingData?.sentences == null || _timingData!.sentences.isEmpty) {
       return -1;
     }
 
     // Binary search for efficiency
-    final sentences = _timingData!.sentences!;
+    final sentences = _timingData!.sentences;
     int left = 0;
     int right = sentences.length - 1;
     int result = -1;
@@ -130,7 +128,7 @@ class HighlightCalculator {
       return null;
     }
 
-    final words = _timingData!.words!;
+    final words = _timingData!.words;
     if (_currentWordIndex >= words.length) {
       return null;
     }
@@ -148,7 +146,7 @@ class HighlightCalculator {
       return null;
     }
 
-    final sentences = _timingData!.sentences!;
+    final sentences = _timingData!.sentences;
     if (_currentSentenceIndex >= sentences.length) {
       return null;
     }
@@ -158,9 +156,9 @@ class HighlightCalculator {
     final sentence = sentences[_currentSentenceIndex];
     if (_timingData!.words != null &&
         sentence.wordStartIndex >= 0 &&
-        sentence.wordEndIndex < _timingData!.words!.length) {
-      final startWord = _timingData!.words![sentence.wordStartIndex];
-      final endWord = _timingData!.words![sentence.wordEndIndex];
+        sentence.wordEndIndex < _timingData!.words.length) {
+      final startWord = _timingData!.words[sentence.wordStartIndex];
+      final endWord = _timingData!.words[sentence.wordEndIndex];
       return CharacterBoundaries(
         start: startWord.charStart ?? 0,
         end: endWord.charEnd ?? 0,

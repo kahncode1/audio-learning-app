@@ -33,10 +33,12 @@ class SentenceTiming {
   })  : assert(text.isNotEmpty, 'Sentence text cannot be empty'),
         assert(startMs >= 0, 'Start time must be non-negative'),
         assert(endMs >= 0, 'End time must be non-negative'),
-        assert(endMs >= startMs, 'End time must be after or equal to start time'),
+        assert(
+            endMs >= startMs, 'End time must be after or equal to start time'),
         assert(sentenceIndex >= 0, 'Sentence index must be non-negative'),
         assert(wordStartIndex >= 0, 'Word start index must be non-negative'),
-        assert(wordEndIndex >= wordStartIndex, 'Word end index must be >= start index'),
+        assert(wordEndIndex >= wordStartIndex,
+            'Word end index must be >= start index'),
         assert(charStart >= 0, 'Character start must be non-negative'),
         assert(charEnd >= charStart, 'Character end must be >= start');
 

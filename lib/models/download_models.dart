@@ -75,7 +75,8 @@ class DownloadTask {
   });
 
   /// Progress as a percentage (0.0 to 1.0)
-  double get progress => expectedSize > 0 ? downloadedBytes / expectedSize : 0.0;
+  double get progress =>
+      expectedSize > 0 ? downloadedBytes / expectedSize : 0.0;
 
   /// Whether this task is complete
   bool get isComplete => status == DownloadStatus.completed;
@@ -146,7 +147,8 @@ class DownloadTask {
       fileType: FileType.values.byName(json['fileType'] as String),
       expectedSize: json['expectedSize'] as int,
       downloadedBytes: json['downloadedBytes'] as int? ?? 0,
-      status: DownloadStatus.values.byName(json['status'] as String? ?? 'pending'),
+      status:
+          DownloadStatus.values.byName(json['status'] as String? ?? 'pending'),
       retryCount: json['retryCount'] as int? ?? 0,
       errorMessage: json['errorMessage'] as String?,
       lastModified: json['lastModified'] != null
@@ -174,6 +176,7 @@ class CourseDownloadProgress {
   final DateTime startedAt;
   DateTime? completedAt;
   DownloadStatus overallStatus;
+  final double downloadSpeed; // bytes per second
 
   CourseDownloadProgress({
     required this.courseId,
@@ -187,6 +190,7 @@ class CourseDownloadProgress {
     required this.startedAt,
     this.completedAt,
     this.overallStatus = DownloadStatus.pending,
+    this.downloadSpeed = 0.0,
   });
 
   /// Overall progress as a percentage (0.0 to 1.0)
@@ -246,6 +250,7 @@ class CourseDownloadProgress {
     List<DownloadTask>? tasks,
     DateTime? completedAt,
     DownloadStatus? overallStatus,
+    double? downloadSpeed,
   }) {
     return CourseDownloadProgress(
       courseId: courseId,
@@ -259,6 +264,7 @@ class CourseDownloadProgress {
       startedAt: startedAt,
       completedAt: completedAt ?? this.completedAt,
       overallStatus: overallStatus ?? this.overallStatus,
+      downloadSpeed: downloadSpeed ?? this.downloadSpeed,
     );
   }
 
@@ -276,6 +282,7 @@ class CourseDownloadProgress {
       'startedAt': startedAt.toIso8601String(),
       'completedAt': completedAt?.toIso8601String(),
       'overallStatus': overallStatus.name,
+      'downloadSpeed': downloadSpeed,
     };
   }
 
@@ -299,6 +306,7 @@ class CourseDownloadProgress {
       overallStatus: DownloadStatus.values.byName(
         json['overallStatus'] as String? ?? 'pending',
       ),
+      downloadSpeed: (json['downloadSpeed'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
@@ -320,7 +328,8 @@ class CourseDownloadInfo {
   });
 
   /// Get human-readable size
-  String get formattedSize => CourseDownloadProgress.formatBytes(totalSizeBytes);
+  String get formattedSize =>
+      CourseDownloadProgress.formatBytes(totalSizeBytes);
 
   /// Create from learning objects
   factory CourseDownloadInfo.fromLearningObjects({
@@ -334,7 +343,8 @@ class CourseDownloadInfo {
     const timingSize = 50 * 1024; // 50KB
     const filesPerObject = 3;
 
-    final totalSize = learningObjectIds.length * (audioSize + contentSize + timingSize);
+    final totalSize =
+        learningObjectIds.length * (audioSize + contentSize + timingSize);
     final fileCount = learningObjectIds.length * filesPerObject;
 
     return CourseDownloadInfo(
@@ -438,7 +448,8 @@ void validateDownloadModels() {
       'Progress percentage should be ~50%');
   assert(progress.pendingFiles == 4, 'Should have 4 pending files');
   assert(progress.hasFailed, 'Should have failed files');
-  assert(progress.getProgressString().contains('MB'), 'Progress string should contain MB');
+  assert(progress.getProgressString().contains('MB'),
+      'Progress string should contain MB');
 
   // Test JSON serialization
   final progressJson = progress.toJson();
@@ -460,7 +471,8 @@ void validateDownloadModels() {
   const settings = DownloadSettings(wifiOnly: true);
   final settingsJson = settings.toJson();
   final settingsFromPrefs = DownloadSettings.fromPrefs(settingsJson);
-  assert(settingsFromPrefs.wifiOnly == true, 'Settings should preserve wifiOnly');
+  assert(
+      settingsFromPrefs.wifiOnly == true, 'Settings should preserve wifiOnly');
 
   debugPrint('✓ All download model validations passed');
 }

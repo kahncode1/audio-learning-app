@@ -48,7 +48,8 @@ class EnvConfig {
 
     if (missing.isNotEmpty) {
       if (kDebugMode) {
-        debugPrint('⚠️ Missing or placeholder values for environment variables:');
+        debugPrint(
+            '⚠️ Missing or placeholder values for environment variables:');
         for (final variable in missing) {
           debugPrint('  - $variable');
         }
@@ -97,7 +98,8 @@ class EnvConfig {
       if (isDevelopment && !isSupabaseConfigured) {
         return 'https://placeholder.supabase.co';
       }
-      throw Exception('SUPABASE_URL environment variable is required. Please set it in your .env file.');
+      throw Exception(
+          'SUPABASE_URL environment variable is required. Please set it in your .env file.');
     }
     return url;
   }
@@ -110,7 +112,8 @@ class EnvConfig {
       if (isDevelopment && !isSupabaseConfigured) {
         return 'placeholder-key';
       }
-      throw Exception('SUPABASE_ANON_KEY environment variable is required. Please set it in your .env file.');
+      throw Exception(
+          'SUPABASE_ANON_KEY environment variable is required. Please set it in your .env file.');
     }
     return key;
   }

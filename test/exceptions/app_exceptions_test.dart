@@ -111,7 +111,8 @@ void main() {
         for (final (statusCode, expectedMessage) in testCases) {
           final exception = NetworkException.fromStatusCode(statusCode);
           expect(exception.statusCode, statusCode);
-          expect(exception.message.toLowerCase(), contains(expectedMessage.toLowerCase()));
+          expect(exception.message.toLowerCase(),
+              contains(expectedMessage.toLowerCase()));
         }
       });
 
@@ -388,7 +389,8 @@ void main() {
           resource: '/admin/panel',
         );
 
-        expect(exception.message, 'Insufficient permissions to access resource');
+        expect(
+            exception.message, 'Insufficient permissions to access resource');
         expect(exception.userId, 'user-456');
         expect(exception.authType, 'authorization');
         expect(exception.details, contains('/admin/panel'));
@@ -438,7 +440,8 @@ void main() {
       });
 
       test('should create invalid value exception', () {
-        final exception = ConfigurationException.invalidValue('timeout', 'invalid');
+        final exception =
+            ConfigurationException.invalidValue('timeout', 'invalid');
         expect(exception.message, 'Invalid configuration value');
         expect(exception.configKey, 'timeout');
         expect(exception.details, contains('timeout'));
@@ -544,7 +547,8 @@ void main() {
     });
 
     group('User Message Generation', () {
-      test('should provide appropriate user messages for all exception types', () {
+      test('should provide appropriate user messages for all exception types',
+          () {
         final exceptions = [
           NetworkException.fromStatusCode(401),
           CacheException.readFailed('key'),

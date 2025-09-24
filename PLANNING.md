@@ -5,7 +5,12 @@
 This planning document defines the architecture, technology decisions, and strategic approach for the Streaming Audio Learning Platform. It works in conjunction with:
 - **CLAUDE.md**: Streamlined development guide with critical instructions and quick reference
 - **TASKS.md**: Detailed task breakdown with completion tracking and implementation references
+- **NEW_CODE_REVIEW_IMPROVEMENT_PLAN.md**: Code quality improvement roadmap and completion tracking
 - **`/implementations/`**: Production-ready reference implementations for all major components
+- **`/documentation/`**: Comprehensive API and architecture documentation:
+  - `WIDGET_ARCHITECTURE.md`: Complete widget hierarchy, patterns, and testing strategies
+  - API guides for Flutter packages, Supabase, AWS Cognito, and integrations
+  - Deployment configurations for iOS and Android
 - **`/references/`**: Detailed technical documentation:
   - `code-patterns.md`: Async/await, state management, lifecycle patterns
   - `implementation-standards.md`: Service patterns, validation functions, testing templates
@@ -34,11 +39,24 @@ The project uses a modular implementation approach:
 ├── dio-config.dart            # HTTP client configuration
 └── models.dart                # Data model definitions
 
+/lib/widgets/player/           # Extracted player components (NEW)
+├── player_controls_widget.dart    # Reusable playback controls
+├── audio_progress_bar.dart        # Seek bar with time display
+├── fullscreen_controller.dart     # Fullscreen mode management
+├── highlighted_text_display.dart  # Text highlighting widget
+└── optimized_highlight_painter.dart # Custom painter for highlights
+
 /references/
 ├── code-patterns.md           # Reusable code patterns and best practices
 ├── implementation-standards.md # Documentation and validation requirements
 ├── technical-requirements.md  # Platform and configuration specifics
 └── common-pitfalls.md         # Critical mistakes and their solutions
+
+/documentation/
+├── WIDGET_ARCHITECTURE.md     # Complete widget hierarchy and patterns
+├── apis/                      # API documentation for packages and services
+├── integrations/              # Integration guides for various services
+└── deployment/                # Platform-specific deployment configs
 ```
 
 These implementations provide tested, production-ready code that should be referenced when building the corresponding features. The reference documentation provides deeper technical guidance for complex implementations.
@@ -87,11 +105,14 @@ The system implements a clean separation of concerns across four primary layers:
    - **Reference:** `/lib/services/database/`, `/lib/providers/database_providers.dart`
 
 3. **Content Delivery (Pre-processed Files)**
-   - Pre-generated MP3 audio files
+   - Pre-generated MP3 audio files hosted on Supabase Storage CDN
    - JSON-based word and sentence timing data
    - Content metadata and display text
-   - Stored locally after initial download
+   - Downloaded and stored locally for offline playback
+   - **Storage Configuration:** Public bucket with 50MB MP3 limit
+   - **CDN:** Automatic global distribution via Cloudflare
    - **Reference Implementation:** `/services/local_content_service.dart`
+   - **Upload Guide:** `/preprocessing_pipeline/UPLOAD_TO_SUPABASE.md`
    - **Architecture Guide:** `/DOWNLOAD_ARCHITECTURE_PLAN.md`
 
 4. **Mobile Application (Flutter)**
@@ -103,6 +124,7 @@ The system implements a clean separation of concerns across four primary layers:
    - Persistent user preferences
    - **Package Guide:** `/documentation/apis/flutter-packages.md`
    - **Highlighting Guide:** `/documentation/integrations/dual-level-highlighting.md`
+   - **Widget Architecture:** `/documentation/WIDGET_ARCHITECTURE.md` (modular component design)
    - **Platform Config:** `/documentation/deployment/ios-configuration.md` and `/documentation/deployment/android-configuration.md`
    - **Reference Implementations:** All files in `/implementations/`
    - **Code Patterns:** `/references/code-patterns.md`
@@ -122,9 +144,12 @@ The system implements a clean separation of concerns across four primary layers:
 - **✅ Production Authentication:** AWS Cognito fully operational, zero mock dependencies
 - **✅ Offline-First Data:** Complete SQLite implementation with Supabase sync
 - **✅ Service Decomposition:** All files <400 lines with single responsibility
+- **✅ Widget Modularization:** Player components extracted, no files >600 lines
 - **✅ Performance Targets:** 60fps highlighting, <2s load times achieved
 - **✅ Error Monitoring:** Sentry integration ready for production
 - **✅ Test Coverage:** 87.9% passing (532/605 tests)
+- **✅ Documentation:** 100% public API coverage with comprehensive architecture guides
+- **✅ Code Quality:** Grade A- (93/100) per NEW_CODE_REVIEW_IMPROVEMENT_PLAN.md
 
 ## Technology Stack
 
@@ -230,6 +255,8 @@ The system implements a clean separation of concerns across four primary layers:
 - **patrol: ^3.3.0** - Integration testing with native interaction support
 - **flutter_test: sdk: flutter** - Core Flutter testing framework
 - **Testing Standards:** `/references/implementation-standards.md` - Testing Standards
+- **Widget Testing:** `/documentation/WIDGET_ARCHITECTURE.md` - Testing strategies and patterns
+- **Test Organization:** `/test/widgets/player/` - Example widget test implementations
 
 ## Required Tools and Dependencies
 
@@ -402,6 +429,7 @@ Key technology selections with current implementations:
 - **Primary Color:** #2196F3 (Blue) for consistency across the app
 - **Gradient Cards:** Dynamic gradients for course differentiation (see `/implementations/home-page.dart`)
 - **Elevation Strategy:** Cards with 2-4dp elevation for depth
+- **Component Architecture:** See `/documentation/WIDGET_ARCHITECTURE.md` for widget hierarchy and patterns
 - **Common Mistakes:** See `/references/common-pitfalls.md` #16, #17 for UI patterns
 
 ### Advanced Player Controls (see `/implementations/audio-player-screen.dart`)
@@ -476,10 +504,13 @@ The project follows a milestone-based approach with clear deliverables and quali
 - **Integration Testing:** Comprehensive end-to-end scenarios with Patrol
 - **Performance Testing:** Continuous validation of performance targets
 - **UI Testing:** Verification of all visual polish elements
+- **Widget Testing:** Comprehensive test coverage per `/documentation/WIDGET_ARCHITECTURE.md`
+- **Mock Patterns:** Using mocktail for dependency injection and stream testing
 - **Device Testing:** Cross-platform verification on physical devices
 - **Network Resilience:** Testing under various network conditions
 - **Validation Functions:** Each implementation file includes self-validation
 - **Standards:** See `/references/implementation-standards.md` for testing templates
+- **Test Examples:** See `/test/widgets/player/` for widget testing patterns
 
 ### Quality Assurance
 - **Code Reviews:** All code reviewed before merging

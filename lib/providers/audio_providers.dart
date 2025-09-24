@@ -29,10 +29,11 @@ final audioPlayerServiceProvider = Provider<AudioPlayerServiceLocal>((ref) {
 });
 
 /// Current learning object being played
-final currentLearningObjectProvider = StateProvider<LearningObjectV2?>((ref) => null);
+final currentLearningObjectProvider =
+    StateProvider<LearningObjectV2?>((ref) => null);
 
 /// Whether audio is currently loaded (not necessarily playing)
-final isAudioLoadedProvider = StreamProvider<bool>((ref) {
+final isAudioLoadedProvider = StreamProvider.autoDispose<bool>((ref) {
   final audioService = ref.watch(audioPlayerServiceProvider);
 
   // Combine playing state and processing state to determine if audio is loaded
@@ -43,33 +44,35 @@ final isAudioLoadedProvider = StreamProvider<bool>((ref) {
 });
 
 /// Audio playing state stream
-final audioPlayingStateProvider = StreamProvider<bool>((ref) {
+final audioPlayingStateProvider = StreamProvider.autoDispose<bool>((ref) {
   final audioService = ref.watch(audioPlayerServiceProvider);
   return audioService.isPlayingStream;
 });
 
 /// Audio position stream
-final audioPositionProvider = StreamProvider<Duration>((ref) {
+final audioPositionProvider = StreamProvider.autoDispose<Duration>((ref) {
   final audioService = ref.watch(audioPlayerServiceProvider);
   return audioService.positionStream;
 });
 
 /// Audio duration stream
-final audioDurationProvider = StreamProvider<Duration>((ref) {
+final audioDurationProvider = StreamProvider.autoDispose<Duration>((ref) {
   final audioService = ref.watch(audioPlayerServiceProvider);
   return audioService.durationStream;
 });
 
 /// Audio loading state
-final audioLoadingStateProvider = StreamProvider<ProcessingState>((ref) {
+final audioLoadingStateProvider = StreamProvider.autoDispose<ProcessingState>((ref) {
   final audioService = ref.watch(audioPlayerServiceProvider);
   return audioService.processingStateStream;
 });
 
 /// Computed provider for progress percentage
 final audioProgressProvider = Provider<double>((ref) {
-  final position = ref.watch(audioPositionProvider).valueOrNull ?? Duration.zero;
-  final duration = ref.watch(audioDurationProvider).valueOrNull ?? Duration.zero;
+  final position =
+      ref.watch(audioPositionProvider).valueOrNull ?? Duration.zero;
+  final duration =
+      ref.watch(audioDurationProvider).valueOrNull ?? Duration.zero;
 
   if (duration.inMilliseconds == 0) return 0.0;
 
@@ -88,13 +91,15 @@ final shouldShowMiniPlayerProvider = Provider<bool>((ref) {
 
 /// Provider for formatted current time
 final formattedPositionProvider = Provider<String>((ref) {
-  final position = ref.watch(audioPositionProvider).valueOrNull ?? Duration.zero;
+  final position =
+      ref.watch(audioPositionProvider).valueOrNull ?? Duration.zero;
   return _formatDuration(position);
 });
 
 /// Provider for formatted total duration
 final formattedDurationProvider = Provider<String>((ref) {
-  final duration = ref.watch(audioDurationProvider).valueOrNull ?? Duration.zero;
+  final duration =
+      ref.watch(audioDurationProvider).valueOrNull ?? Duration.zero;
   return _formatDuration(duration);
 });
 
