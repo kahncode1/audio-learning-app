@@ -40,6 +40,10 @@ class WordTimingServiceSimplified {
   final BehaviorSubject<int> _currentSentenceIndexSubject =
       BehaviorSubject.seeded(0);
 
+  // Track last emitted values to prevent duplicate emissions
+  int _lastEmittedWordIndex = -1;
+  int _lastEmittedSentenceIndex = -1;
+
   WordTimingServiceSimplified._()
       : _localContentService = LocalContentService();
 
@@ -65,6 +69,10 @@ class WordTimingServiceSimplified {
         _currentTimingData = cached;
         _currentLearningObjectId = learningObjectId;
 
+        // Reset last emitted values when switching learning objects
+        _lastEmittedWordIndex = -1;
+        _lastEmittedSentenceIndex = -1;
+
         AppLogger.info('Using cached timing data', {
           'wordCount': cached.words.length,
           'sentenceCount': cached.sentences.length,
@@ -81,6 +89,10 @@ class WordTimingServiceSimplified {
       _timingCache[learningObjectId] = timingData;
       _currentTimingData = timingData;
       _currentLearningObjectId = learningObjectId;
+
+      // Reset last emitted values when loading new timing data
+      _lastEmittedWordIndex = -1;
+      _lastEmittedSentenceIndex = -1;
 
       // Implement simple LRU cache eviction (keep last 10 items)
       if (_timingCache.length > 10) {
@@ -315,8 +327,17 @@ class WordTimingServiceSimplified {
       });
     }
 
-    _currentWordIndexSubject.add(wordIndex);
-    _currentSentenceIndexSubject.add(sentenceIndex);
+    // ONLY emit if the indices have actually changed
+    // This prevents unnecessary widget rebuilds and flashing
+    if (wordIndex != _lastEmittedWordIndex) {
+      _currentWordIndexSubject.add(wordIndex);
+      _lastEmittedWordIndex = wordIndex;
+    }
+
+    if (sentenceIndex != _lastEmittedSentenceIndex) {
+      _currentSentenceIndexSubject.add(sentenceIndex);
+      _lastEmittedSentenceIndex = sentenceIndex;
+    }
   }
 
   // Track last reset time to prevent cache thrashing during rapid seeks
