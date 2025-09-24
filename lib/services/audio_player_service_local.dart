@@ -291,6 +291,9 @@ class AudioPlayerServiceLocal {
           'title': learningObject.title,
         });
 
+        // Clear any existing highlights when loading new content
+        WordTimingServiceSimplified.instance.clearHighlights();
+
         // Check if content is available
         final isAvailable =
             await _localContentService.isContentAvailable(learningObject.id);
@@ -521,6 +524,9 @@ class AudioPlayerServiceLocal {
     try {
       await _player.stop();
       await seekToPosition(Duration.zero);
+
+      // Clear highlights when stopping
+      WordTimingServiceSimplified.instance.clearHighlights();
     } catch (e) {
       AppLogger.error('Error stopping audio', error: e);
     }

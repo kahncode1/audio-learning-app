@@ -327,17 +327,27 @@ class WordTimingServiceSimplified {
       });
     }
 
-    // ONLY emit if the indices have actually changed
-    // This prevents unnecessary widget rebuilds and flashing
-    if (wordIndex != _lastEmittedWordIndex) {
-      _currentWordIndexSubject.add(wordIndex);
-      _lastEmittedWordIndex = wordIndex;
+    // STICKY HIGHLIGHTING: Don't emit -1 values for word index
+    // This prevents flashing when we're between words
+    if (wordIndex >= 0) {
+      // Valid word found - emit it if different from last
+      if (wordIndex != _lastEmittedWordIndex) {
+        _currentWordIndexSubject.add(wordIndex);
+        _lastEmittedWordIndex = wordIndex;
+      }
     }
+    // If wordIndex is -1, we keep the last valid highlight
+    // This creates a "sticky" effect where highlights persist through gaps
 
-    if (sentenceIndex != _lastEmittedSentenceIndex) {
-      _currentSentenceIndexSubject.add(sentenceIndex);
-      _lastEmittedSentenceIndex = sentenceIndex;
+    // Apply similar logic for sentences
+    if (sentenceIndex >= 0) {
+      // Valid sentence found - emit it if different from last
+      if (sentenceIndex != _lastEmittedSentenceIndex) {
+        _currentSentenceIndexSubject.add(sentenceIndex);
+        _lastEmittedSentenceIndex = sentenceIndex;
+      }
     }
+    // If sentenceIndex is -1, maintain the last valid sentence highlight
   }
 
   // Track last reset time to prevent cache thrashing during rapid seeks
@@ -368,6 +378,20 @@ class WordTimingServiceSimplified {
         'learningObjectId': _currentLearningObjectId,
       });
     }
+  }
+
+  /// Clear current highlights (call when stopping playback)
+  void clearHighlights() {
+    // Explicitly clear highlights by emitting -1
+    if (_lastEmittedWordIndex != -1) {
+      _currentWordIndexSubject.add(-1);
+      _lastEmittedWordIndex = -1;
+    }
+    if (_lastEmittedSentenceIndex != -1) {
+      _currentSentenceIndexSubject.add(-1);
+      _lastEmittedSentenceIndex = -1;
+    }
+    AppLogger.info('🔄 HIGHLIGHT: Cleared all highlights');
   }
 
   /// Stream of current word index
