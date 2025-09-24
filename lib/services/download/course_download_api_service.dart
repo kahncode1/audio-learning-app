@@ -21,10 +21,14 @@
 /// - Stores everything in local SQLite database
 /// - Tracks download progress
 
-import 'package:dio/dio.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../database/local_database_service.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../utils/app_logger.dart';
+import '../database/local_database_service.dart';
 
 class CourseDownloadApiService {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -177,6 +181,22 @@ class CourseDownloadApiService {
     for (final lo in learningObjects) {
       lo['created_at'] ??= DateTime.now().toIso8601String();
       lo['updated_at'] ??= DateTime.now().toIso8601String();
+
+      // Download audio file if URL exists
+      if (lo['audio_url'] != null && lo['audio_url'].toString().isNotEmpty) {
+        await _downloadAudioFile(
+          learningObjectId: lo['id'] as String,
+          audioUrl: lo['audio_url'] as String,
+          courseId: lo['course_id'] as String,
+        );
+      }
+
+      // Save content and timing data
+      await _saveContentData(
+        learningObjectId: lo['id'] as String,
+        courseId: lo['course_id'] as String,
+        learningObject: lo,
+      );
     }
 
     return learningObjects;
@@ -247,6 +267,125 @@ class CourseDownloadApiService {
         message: 'Update failed: ${e.toString()}',
       ));
       rethrow;
+    }
+  }
+
+  /// Download audio file from URL to local storage
+  Future<void> _downloadAudioFile({
+    required String learningObjectId,
+    required String audioUrl,
+    required String courseId,
+  }) async {
+    try {
+      // Get documents directory
+      final documentsDir = await getApplicationDocumentsDirectory();
+      final audioDir = Directory(
+        '${documentsDir.path}/audio_learning/courses/$courseId/learning_objects/$learningObjectId',
+      );
+
+      // Create directory if it doesn't exist
+      if (!await audioDir.exists()) {
+        await audioDir.create(recursive: true);
+      }
+
+      final audioFile = File('${audioDir.path}/audio.mp3');
+
+      // Skip if file already exists
+      if (await audioFile.exists()) {
+        AppLogger.info('Audio file already exists', {
+          'learningObjectId': learningObjectId,
+          'path': audioFile.path,
+        });
+        return;
+      }
+
+      // Download the audio file
+      AppLogger.info('Downloading audio file', {
+        'learningObjectId': learningObjectId,
+        'url': audioUrl,
+      });
+
+      final response = await _dio.get<List<int>>(
+        audioUrl,
+        options: Options(
+          responseType: ResponseType.bytes,
+          followRedirects: true,
+        ),
+      );
+
+      // Save to file
+      await audioFile.writeAsBytes(response.data!);
+
+      AppLogger.info('Audio file downloaded successfully', {
+        'learningObjectId': learningObjectId,
+        'size': response.data!.length,
+        'path': audioFile.path,
+      });
+    } catch (e) {
+      AppLogger.error('Failed to download audio file', error: e, data: {
+        'learningObjectId': learningObjectId,
+        'audioUrl': audioUrl,
+      });
+      // Don't rethrow - allow download to continue even if audio fails
+    }
+  }
+
+  /// Save content and timing data to local storage
+  Future<void> _saveContentData({
+    required String learningObjectId,
+    required String courseId,
+    required Map<String, dynamic> learningObject,
+  }) async {
+    try {
+      // Get documents directory
+      final documentsDir = await getApplicationDocumentsDirectory();
+      final contentDir = Directory(
+        '${documentsDir.path}/audio_learning/courses/$courseId/learning_objects/$learningObjectId',
+      );
+
+      // Create directory if it doesn't exist
+      if (!await contentDir.exists()) {
+        await contentDir.create(recursive: true);
+      }
+
+      // Extract content from learning object
+      final contentJson = learningObject['content'] as Map<String, dynamic>?;
+      final displayText = contentJson?['display_text'] as String? ?? '';
+      final metadata = learningObject['metadata'] as Map<String, dynamic>?;
+
+      // Create timing data file
+      final timingFile = File('${contentDir.path}/timing.json');
+      final timingData = {
+        'version': 2,
+        'word_timings': learningObject['word_timings'] ?? [],
+        'sentence_timings': learningObject['sentence_timings'] ?? [],
+        'total_duration_ms': learningObject['total_duration_ms'] ?? 0,
+      };
+      await timingFile.writeAsString(json.encode(timingData));
+
+      // Create content.json file with display text and metadata
+      final contentFile = File('${contentDir.path}/content.json');
+      final contentData = {
+        'version': 2,
+        'display_text': displayText,
+        'metadata': metadata ?? {
+          'word_count': displayText.split(' ').length,
+          'character_count': displayText.length,
+          'estimated_reading_time': '${(displayText.split(' ').length / 200).ceil()} min',
+        },
+      };
+      await contentFile.writeAsString(json.encode(contentData));
+
+      AppLogger.info('Content data saved', {
+        'learningObjectId': learningObjectId,
+        'path': contentDir.path,
+        'hasDisplayText': displayText.isNotEmpty,
+        'hasWordTimings': (learningObject['word_timings'] as List?)?.isNotEmpty ?? false,
+      });
+    } catch (e) {
+      AppLogger.error('Failed to save content data', error: e, data: {
+        'learningObjectId': learningObjectId,
+      });
     }
   }
 

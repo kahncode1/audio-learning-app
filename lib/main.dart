@@ -17,7 +17,7 @@ import 'services/performance_monitor.dart';
 import 'utils/app_logger.dart';
 
 // Models
-import 'models/learning_object.dart';
+import 'models/learning_object_v2.dart';
 
 // Providers
 import 'providers/audio_providers.dart';
@@ -187,7 +187,7 @@ class AudioLearningApp extends ConsumerWidget {
             final args = settings.arguments as Map<String, dynamic>;
             return MaterialPageRoute(
               builder: (context) => EnhancedAudioPlayerScreen(
-                learningObject: args['learningObject'] as LearningObject,
+                learningObject: args['learningObject'] as LearningObjectV2,
                 courseNumber: args['courseNumber'] as String?,
                 courseTitle: args['courseTitle'] as String?,
                 assignmentTitle: args['assignmentTitle'] as String?,
@@ -196,7 +196,7 @@ class AudioLearningApp extends ConsumerWidget {
             );
           } else {
             // Legacy support for direct LearningObject
-            final learningObject = settings.arguments as LearningObject;
+            final learningObject = settings.arguments as LearningObjectV2;
             return MaterialPageRoute(
               builder: (context) => EnhancedAudioPlayerScreen(
                 learningObject: learningObject,

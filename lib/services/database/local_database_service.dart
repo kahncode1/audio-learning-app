@@ -22,6 +22,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:convert';
+import '../../utils/app_logger.dart';
 
 class LocalDatabaseService {
   static final LocalDatabaseService instance = LocalDatabaseService._internal();
@@ -311,6 +312,17 @@ class LocalDatabaseService {
     return results.isEmpty ? null : results.first;
   }
 
+  /// Delete all courses and related data from the database
+  Future<void> deleteAllCourses() async {
+    final db = await database;
+    await db.delete('user_progress');
+    await db.delete('download_cache');
+    await db.delete('learning_objects');
+    await db.delete('assignments');
+    await db.delete('courses');
+    AppLogger.info('Deleted all courses and related data from local database');
+  }
+
   /// Get assignments for a course
   Future<List<Map<String, dynamic>>> getAssignments(String courseId) async {
     final db = await database;
@@ -333,7 +345,10 @@ class LocalDatabaseService {
     );
 
     // Parse JSON strings back to objects
-    for (final result in results) {
+    // Create mutable copies of the results to avoid read-only error
+    final mutableResults = results.map((r) => Map<String, dynamic>.from(r)).toList();
+
+    for (final result in mutableResults) {
       if (result['paragraphs'] is String) {
         result['paragraphs'] = jsonDecode(result['paragraphs'] as String);
       }
@@ -354,7 +369,7 @@ class LocalDatabaseService {
       }
     }
 
-    return results;
+    return mutableResults;
   }
 
   /// Get a specific learning object

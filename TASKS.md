@@ -1,89 +1,201 @@
 # Audio Learning Platform - Development Tasks
 
-## 🎯 CURRENT STATUS: PRODUCTION READY (Grade A - 93/100)
+## 🎯 CURRENT STATUS: Functionally Complete, Needs Platform Deployment
 
-**Key Achievements:**
-- ✅ AWS Cognito authentication fully implemented (all mock code removed)
-- ✅ Offline-first architecture with SQLite and Supabase sync
-- ✅ Service decomposition complete (all files <400 lines)
-- ✅ Performance targets met (60fps highlighting, <2s load)
-- ✅ Test coverage: 87.9% (532/605 passing)
+**App Status:**
+- ✅ AWS Cognito authentication fully implemented
+- ✅ Offline-first architecture with SQLite
+- ✅ All features working in iOS simulator
+- ⚠️ Android project structure incomplete
+- ❌ Not tested on physical devices
+- ❌ Not ready for app store submission
 
-## 📋 TODO: Final Production Tasks
+## 🚨 CRITICAL: Android Project Setup Required
 
-### High Priority (1-2 days)
-1. **Fix Remaining Widget Tests**
-   - [ ] Update 73 failing widget tests to remove mock dependencies
-   - [ ] Add proper test database setup
-   - [ ] Target: 100% test pass rate
+### Immediate Action Needed
+The Android project is missing critical Gradle files. Must run:
+```bash
+flutter create . --platforms android
+```
+This will regenerate the Android project structure without affecting existing code.
 
-2. **Integration Testing**
-   - [ ] Implement Patrol tests for critical user journeys
-   - [ ] Test offline/online transitions
-   - [ ] Validate sync functionality
+## 📱 Mobile Platform Tasks
 
-### Medium Priority (2-3 days)
-3. **Production Monitoring**
-   - [ ] Configure Sentry for production
-   - [ ] Set up performance dashboards
-   - [ ] Create alert rules
+### 1. iOS Platform Configuration
 
-4. **Documentation**
-   - [ ] Update README with setup instructions
-   - [ ] Create deployment guide
-   - [ ] Document API endpoints
+#### Device Testing (High Priority)
+- [ ] Test on physical iPhone (various models)
+- [ ] Test on physical iPad
+- [ ] Verify background audio playback works
+- [ ] Test offline data persistence
+- [ ] Verify memory usage < 200MB
+- [ ] Test during phone calls
+- [ ] Test with Bluetooth headphones
+- [ ] Test with system font scaling
 
-### Low Priority (Optional)
-5. **Platform Testing**
-   - [ ] Android device testing
-   - [ ] Tablet UI optimization
-   - [ ] Accessibility improvements
+#### iOS Configuration
+- [ ] Set up Apple Developer account
+- [ ] Configure bundle identifier: `com.industria.audiocourses`
+- [ ] Generate signing certificates
+- [ ] Create provisioning profiles
+- [ ] Configure push notification certificates (if needed)
+- [ ] Set up TestFlight for beta testing
 
-## ✅ Completed Phases
+#### App Store Preparation
+- [ ] Create app icon (1024x1024)
+- [ ] Generate all required icon sizes
+- [ ] Create launch screen
+- [ ] Prepare screenshots (iPhone 6.7", 6.5", 5.5", iPad)
+- [ ] Write App Store description
+- [ ] Create privacy policy
+- [ ] Prepare release notes
+- [ ] Submit for App Store review
 
-### DATA_ARCHITECTURE_PLAN (Phases 5-7) - COMPLETE (2025-09-23)
-- LocalDatabaseService with SQLite (6 tables)
-- CourseDownloadApiService for offline content
-- DataSyncService for bidirectional sync
-- All UI screens using database providers
-- Mock services completely removed
+### 2. Android Platform Configuration
 
-### CODEBASE_IMPROVEMENT_PLAN - COMPLETE (2025-09-23)
-- Service decomposition (all files <400 lines)
-- Error tracking (Sentry integration ready)
-- Performance monitoring implemented
-- All large files refactored
+#### Initial Setup (Critical)
+- [ ] Run `flutter create . --platforms android` to fix project
+- [ ] Configure `android/build.gradle`
+- [ ] Configure `android/app/build.gradle`
+- [ ] Set minimum SDK to 21 (Android 5.0)
+- [ ] Set target SDK to 34 (Android 14)
+- [ ] Configure ProGuard rules
 
-### Authentication - COMPLETE (2025-09-23)
-- AWS Cognito with production credentials
-- SSO fully operational
-- All mock authentication removed
-- JWT bridging to Supabase
+#### Android Configuration
+- [ ] Set up Google Play Console account
+- [ ] Generate release signing key
+- [ ] Configure key store
+- [ ] Set up app signing by Google Play
+- [ ] Configure deep links for OAuth
+- [ ] Test background audio service
 
-### Core Features - COMPLETE
-- Dual-level highlighting at 60fps
-- Offline-first data architecture
-- Mini audio player
-- Keyboard shortcuts
-- Font size preferences
-- Playback speed control
-- Progress tracking
+#### Device Testing
+- [ ] Test on physical Android phones
+- [ ] Test on Android tablets
+- [ ] Test offline functionality
+- [ ] Verify battery usage
+- [ ] Test on Android 5, 8, 11, 14
+- [ ] Test with different screen sizes
+
+#### Play Store Preparation
+- [ ] Create app icon for Android
+- [ ] Generate adaptive icons
+- [ ] Create feature graphic (1024x500)
+- [ ] Prepare screenshots (phone and tablet)
+- [ ] Write Play Store description
+- [ ] Create privacy policy
+- [ ] Prepare release notes
+
+### 3. Cross-Platform Testing
+
+#### Network Testing
+- [ ] Test offline/online transitions
+- [ ] Test sync when reconnecting
+- [ ] Test download interruption recovery
+- [ ] Test on slow 3G connection
+- [ ] Test on cellular vs WiFi
+- [ ] Test with network throttling
+
+#### Performance Testing
+- [ ] Verify 60fps highlighting on devices
+- [ ] Test with 100+ learning objects
+- [ ] Profile memory usage
+- [ ] Measure battery drain during playback
+- [ ] Test app size after downloads
+- [ ] Verify <3 second cold start
+
+#### Edge Cases
+- [ ] App backgrounding/foregrounding
+- [ ] Screen rotation handling
+- [ ] Low memory scenarios
+- [ ] Storage almost full
+- [ ] Multiple user switching
+- [ ] Accessibility features
+
+### 4. Release Engineering
+
+#### CI/CD Setup
+- [ ] Install fastlane
+- [ ] Configure fastlane for iOS
+- [ ] Configure fastlane for Android
+- [ ] Set up automatic versioning
+- [ ] Configure beta distribution
+- [ ] Set up release automation
+
+#### Build Configuration
+- [ ] Configure production environment variables
+- [ ] Set up production Sentry DSN
+- [ ] Configure release builds
+- [ ] Enable code obfuscation
+- [ ] Set up app thinning
+
+#### Release Process
+- [ ] Create release branch
+- [ ] Generate changelog
+- [ ] Tag releases
+- [ ] Archive builds
+- [ ] Upload debug symbols
+
+## 🧪 Testing Tasks
+
+### Unit & Widget Tests
+- [ ] Fix 73 failing widget tests
+- [ ] Add database mock for tests
+- [ ] Achieve 100% test pass rate
+- [ ] Add golden tests for UI
+
+### Integration Tests
+- [ ] Set up Patrol framework
+- [ ] Test authentication flow
+- [ ] Test course download flow
+- [ ] Test offline playback
+- [ ] Test sync functionality
+- [ ] Test mini player navigation
+
+### Platform Tests
+- [ ] iOS simulator testing (complete)
+- [ ] iOS device testing
+- [ ] Android emulator testing
+- [ ] Android device testing
+- [ ] Tablet testing (both platforms)
 
 ## 🚀 Deployment Checklist
 
-Before deploying to production:
-- [ ] All tests passing (target: 100%)
-- [ ] Sentry configured with DSN
-- [ ] Environment variables set
-- [ ] iOS build configured
-- [ ] Android build configured
-- [ ] App Store assets prepared
-- [ ] Play Store assets prepared
-- [ ] Release notes written
+### Pre-Launch Requirements
+- [ ] All tests passing
+- [ ] Tested on 5+ physical devices
+- [ ] Performance validated
+- [ ] Security audit complete
+- [ ] Privacy policy published
+- [ ] Terms of service ready
+- [ ] Support email configured
+- [ ] Crash reporting active
+
+### Launch Day
+- [ ] Production environment ready
+- [ ] Monitoring dashboards live
+- [ ] Support team briefed
+- [ ] Marketing materials ready
+- [ ] Press release prepared
+- [ ] App store optimization complete
+
+## 📊 Current Blockers
+
+1. **Android Project Structure** - Missing Gradle files, needs regeneration
+2. **Physical Device Testing** - No testing on real devices yet
+3. **App Store Assets** - No icons, screenshots, or descriptions
+4. **Release Signing** - No certificates or signing keys configured
+
+## 📅 Estimated Timeline
+
+- **Week 1:** Fix Android, test on devices, fix critical bugs
+- **Week 2:** Prepare store assets, configure release builds
+- **Week 3:** Submit to stores, address review feedback
+- **Week 4:** Production launch
 
 ## Notes
 
-- **Test Strategy:** Focus on fixing widget tests first, then add integration tests
-- **Monitoring:** Sentry is integrated but needs production DSN configuration
-- **Documentation:** README needs update to reflect removal of mock auth
-- **Performance:** All targets met, monitoring in place for production validation
+- **Priority:** Fix Android project structure first
+- **Testing:** Must test on physical devices before submission
+- **Assets:** Need designer for app icons and screenshots
+- **Timeline:** 3-4 weeks to app store submission

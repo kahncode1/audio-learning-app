@@ -1,6 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
-import '../models/learning_object.dart';
+import '../models/learning_object_v2.dart';
 
 import '../utils/app_logger.dart';
 
@@ -85,7 +85,7 @@ class AudioLearningHandler extends BaseAudioHandler with SeekHandler {
   }
 
   /// Update media item with learning object information
-  void updateMediaItemForLearning(LearningObject learningObject, {Duration? audioDuration}) {
+  void updateMediaItemForLearning(LearningObjectV2 learningObject, {Duration? audioDuration}) {
 
     // Use actual audio duration if available, otherwise estimate from content
     final duration = audioDuration ?? _estimateDuration(learningObject);
@@ -102,9 +102,13 @@ class AudioLearningHandler extends BaseAudioHandler with SeekHandler {
   }
 
   /// Estimate duration based on content length (rough estimate)
-  Duration _estimateDuration(LearningObject learningObject) {
+  Duration _estimateDuration(LearningObjectV2 learningObject) {
+    // Use actual duration if available
+    if (learningObject.totalDurationMs > 0) {
+      return Duration(milliseconds: learningObject.totalDurationMs);
+    }
     // Estimate ~150 words per minute for speech
-    final text = learningObject.plainText ?? '';
+    final text = learningObject.displayText;
     final wordCount = text.split(' ').length;
     final minutes = (wordCount / 150).ceil();
     return Duration(minutes: minutes > 0 ? minutes : 1);

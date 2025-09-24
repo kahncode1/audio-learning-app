@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/learning_object.dart';
+import '../models/learning_object_v2.dart';
 import '../services/local_content_service.dart';
 import '../services/audio_player_service_local.dart';
 import '../utils/app_logger.dart';
@@ -90,26 +90,21 @@ class _LocalContentTestScreenState
             'Timing data loaded. ${_timingData!.words.length} words, ${_timingData!.sentences.length} sentences';
       });
 
-      // Create learning object for audio player
-      final learningObject = LearningObject(
-        id: testId,
-        assignmentId: 'test-assignment',
-        title: 'Case Reserve Management',
-        contentType: 'audio',
-        ssmlContent: '',
-        plainText: LocalContentService.getDisplayText(_contentData!),
-        orderIndex: 1,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        isCompleted: false,
-        currentPositionMs: 0,
-      );
+      // TODO: Update to use LearningObjectV2
+      // Temporarily disabled during migration to V2
+      setState(() {
+        _status = 'Test disabled - needs update for LearningObjectV2';
+      });
+      return;
+
+      /* // Original code - needs update
+      final learningObject = LearningObjectV2(...);
 
       // Load audio
       setState(() {
         _status = 'Loading audio file...';
       });
-      await _audioService.loadLocalAudio(learningObject);
+      await _audioService.loadLocalAudio(learningObject); */
 
       setState(() {
         _isLoading = false;

@@ -168,8 +168,14 @@ class _AssignmentTileState extends ConsumerState<AssignmentTile> {
         ? 'Not started'
         : '${completionPercentage.round()}% complete';
 
-    // Calculate duration based on learning objects
-    final durationMinutes = learningObjects.length * 5; // Estimate 5 min per object
+    // Calculate total actual duration from learning objects
+    final totalDurationMs = learningObjects.fold<int>(
+      0,
+      (sum, lo) => sum + lo.totalDurationMs
+    );
+    final durationMinutes = totalDurationMs > 0
+        ? (totalDurationMs / 60000).round()
+        : learningObjects.length * 5; // Fallback estimate if no duration data
 
     return Card(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),

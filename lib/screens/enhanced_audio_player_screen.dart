@@ -7,7 +7,7 @@ import '../theme/app_theme.dart';
 import '../services/audio_player_service_local.dart';
 import '../services/progress_service.dart';
 import '../services/word_timing_service_simplified.dart';
-import '../models/learning_object.dart';
+import '../models/learning_object_v2.dart';
 import '../providers/providers.dart';
 import '../widgets/simplified_dual_level_highlighted_text.dart';
 import '../utils/app_logger.dart';
@@ -24,7 +24,7 @@ import '../utils/app_logger.dart';
 /// - Time display with formatted duration
 /// - Interactive seek bar
 class EnhancedAudioPlayerScreen extends ConsumerStatefulWidget {
-  final LearningObject learningObject;
+  final LearningObjectV2 learningObject;
   final bool autoPlay;
   final String? courseNumber;
   final String? courseTitle;
@@ -90,17 +90,17 @@ class _EnhancedAudioPlayerScreenState
       if (isResumingFromMiniPlayer) {
         debugPrint('Resuming same learning object from mini player, skipping reload');
         // Just update the display text from the current service state
-        _displayText = _audioService.currentDisplayText ?? widget.learningObject.plainText;
+        _displayText = _audioService.currentDisplayText ?? widget.learningObject.displayText;
       } else {
         // Use plainText as single source of truth for display
         // The text processing should have already happened in SpeechifyService
-        _displayText = widget.learningObject.plainText;
+        _displayText = widget.learningObject.displayText;
 
         // Only log if we don't have display text (this would be an error condition)
         if (_displayText == null || _displayText!.isEmpty) {
           AppLogger.warning('Learning object has no plainText', {
             'learningObjectId': widget.learningObject.id,
-            'hasSSMLContent': widget.learningObject.ssmlContent != null,
+            'hasTimingData': widget.learningObject.wordTimings.isNotEmpty,
           });
           // Set a fallback message instead of processing SSML here
           _displayText = 'No content available for display';
