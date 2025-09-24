@@ -293,33 +293,69 @@ class LocalDatabaseService {
   /// Insert or update a learning object
   Future<int> upsertLearningObject(Map<String, dynamic> learningObject) async {
     final db = await database;
-    learningObject['updated_at'] = DateTime.now().toIso8601String();
+
+    // Create a new map with only the fields that exist in the database schema
+    final dbRecord = <String, dynamic>{
+      'id': learningObject['id'],
+      'assignment_id': learningObject['assignment_id'],
+      'course_id': learningObject['course_id'],
+      'title': learningObject['title'],
+      'order_index': learningObject['order_index'],
+      'display_text': learningObject['display_text'],
+      'total_duration_ms': learningObject['total_duration_ms'],
+      'audio_url': learningObject['audio_url'],
+      'audio_size_bytes': learningObject['audio_size_bytes'],
+      'audio_format': learningObject['audio_format'] ?? 'mp3',
+      'audio_codec': learningObject['audio_codec'] ?? 'mp3_128',
+      'local_file_path': learningObject['local_file_path'],
+      'file_version': learningObject['file_version'] ?? 1,
+      'created_at': learningObject['created_at'],
+      'updated_at': learningObject['updated_at'] ?? DateTime.now().toIso8601String(),
+    };
 
     // Convert JSONB fields to strings
     if (learningObject['paragraphs'] is List) {
-      learningObject['paragraphs'] = jsonEncode(learningObject['paragraphs']);
+      dbRecord['paragraphs'] = jsonEncode(learningObject['paragraphs']);
+    } else {
+      dbRecord['paragraphs'] = learningObject['paragraphs'];
     }
+
     if (learningObject['headers'] is List) {
-      learningObject['headers'] = jsonEncode(learningObject['headers']);
+      dbRecord['headers'] = jsonEncode(learningObject['headers']);
+    } else {
+      dbRecord['headers'] = learningObject['headers'] ?? '[]';
     }
+
     if (learningObject['formatting'] is Map) {
-      learningObject['formatting'] = jsonEncode(learningObject['formatting']);
+      dbRecord['formatting'] = jsonEncode(learningObject['formatting']);
+    } else {
+      dbRecord['formatting'] = learningObject['formatting'] ?? '{"bold_headers": false, "paragraph_spacing": true}';
     }
+
     if (learningObject['metadata'] is Map) {
-      learningObject['metadata'] = jsonEncode(learningObject['metadata']);
+      dbRecord['metadata'] = jsonEncode(learningObject['metadata']);
+    } else {
+      dbRecord['metadata'] = learningObject['metadata'];
     }
-    if (learningObject['word_timings'] is List) {
-      learningObject['word_timings'] =
-          jsonEncode(learningObject['word_timings']);
+
+    // Handle word_timings - could be Map (with embedded lookup table) or List
+    if (learningObject['word_timings'] is Map) {
+      dbRecord['word_timings'] = jsonEncode(learningObject['word_timings']);
+    } else if (learningObject['word_timings'] is List) {
+      dbRecord['word_timings'] = jsonEncode(learningObject['word_timings']);
+    } else {
+      dbRecord['word_timings'] = learningObject['word_timings'];
     }
+
     if (learningObject['sentence_timings'] is List) {
-      learningObject['sentence_timings'] =
-          jsonEncode(learningObject['sentence_timings']);
+      dbRecord['sentence_timings'] = jsonEncode(learningObject['sentence_timings']);
+    } else {
+      dbRecord['sentence_timings'] = learningObject['sentence_timings'];
     }
 
     return await db.insert(
       'learning_objects',
-      learningObject,
+      dbRecord,
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
@@ -400,11 +436,48 @@ class LocalDatabaseService {
         result['metadata'] = jsonDecode(result['metadata'] as String);
       }
       if (result['word_timings'] is String) {
-        result['word_timings'] = jsonDecode(result['word_timings'] as String);
+        try {
+          final wordTimingsStr = result['word_timings'] as String;
+          // Check if it looks like valid JSON before parsing
+          if (wordTimingsStr.isNotEmpty &&
+              (wordTimingsStr.startsWith('[') || wordTimingsStr.startsWith('{'))) {
+            result['word_timings'] = jsonDecode(wordTimingsStr);
+          } else {
+            // Invalid or empty, set to empty list
+            result['word_timings'] = [];
+            AppLogger.warning('Invalid word_timings JSON, using empty list', {
+              'id': result['id'],
+              'data': wordTimingsStr.substring(0, wordTimingsStr.length > 100 ? 100 : wordTimingsStr.length),
+            });
+          }
+        } catch (e) {
+          AppLogger.error('Failed to parse word_timings', error: e, data: {
+            'id': result['id'],
+          });
+          result['word_timings'] = [];
+        }
       }
       if (result['sentence_timings'] is String) {
-        result['sentence_timings'] =
-            jsonDecode(result['sentence_timings'] as String);
+        try {
+          final sentenceTimingsStr = result['sentence_timings'] as String;
+          // Check if it looks like valid JSON before parsing
+          if (sentenceTimingsStr.isNotEmpty &&
+              (sentenceTimingsStr.startsWith('[') || sentenceTimingsStr.startsWith('{'))) {
+            result['sentence_timings'] = jsonDecode(sentenceTimingsStr);
+          } else {
+            // Invalid or empty, set to empty list
+            result['sentence_timings'] = [];
+            AppLogger.warning('Invalid sentence_timings JSON, using empty list', {
+              'id': result['id'],
+              'data': sentenceTimingsStr.substring(0, sentenceTimingsStr.length > 100 ? 100 : sentenceTimingsStr.length),
+            });
+          }
+        } catch (e) {
+          AppLogger.error('Failed to parse sentence_timings', error: e, data: {
+            'id': result['id'],
+          });
+          result['sentence_timings'] = [];
+        }
       }
     }
 

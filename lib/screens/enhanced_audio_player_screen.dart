@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:rxdart/rxdart.dart';
 import '../theme/app_theme.dart';
 import '../services/audio_player_service_local.dart';
 import '../services/local_content_service.dart';
@@ -61,6 +62,7 @@ class _EnhancedAudioPlayerScreenState
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<bool>? _playingStateSub;
   StreamSubscription<ProcessingState>? _processingStateSub;
+  StreamSubscription<int>? _fontSizeSub;
   late FullscreenController _fullscreenController;
   bool _isInitialized = false;
   String? _errorMessage;
@@ -93,6 +95,13 @@ class _EnhancedAudioPlayerScreenState
       debugPrint('Getting progress service...');
       _progressService = await ProgressService.getInstance();
       debugPrint('Progress service initialized');
+
+      // Listen to font size changes for immediate UI updates
+      _fontSizeSub = _progressService?.fontSizeIndexStream.listen((_) {
+        if (mounted) {
+          setState(() {}); // Trigger rebuild when font size changes
+        }
+      });
 
       // Check if we're resuming the same learning object from mini player
       final currentObject = _audioService.currentLearningObject;
@@ -185,9 +194,16 @@ class _EnhancedAudioPlayerScreenState
         }
       });
 
-      // Set up position stream listener BEFORE auto-play
-      // This ensures word timing updates are ready
-      _positionSub = _audioService.positionStream.listen((position) {
+      // Set up position stream listener with throttling for performance
+      // Throttle to 20Hz (50ms) instead of 60Hz for better performance
+      // This ensures word timing updates are ready without overwhelming the UI
+      _positionSub = _audioService.positionStream
+          .throttleTime(
+            const Duration(milliseconds: 50),
+            trailing: true,
+            leading: true,
+          )
+          .listen((position) {
         final positionMs = position.inMilliseconds;
 
         if (!mounted) return; // Avoid using ref after dispose
@@ -195,9 +211,9 @@ class _EnhancedAudioPlayerScreenState
         // Update word timing service with current position
         _wordTimingService.updatePosition(positionMs, widget.learningObject.id);
 
-        // Log position updates for debugging
+        // Log position updates for debugging (reduced frequency)
         if (positionMs % 1000 < 100) {
-          AppLogger.debug('Audio position update', {
+          AppLogger.debug('Audio position update (throttled)', {
             'positionMs': positionMs,
             'learningObjectId': widget.learningObject.id,
           });
@@ -493,6 +509,8 @@ class _EnhancedAudioPlayerScreenState
     _playingStateSub = null;
     _processingStateSub?.cancel();
     _processingStateSub = null;
+    _fontSizeSub?.cancel();
+    _fontSizeSub = null;
 
     // Clean up fullscreen controller
     _fullscreenController.dispose();

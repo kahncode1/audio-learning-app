@@ -4,13 +4,15 @@
 
 ### Prerequisites
 - Python 3.7+
-- No external dependencies (uses standard library only)
+- For preprocessing: No external dependencies (uses standard library only)
+- For Supabase upload: `pip install supabase python-dotenv`
 - ElevenLabs TTS output JSON file with character timing
 - (Optional) Original content JSON for formatting preservation
 
 ### File Setup
 Ensure these files are in the `preprocessing_pipeline` directory:
-- `process_elevenlabs_complete.py` - Main script
+- `process_elevenlabs_complete.py` - Main script with O(1) lookup generation
+- `upload_to_supabase.py` - Database upload with embedded lookup tables
 - `edge_case_handlers.py` - Edge case detection module
 - `config.json` - Configuration settings
 - `abbreviations.json` - Abbreviation database
@@ -261,6 +263,69 @@ cp content_enhanced.json ../assets/test_content/learning_objects/{id}/content.js
 **Words with sentence_index = -1**
 - Script auto-fixes this with continuous coverage
 - Check for warnings in output
+
+## Complete Pipeline: ElevenLabs to Supabase
+
+### Step 1: Generate Audio with ElevenLabs
+```bash
+# Use ElevenLabs API to generate audio with timing data
+# Output: JSON with character-level timing
+```
+
+### Step 2: Preprocess with Lookup Table Generation
+```bash
+python process_elevenlabs_complete.py elevenlabs_output.json \
+  -o enhanced_content.json
+```
+
+This generates:
+- Word and sentence timing with no gaps
+- O(1) lookup table embedded in JSON (10ms intervals)
+- Snake_case field names for Flutter compatibility
+
+### Step 3: Upload to Supabase
+```bash
+# Set environment variables
+export SUPABASE_URL="https://your-project.supabase.co"
+export SUPABASE_ANON_KEY="your-anon-key"
+
+# Upload with embedded lookup table
+python upload_to_supabase.py enhanced_content.json \
+  --id "learning-object-uuid" \
+  --assignment-id "assignment-uuid" \
+  --title "Learning Object Title" \
+  --audio-file audio.mp3
+```
+
+### Step 4: Verify Upload
+```bash
+# Check if lookup table was uploaded
+python upload_to_supabase.py enhanced_content.json \
+  --id "learning-object-uuid" \
+  --verify-only
+```
+
+## Lookup Table Features
+
+### Performance Benefits
+- **O(1) time complexity** for position queries (vs O(log n) binary search)
+- **60fps highlighting** guaranteed with 10ms resolution
+- **No gaps** in timing coverage for smooth transitions
+
+### How It Works
+```json
+"lookup_table": {
+  "version": "1.0",
+  "interval": 10,  // Query every 10ms
+  "totalDurationMs": 95764,
+  "lookup": [
+    [0, 0],   // At 0ms: word 0, sentence 0
+    [0, 0],   // At 10ms: word 0, sentence 0
+    [1, 0],   // At 20ms: word 1, sentence 0
+    ...
+  ]
+}
+```
 
 ### Validation Checks
 

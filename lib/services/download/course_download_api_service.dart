@@ -362,13 +362,90 @@ class CourseDownloadApiService {
 
       // Create timing data file
       final timingFile = File('${contentDir.path}/timing.json');
-      final timingData = {
-        'version': 2,
-        'word_timings': learningObject['word_timings'] ?? [],
-        'sentence_timings': learningObject['sentence_timings'] ?? [],
-        'total_duration_ms': learningObject['total_duration_ms'] ?? 0,
-      };
+
+      // Extract word_timings JSONB
+      final wordTimingsData = learningObject['word_timings'];
+      Map<String, dynamic> timingData;
+      Map<String, dynamic>? lookupTableData;
+
+      if (wordTimingsData is Map<String, dynamic>) {
+        // New format from Supabase JSONB
+        timingData = {
+          'version': 2,
+          'word_timings': wordTimingsData['words'] ?? [],
+          'sentence_timings': wordTimingsData['sentences'] ?? [],
+          'total_duration_ms': wordTimingsData['totalDurationMs'] ?? 0,
+        };
+
+        // Extract embedded lookup table if present
+        if (wordTimingsData['lookupTable'] != null) {
+          lookupTableData = wordTimingsData['lookupTable'] as Map<String, dynamic>;
+          AppLogger.info('Found embedded lookup table', {
+            'entries': (lookupTableData['lookup'] as List?)?.length ?? 0,
+            'interval': lookupTableData['interval'],
+          });
+        }
+      } else {
+        // Legacy format
+        timingData = {
+          'version': 2,
+          'word_timings': wordTimingsData ?? [],
+          'sentence_timings': learningObject['sentence_timings'] ?? [],
+          'total_duration_ms': learningObject['total_duration_ms'] ?? 0,
+        };
+      }
+
       await timingFile.writeAsString(json.encode(timingData));
+
+      // Save embedded lookup table as separate file if present
+      if (lookupTableData != null) {
+        final lookupFile = File('${contentDir.path}/position_lookup.json');
+        await lookupFile.writeAsString(json.encode(lookupTableData));
+        AppLogger.info('✅ Saved embedded lookup table', {
+          'path': lookupFile.path,
+          'entries': (lookupTableData['lookup'] as List?)?.length ?? 0,
+          'interval': lookupTableData['interval'],
+        });
+      }
+
+      // Download separate lookup table if URL is provided
+      final lookupTableUrl = learningObject['lookup_table_url'] as String?;
+      if (lookupTableUrl != null && lookupTableUrl.isNotEmpty) {
+        try {
+          final lookupFile = File('${contentDir.path}/position_lookup.json');
+
+          AppLogger.info('Downloading lookup table', {
+            'url': lookupTableUrl,
+            'path': lookupFile.path,
+          });
+
+          // Download the lookup table
+          final response = await _dio.get<String>(
+            lookupTableUrl,
+            options: Options(responseType: ResponseType.plain),
+          );
+
+          if (response.data != null) {
+            await lookupFile.writeAsString(response.data!);
+
+            // Parse to verify and log
+            final lookupData = json.decode(response.data!) as Map<String, dynamic>;
+            AppLogger.info('✅ Downloaded lookup table', {
+              'interval': lookupData['interval'],
+              'entries': (lookupData['lookup'] as List?)?.length ?? 0,
+              'version': lookupData['version'],
+            });
+          }
+        } catch (e) {
+          AppLogger.warning('Failed to download lookup table', {
+            'error': e.toString(),
+            'url': lookupTableUrl,
+          });
+          // Continue without lookup table - app will fall back to binary search
+        }
+      } else {
+        AppLogger.info('No lookup table URL - will use binary search');
+      }
 
       // Create content.json file with display text and metadata
       final contentFile = File('${contentDir.path}/content.json');

@@ -210,6 +210,7 @@ See: `/references/code-patterns.md` for examples
 3. Test on both platforms
 4. Update TASKS.md with completion date
 5. Document any discovered tasks
+6. NEVER commit changes unless explicitly requested by the user
 
 ## Test Data and Development Setup
 
@@ -295,7 +296,9 @@ shared_preferences: ^2.2.2
 
 ## Automated Quality Checks
 
-**MANDATORY before every commit:**
+**IMPORTANT: NEVER commit changes unless the user explicitly asks you to. Do not automatically push to GitHub.**
+
+**MANDATORY before every commit (when user requests it):**
 1. Run `./check-local.sh` to verify all checks pass
 2. Flutter analyze must show 0 errors (warnings allowed but discouraged)
 3. All tests must pass (can skip temporarily with SKIP_TESTS=1)

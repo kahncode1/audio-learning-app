@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../models/word_timing.dart';
+import '../utils/app_logger.dart';
 
 /// Optimized painter using three-layer system with single TextPainter
 ///
@@ -9,6 +11,7 @@ import '../models/word_timing.dart';
 /// - TextBox caching for performance
 /// - Direct character position lookups
 /// - Optimized shouldRepaint logic
+/// - FPS monitoring for performance tracking
 class OptimizedHighlightPainter extends CustomPainter {
   final String text;
   final TextPainter textPainter;
@@ -22,6 +25,12 @@ class OptimizedHighlightPainter extends CustomPainter {
   // Cache for TextBox calculations to avoid expensive layout operations
   static final Map<String, List<TextBox>> textBoxCache = {};
   static const int maxCacheSize = 100; // Limit cache size to prevent memory issues
+
+  // Performance monitoring
+  static DateTime? _lastPaintTime;
+  static int _paintCount = 0;
+  static DateTime _fpsWindowStart = DateTime.now();
+  static const int _fpsWindowSize = 60; // Calculate FPS over 60 frames
 
   OptimizedHighlightPainter({
     required this.text,
@@ -66,6 +75,30 @@ class OptimizedHighlightPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Performance monitoring
+    final paintStart = DateTime.now();
+    if (_lastPaintTime != null && kDebugMode) {
+      _paintCount++;
+
+      // Calculate FPS every N frames
+      if (_paintCount % _fpsWindowSize == 0) {
+        final windowDuration = paintStart.difference(_fpsWindowStart);
+        final fps = _fpsWindowSize / windowDuration.inMilliseconds * 1000;
+
+        // Log FPS performance
+        final fpsColor = fps >= 55 ? '🟢' : fps >= 30 ? '🟡' : '🔴';
+        AppLogger.performance('$fpsColor FPS Performance', {
+          'fps': fps.toStringAsFixed(1),
+          'frameTime': '${windowDuration.inMilliseconds / _fpsWindowSize}ms',
+          'wordIndex': currentWordIndex,
+          'cacheSize': textBoxCache.length,
+        });
+
+        _fpsWindowStart = paintStart;
+      }
+    }
+    _lastPaintTime = paintStart;
+
     // Three-layer paint system for optimal visual hierarchy
 
     // Layer 1: Paint sentence highlight (background)
@@ -81,6 +114,17 @@ class OptimizedHighlightPainter extends CustomPainter {
 
     // Layer 3: Paint base text (foreground - on top)
     textPainter.paint(canvas, Offset.zero);
+
+    // Log paint duration in debug mode
+    if (kDebugMode && _paintCount % 10 == 0) {
+      final paintDuration = DateTime.now().difference(paintStart);
+      if (paintDuration.inMicroseconds > 16000) { // More than 16ms
+        AppLogger.warning('⚠️ Slow paint cycle detected', {
+          'duration': '${paintDuration.inMicroseconds}μs',
+          'targetMax': '16000μs (60fps)',
+        });
+      }
+    }
   }
 
   void _paintSentenceHighlight(Canvas canvas, int sentenceIndex) {

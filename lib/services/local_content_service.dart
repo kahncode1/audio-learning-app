@@ -155,23 +155,44 @@ class LocalContentService {
   /// Get the path to a downloaded file
   Future<String?> _getDownloadedFilePath(
       String learningObjectId, String fileName) async {
-    if (_documentsDir == null || _courseId == null) {
+    if (_documentsDir == null) {
       await _initializeDocumentsDir();
       if (_documentsDir == null) return null;
     }
 
-    // Default course ID if not set (for testing)
-    final courseId = _courseId ?? 'INS-101';
+    // Search for the file in any course directory
+    // This allows content to be found regardless of which course it belongs to
+    final audioLearningDir = Directory('${_documentsDir!.path}/audio_learning/courses');
 
-    final path =
-        '${_documentsDir!.path}/audio_learning/courses/$courseId/learning_objects/$learningObjectId/$fileName';
-    final file = File(path);
+    if (await audioLearningDir.exists()) {
+      // List all course directories
+      await for (final courseDir in audioLearningDir.list()) {
+        if (courseDir is Directory) {
+          final path = '${courseDir.path}/learning_objects/$learningObjectId/$fileName';
+          final file = File(path);
 
-    if (await file.exists()) {
-      AppLogger.info('LocalContentService: Found downloaded file', {
-        'path': path,
-      });
-      return path;
+          if (await file.exists()) {
+            AppLogger.info('LocalContentService: Found downloaded file', {
+              'path': path,
+            });
+            return path;
+          }
+        }
+      }
+    }
+
+    // If we have a specific courseId set, also check that path
+    if (_courseId != null) {
+      final path =
+          '${_documentsDir!.path}/audio_learning/courses/$_courseId/learning_objects/$learningObjectId/$fileName';
+      final file = File(path);
+
+      if (await file.exists()) {
+        AppLogger.info('LocalContentService: Found downloaded file', {
+          'path': path,
+        });
+        return path;
+      }
     }
 
     return null;

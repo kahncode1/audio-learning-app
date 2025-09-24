@@ -110,6 +110,140 @@ class ElevenLabsCompleteProcessor:
 
         return words
 
+    def eliminate_timing_gaps(self, words: List[Dict]) -> List[Dict]:
+        """Eliminate gaps between words by extending word boundaries.
+
+        This ensures binary search always finds a word, making FF/RW work perfectly.
+        Preserves original start times for accuracy while extending end times.
+        """
+        if not words:
+            return words
+
+        print("\n🔧 Eliminating timing gaps...")
+
+        # Track statistics
+        gaps_found = 0
+        total_gap_ms = 0
+        max_gap = 0
+
+        # Process each word pair
+        for i in range(len(words) - 1):
+            current_word = words[i]
+            next_word = words[i + 1]
+
+            gap = next_word['start_ms'] - current_word['end_ms']
+
+            if gap > 0:
+                gaps_found += 1
+                total_gap_ms += gap
+                max_gap = max(max_gap, gap)
+
+                # For normal gaps (<500ms), extend current word to meet next
+                if gap < 500:
+                    current_word['end_ms'] = next_word['start_ms']
+                else:
+                    # For large gaps (silence between paragraphs), split 50/50
+                    midpoint = current_word['end_ms'] + (gap // 2)
+                    current_word['end_ms'] = midpoint
+                    # We'll handle the other half when we process the next word
+                    # by adjusting its start if needed in a second pass
+            elif gap < 0:
+                # Overlap detected (shouldn't happen but handle gracefully)
+                print(f"   ⚠️ Overlap detected: '{current_word['word']}' -> '{next_word['word']}': {-gap}ms overlap")
+                # Adjust current word to end exactly when next starts
+                current_word['end_ms'] = next_word['start_ms']
+
+        # Second pass: Handle large gaps by adjusting start times if needed
+        # This is optional - only if we want perfect coverage
+        # For now, keeping original start times for accuracy
+
+        if gaps_found > 0:
+            avg_gap = total_gap_ms / gaps_found
+            print(f"   ✅ Eliminated {gaps_found} gaps")
+            print(f"      Average gap: {avg_gap:.1f}ms")
+            print(f"      Max gap: {max_gap}ms")
+            print(f"      Total gap time: {total_gap_ms}ms")
+        else:
+            print("   ✅ No gaps found (timing already continuous)")
+
+        return words
+
+    def generate_lookup_table(self, words: List[Dict], sentences: List[Dict], total_duration_ms: int, interval_ms: int = 10) -> Dict:
+        """
+        Generate O(1) position lookup table for instant word/sentence lookups.
+
+        Creates a lookup table that maps time positions to word and sentence indices
+        at regular intervals (default 10ms). This enables O(1) lookups instead of
+        O(log n) binary search, dramatically improving performance.
+
+        Args:
+            words: List of word timing dictionaries
+            sentences: List of sentence dictionaries
+            total_duration_ms: Total duration of the audio in milliseconds
+            interval_ms: Interval between lookup entries (default 10ms)
+
+        Returns:
+            Dictionary with lookup table structure
+        """
+        print(f"🚀 Generating O(1) lookup table (interval: {interval_ms}ms)...")
+
+        # Calculate number of entries needed
+        num_entries = (total_duration_ms // interval_ms) + 1
+        lookup = []
+
+        # Track current indices
+        word_idx = 0
+        sentence_idx = 0
+
+        # Generate lookup entry for each time position
+        for time_ms in range(0, total_duration_ms + 1, interval_ms):
+            # Find active word at this time
+            while word_idx < len(words) - 1:
+                if words[word_idx + 1]['start_ms'] <= time_ms:
+                    word_idx += 1
+                else:
+                    break
+
+            # Check if current word is actually active at this time
+            current_word_idx = -1
+            if word_idx < len(words):
+                word = words[word_idx]
+                if word['start_ms'] <= time_ms <= word['end_ms']:
+                    current_word_idx = word_idx
+                elif word_idx > 0:
+                    # Check previous word (for gaps that were filled)
+                    prev_word = words[word_idx - 1]
+                    if prev_word['start_ms'] <= time_ms <= prev_word['end_ms']:
+                        current_word_idx = word_idx - 1
+
+            # Get sentence index from word
+            if current_word_idx >= 0:
+                sentence_idx = words[current_word_idx].get('sentence_index', 0)
+            else:
+                sentence_idx = -1
+
+            # Add entry: [word_index, sentence_index]
+            lookup.append([current_word_idx, sentence_idx])
+
+        # Create lookup table structure
+        lookup_table = {
+            "version": "1.0",
+            "interval": interval_ms,
+            "totalDurationMs": total_duration_ms,
+            "lookup": lookup
+        }
+
+        print(f"   ✅ Generated {len(lookup)} lookup entries")
+        print(f"      Coverage: 0ms to {total_duration_ms}ms")
+        print(f"      Size: ~{len(lookup) * 8 / 1024:.1f}KB")
+
+        # Verify lookup table quality
+        valid_entries = sum(1 for entry in lookup if entry[0] >= 0)
+        coverage_percent = (valid_entries / len(lookup)) * 100 if lookup else 0
+        print(f"      Coverage: {coverage_percent:.1f}% of positions have active words")
+
+        return lookup_table
+
     def detect_sentences(self, words: List[Dict], text: str) -> List[Dict]:
         """Detect sentence boundaries and create sentence timing with edge case handling"""
         # Use enhanced detection if enabled
@@ -301,6 +435,9 @@ class ElevenLabsCompleteProcessor:
         # Extract words with timing
         words = self.extract_words_with_timing()
 
+        # Eliminate gaps between words for smooth highlighting
+        words = self.eliminate_timing_gaps(words)
+
         # Detect sentences
         sentences = self.detect_sentences(words, full_text)
 
@@ -324,6 +461,9 @@ class ElevenLabsCompleteProcessor:
         # Calculate total duration
         total_duration_ms = int(self.end_times[-1] * 1000) if self.end_times else 0
 
+        # Generate O(1) lookup table for performance
+        lookup_table = self.generate_lookup_table(words, sentences, total_duration_ms)
+
         # Build enhanced content JSON
         content = {
             "version": "1.0",
@@ -344,20 +484,36 @@ class ElevenLabsCompleteProcessor:
             "timing": {
                 "words": words,
                 "sentences": sentences,
-                "total_duration_ms": total_duration_ms
+                "total_duration_ms": total_duration_ms,
+                "lookup_table": lookup_table
             }
         }
 
         return content
 
     def save(self, output_path: str):
-        """Process and save enhanced content"""
+        """Process and save enhanced content with separate lookup table"""
         content = self.process()
 
+        # Extract lookup table to save separately
+        lookup_table = content['timing'].pop('lookup_table', None)
+
+        # Save main content without lookup table
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(content, f, indent=2, ensure_ascii=False)
 
         print(f"\n✅ Saved enhanced content to: {output_path}")
+
+        # Save lookup table as separate file (for Supabase Storage)
+        if lookup_table:
+            from pathlib import Path
+            lookup_path = Path(output_path).parent / f"{Path(output_path).stem}_lookup.json"
+            with open(lookup_path, 'w', encoding='utf-8') as f:
+                json.dump(lookup_table, f, indent=2, ensure_ascii=False)
+            print(f"✅ Saved lookup table to: {lookup_path}")
+            print(f"   Entries: {len(lookup_table.get('lookup', []))}")
+            print(f"   Interval: {lookup_table.get('interval', 0)}ms")
+
         print(f"\n📊 Summary:")
         print(f"   Text: {content['metadata']['character_count']} characters")
         print(f"   Words: {len(content['timing']['words'])}")

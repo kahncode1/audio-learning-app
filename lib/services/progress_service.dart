@@ -310,11 +310,12 @@ class ProgressService {
   Future<void> setFontSizeIndex(int index) async {
     if (index < 0 || index >= fontSizeValues.length) return;
 
+    // Only save if value actually changed to avoid unnecessary writes
+    if (index == _fontSizeIndexSubject.value) return;
+
     _fontSizeIndexSubject.add(index);
     await _prefs.setInt(_fontSizeKey, index);
-    if (kDebugMode) {
-      debugPrint('Font size index saved: $index');
-    }
+    // Removed debug print to reduce log spam and improve performance
   }
 
   /// Cycle to next font size

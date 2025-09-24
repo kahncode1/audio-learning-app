@@ -105,23 +105,35 @@ class LearningObjectV2 {
   factory LearningObjectV2.fromJson(Map<String, dynamic> json) {
     // Data comes flat from database - no nested 'content' object
     final displayText = json['display_text'] as String? ?? '';
-    final paragraphs = (json['paragraphs'] as List?)
-            ?.map((p) => p as String)
-            .toList() ??
-        [];
-    final headers =
-        (json['headers'] as List?)?.map((h) => h as String).toList() ??
-            [];
+
+    // Handle paragraphs - could be List or Map from database
+    List<String> paragraphs = [];
+    final paragraphsData = json['paragraphs'];
+    if (paragraphsData is List) {
+      paragraphs = paragraphsData.map((p) => p.toString()).toList();
+    } else if (paragraphsData is Map) {
+      // If it's a Map, try to extract values
+      paragraphs = paragraphsData.values.map((v) => v.toString()).toList();
+    }
+
+    // Handle headers - could be List or Map from database
+    List<String> headers = [];
+    final headersData = json['headers'];
+    if (headersData is List) {
+      headers = headersData.map((h) => h.toString()).toList();
+    } else if (headersData is Map) {
+      headers = headersData.values.map((v) => v.toString()).toList();
+    }
 
     // Parse formatting JSONB
     final formattingJson = json['formatting'];
-    final formatting = formattingJson != null
+    final formatting = formattingJson != null && formattingJson is Map
         ? ContentFormatting.fromJson(Map<String, dynamic>.from(formattingJson))
         : ContentFormatting();
 
     // Parse metadata JSONB
     final metadataJson = json['metadata'];
-    final metadata = metadataJson != null
+    final metadata = metadataJson != null && metadataJson is Map
         ? ContentMetadata.fromJson(Map<String, dynamic>.from(metadataJson))
         : ContentMetadata(
             wordCount: 0,
@@ -130,19 +142,39 @@ class LearningObjectV2 {
             language: 'en',
           );
 
-    // Parse word timings JSONB
-    final wordTimingsJson = json['word_timings'] as List?;
-    final wordTimings = wordTimingsJson
-            ?.map((w) => WordTiming.fromJson(w as Map<String, dynamic>))
-            .toList() ??
-        [];
+    // Parse word timings - can be either List or Map (with embedded lookup table)
+    List<WordTiming> wordTimings = [];
+    final wordTimingsJson = json['word_timings'];
+    if (wordTimingsJson is List) {
+      // Legacy format - just a list of word timings
+      wordTimings = wordTimingsJson
+          .map((w) => WordTiming.fromJson(w as Map<String, dynamic>))
+          .toList();
+    } else if (wordTimingsJson is Map) {
+      // New format with embedded lookup table
+      final wordsArray = wordTimingsJson['words'] as List?;
+      if (wordsArray != null) {
+        wordTimings = wordsArray
+            .map((w) => WordTiming.fromJson(w as Map<String, dynamic>))
+            .toList();
+      }
+    }
 
-    // Parse sentence timings JSONB
-    final sentenceTimingsJson = json['sentence_timings'] as List?;
-    final sentenceTimings = sentenceTimingsJson
-            ?.map((s) => SentenceTiming.fromJson(s as Map<String, dynamic>))
-            .toList() ??
-        [];
+    // Parse sentence timings - can be from word_timings Map or separate field
+    List<SentenceTiming> sentenceTimings = [];
+    if (wordTimingsJson is Map && wordTimingsJson['sentences'] != null) {
+      // Sentences embedded in word_timings Map
+      final sentencesArray = wordTimingsJson['sentences'] as List;
+      sentenceTimings = sentencesArray
+          .map((s) => SentenceTiming.fromJson(s as Map<String, dynamic>))
+          .toList();
+    } else if (json['sentence_timings'] is List) {
+      // Separate sentence_timings field
+      final sentenceTimingsJson = json['sentence_timings'] as List;
+      sentenceTimings = sentenceTimingsJson
+          .map((s) => SentenceTiming.fromJson(s as Map<String, dynamic>))
+          .toList();
+    }
 
     return LearningObjectV2(
       id: json['id'] as String,

@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "source": "elevenlabs-complete",
+  "display_text": "",
+  "paragraphs": [
+    ""
+  ],
+  "headers": [],
+  "formatting": {
+    "bold_headers": false,
+    "paragraph_spacing": true
+  },
+  "metadata": {
+    "word_count": 0,
+    "character_count": 0,
+    "estimated_reading_time": "1 minutes",
+    "language": "en"
+  },
+  "timing": {
+    "words": [],
+    "sentences": [],
+    "total_duration_ms": 0,
+    "lookup_table": {
+      "version": "1.0",
+      "interval": 10,
+      "totalDurationMs": 0,
+      "lookup": [
+        [
+          -1,
+          -1
+        ]
+      ]
+    }
+  }
+}

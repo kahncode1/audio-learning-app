@@ -90,12 +90,16 @@ class _SimplifiedDualLevelHighlightedTextState
 
   void _setupListeners() {
     // Direct stream subscription - WordTimingService handles throttling
+    // Only rebuild when indices actually change to optimize performance
     _wordSubscription = _timingService.currentWordStream.listen((wordIndex) {
       if (mounted && wordIndex != _currentWordIndex) {
-        AppLogger.info('🎨 WIDGET: Word index update received', {
-          'oldIndex': _currentWordIndex,
-          'newIndex': wordIndex,
-        });
+        // Only log significant changes (not every word)
+        if ((wordIndex - _currentWordIndex).abs() > 5 || wordIndex % 10 == 0) {
+          AppLogger.info('🎨 WIDGET: Word index update received', {
+            'oldIndex': _currentWordIndex,
+            'newIndex': wordIndex,
+          });
+        }
         setState(() => _currentWordIndex = wordIndex);
         _autoScroll();
       }
@@ -104,6 +108,7 @@ class _SimplifiedDualLevelHighlightedTextState
     _sentenceSubscription =
         _timingService.currentSentenceStream.listen((sentenceIndex) {
       if (mounted && sentenceIndex != _currentSentenceIndex) {
+        // Only rebuild if sentence actually changed
         AppLogger.info('🎨 WIDGET: Sentence index update received', {
           'oldIndex': _currentSentenceIndex,
           'newIndex': sentenceIndex,
