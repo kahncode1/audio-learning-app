@@ -62,11 +62,17 @@ class _SimplifiedDualLevelHighlightedTextState
   // Minimal state - let WordTimingService handle complexity
   late final WordTimingServiceSimplified _timingService;
   WordTimingCollection? _timingCollection;
-  int _currentWordIndex = -1;
-  int _currentSentenceIndex = -1;
+
+  // Use ValueNotifier for efficient rebuilds - only CustomPaint rebuilds, not whole tree
+  final ValueNotifier<int> _wordIndexNotifier = ValueNotifier<int>(-1);
+  final ValueNotifier<int> _sentenceIndexNotifier = ValueNotifier<int>(-1);
+
   StreamSubscription<int>? _wordSubscription;
   StreamSubscription<int>? _sentenceSubscription;
 
+  // Auto-scroll debouncing to reduce scroll animations during playback
+  Timer? _scrollDebounceTimer;
+  int _pendingScrollWordIndex = -1;
 
   // Single TextPainter instance for efficiency
   late TextPainter _textPainter;
@@ -90,30 +96,30 @@ class _SimplifiedDualLevelHighlightedTextState
 
   void _setupListeners() {
     // Direct stream subscription - WordTimingService handles throttling
-    // Only rebuild when indices actually change to optimize performance
+    // Use ValueNotifier to avoid full widget rebuilds
     _wordSubscription = _timingService.currentWordStream.listen((wordIndex) {
-      if (mounted && wordIndex != _currentWordIndex) {
+      if (mounted && wordIndex != _wordIndexNotifier.value) {
         // Only log significant changes (not every word)
-        if ((wordIndex - _currentWordIndex).abs() > 5 || wordIndex % 10 == 0) {
+        if ((wordIndex - _wordIndexNotifier.value).abs() > 5 || wordIndex % 10 == 0) {
           AppLogger.info('🎨 WIDGET: Word index update received', {
-            'oldIndex': _currentWordIndex,
+            'oldIndex': _wordIndexNotifier.value,
             'newIndex': wordIndex,
           });
         }
-        setState(() => _currentWordIndex = wordIndex);
-        _autoScroll();
+        _wordIndexNotifier.value = wordIndex;
+        _autoScrollDebounced(wordIndex);
       }
     });
 
     _sentenceSubscription =
         _timingService.currentSentenceStream.listen((sentenceIndex) {
-      if (mounted && sentenceIndex != _currentSentenceIndex) {
-        // Only rebuild if sentence actually changed
+      if (mounted && sentenceIndex != _sentenceIndexNotifier.value) {
+        // Only rebuild CustomPaint, not entire widget
         AppLogger.info('🎨 WIDGET: Sentence index update received', {
-          'oldIndex': _currentSentenceIndex,
+          'oldIndex': _sentenceIndexNotifier.value,
           'newIndex': sentenceIndex,
         });
-        setState(() => _currentSentenceIndex = sentenceIndex);
+        _sentenceIndexNotifier.value = sentenceIndex;
       }
     });
   }
@@ -144,9 +150,23 @@ class _SimplifiedDualLevelHighlightedTextState
     }
   }
 
-  void _autoScroll() {
+  // Debounced auto-scroll to reduce scroll animations during rapid word changes
+  void _autoScrollDebounced(int wordIndex) {
+    // Cancel any pending scroll
+    _scrollDebounceTimer?.cancel();
+    _pendingScrollWordIndex = wordIndex;
+
+    // Wait 150ms before scrolling to let playback stabilize
+    _scrollDebounceTimer = Timer(const Duration(milliseconds: 150), () {
+      if (mounted && _pendingScrollWordIndex >= 0) {
+        _autoScroll(_pendingScrollWordIndex);
+      }
+    });
+  }
+
+  void _autoScroll(int wordIndex) {
     if (widget.scrollController == null ||
-        _currentWordIndex < 0 ||
+        wordIndex < 0 ||
         _timingCollection == null ||
         _textPainter.text == null) {
       return;
@@ -162,8 +182,8 @@ class _SimplifiedDualLevelHighlightedTextState
 
     final viewportHeight = scrollController.position.viewportDimension;
 
-    // Get text boxes for the current word
-    final boxes = _getWordBoxes(_currentWordIndex);
+    // Get text boxes for the specified word
+    final boxes = _getWordBoxes(wordIndex);
     if (boxes.isEmpty) return;
 
     // Use the first box (words rarely span multiple lines)
@@ -270,9 +290,9 @@ class _SimplifiedDualLevelHighlightedTextState
 
   // Calculate appropriate scroll duration based on distance
   Duration _calculateScrollDuration(double distance) {
-    // Minimum 150ms, maximum 300ms for faster response
+    // Shorter durations for snappier response (100-200ms)
     // Scale based on distance for natural feeling
-    final milliseconds = (150 + (distance / 15)).clamp(150, 300).toInt();
+    final milliseconds = (100 + (distance / 20)).clamp(100, 200).toInt();
     return Duration(milliseconds: milliseconds);
   }
 
@@ -359,17 +379,30 @@ class _SimplifiedDualLevelHighlightedTextState
             widget.sentenceHighlightColor ?? theme.sentenceHighlight;
         final wordColor = widget.wordHighlightColor ?? theme.wordHighlight;
 
-        return CustomPaint(
-          size: Size(constraints.maxWidth, _textPainter.height),
-          painter: OptimizedHighlightPainter(
-            text: widget.text,
-            textPainter: _textPainter,
-            timingCollection: _timingCollection!,
-            currentWordIndex: _currentWordIndex,
-            currentSentenceIndex: _currentSentenceIndex,
-            baseStyle: widget.baseStyle,
-            sentenceHighlightColor: sentenceColor,
-            wordHighlightColor: wordColor,
+        // Use ValueListenableBuilder to rebuild only CustomPaint, not whole tree
+        return RepaintBoundary(
+          child: ValueListenableBuilder<int>(
+            valueListenable: _wordIndexNotifier,
+            builder: (context, wordIndex, child) {
+              return ValueListenableBuilder<int>(
+                valueListenable: _sentenceIndexNotifier,
+                builder: (context, sentenceIndex, _) {
+                  return CustomPaint(
+                    size: Size(constraints.maxWidth, _textPainter.height),
+                    painter: OptimizedHighlightPainter(
+                      text: widget.text,
+                      textPainter: _textPainter,
+                      timingCollection: _timingCollection!,
+                      currentWordIndex: wordIndex,
+                      currentSentenceIndex: sentenceIndex,
+                      baseStyle: widget.baseStyle,
+                      sentenceHighlightColor: sentenceColor,
+                      wordHighlightColor: wordColor,
+                    ),
+                  );
+                },
+              );
+            },
           ),
         );
       },
@@ -398,8 +431,11 @@ class _SimplifiedDualLevelHighlightedTextState
 
   @override
   void dispose() {
+    _scrollDebounceTimer?.cancel();
     _wordSubscription?.cancel();
     _sentenceSubscription?.cancel();
+    _wordIndexNotifier.dispose();
+    _sentenceIndexNotifier.dispose();
     _textPainter.dispose();
     super.dispose();
   }

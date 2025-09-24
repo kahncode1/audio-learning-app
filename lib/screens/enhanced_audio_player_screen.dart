@@ -195,11 +195,11 @@ class _EnhancedAudioPlayerScreenState
       });
 
       // Set up position stream listener with throttling for performance
-      // Throttle to 20Hz (50ms) instead of 60Hz for better performance
-      // This ensures word timing updates are ready without overwhelming the UI
+      // Throttle to 10Hz (100ms) for optimal performance vs smoothness balance
+      // Human perception still sees this as smooth while reducing UI updates by 50%
       _positionSub = _audioService.positionStream
           .throttleTime(
-            const Duration(milliseconds: 50),
+            const Duration(milliseconds: 100),
             trailing: true,
             leading: true,
           )
