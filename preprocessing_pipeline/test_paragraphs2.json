@@ -1,0 +1,4244 @@
+{
+  "version": "1.0",
+  "source": "elevenlabs-complete-with-paragraphs",
+  "display_text": "Objective The objective of this lesson is to demonstrate the critical role of risk management and insurance in society. Let's begin. Before becoming a risk management and insurance professional, you may have had misconceptions about the industry.\n\nPerhaps you imagined door-to-door salesmen or thought it sounded boring. However, the reality is that risk management and insurance make many things possible in our society.\n\nLet's consider some specific examples to illustrate this point. First, the entertainment industry. Large concerts, like those by Beyoncé, require complex risk management.\n\nWithout proper risk management and insurance, these massive events simply couldn't happen. Picture one of her concerts with thousands of screaming fans and complex equipment on stage.\n\nInsurance covers potential issues like artist illness, venue damage, or injuries to concertgoers. If Beyoncé gets sick and has to postpone or cancel the concert, there are significant financial implications for many people involved.\n\nSecond, the construction industry. Risk management and insurance enable the building of skyscrapers and stadiums.\n\nThese massive construction projects depend on comprehensive risk management strategies to move forward. Third, the healthcare industry. Healthcare risk management and insurance allow healthcare companies and providers to perform their jobs effectively and safely.\n\nThis protection enables them to focus on patient care while managing the inherent risks in medical practice.\n\nNow, let's test your understanding with a practical scenario. Check Your Understanding Imagine you're working with a manufacturing company called Roundpact, Inc., which is looking to purchase a commercial insurance policy with your organization.\n\nThe company is located in Tornado Alley and, naturally, its management team is greatly concerned about how a tornado could damage its property, harm employees, and shut down operations.\n\nAs Roundpact's risk management and insurance partner, what might you want to tell the company's management team to encourage them to begin thinking about how to protect the business from catastrophes that may take place in other regions or areas of the world as well?\n\nThe Answer It's not just local catastrophes that Roundpact must account for in its risk management plans.\n\nThe company must prepare for how catastrophes in other parts of the world could affect the organization.\n\nFor example, a key supplier of parts along the Gulf Coast of Florida could be affected by a hurricane or flood, and any disruption to that business could interrupt Roundpact's operations.\n\nHelping companies identify and devise risk management strategies and insurance coverages to deal with these types of unknown exposures is a key way the insurance industry benefits society. It also helps distinguish industry professionals as critical thinkers and leaders.\n\nThe Bottom Line The insurance industry exists to help people take calculated risks, prevent and mitigate losses, and recover from losses when they occur.\n\nOur industry makes an undeniable positive impact on this world and the people in it. Risk management and insurance professionals play a vital role in enabling the activities and innovations that drive our society forward.",
+  "paragraphs": [
+    "Objective The objective of this lesson is to demonstrate the critical role of risk management and insurance in society. Let's begin. Before becoming a risk management and insurance professional, you may have had misconceptions about the industry.",
+    "Perhaps you imagined door-to-door salesmen or thought it sounded boring. However, the reality is that risk management and insurance make many things possible in our society.",
+    "Let's consider some specific examples to illustrate this point. First, the entertainment industry. Large concerts, like those by Beyoncé, require complex risk management.",
+    "Without proper risk management and insurance, these massive events simply couldn't happen. Picture one of her concerts with thousands of screaming fans and complex equipment on stage.",
+    "Insurance covers potential issues like artist illness, venue damage, or injuries to concertgoers. If Beyoncé gets sick and has to postpone or cancel the concert, there are significant financial implications for many people involved.",
+    "Second, the construction industry. Risk management and insurance enable the building of skyscrapers and stadiums.",
+    "These massive construction projects depend on comprehensive risk management strategies to move forward. Third, the healthcare industry. Healthcare risk management and insurance allow healthcare companies and providers to perform their jobs effectively and safely.",
+    "This protection enables them to focus on patient care while managing the inherent risks in medical practice.",
+    "Now, let's test your understanding with a practical scenario. Check Your Understanding Imagine you're working with a manufacturing company called Roundpact, Inc., which is looking to purchase a commercial insurance policy with your organization.",
+    "The company is located in Tornado Alley and, naturally, its management team is greatly concerned about how a tornado could damage its property, harm employees, and shut down operations.",
+    "As Roundpact's risk management and insurance partner, what might you want to tell the company's management team to encourage them to begin thinking about how to protect the business from catastrophes that may take place in other regions or areas of the world as well?",
+    "The Answer It's not just local catastrophes that Roundpact must account for in its risk management plans.",
+    "The company must prepare for how catastrophes in other parts of the world could affect the organization.",
+    "For example, a key supplier of parts along the Gulf Coast of Florida could be affected by a hurricane or flood, and any disruption to that business could interrupt Roundpact's operations.",
+    "Helping companies identify and devise risk management strategies and insurance coverages to deal with these types of unknown exposures is a key way the insurance industry benefits society. It also helps distinguish industry professionals as critical thinkers and leaders.",
+    "The Bottom Line The insurance industry exists to help people take calculated risks, prevent and mitigate losses, and recover from losses when they occur.",
+    "Our industry makes an undeniable positive impact on this world and the people in it. Risk management and insurance professionals play a vital role in enabling the activities and innovations that drive our society forward."
+  ],
+  "headers": [],
+  "formatting": {
+    "bold_headers": false,
+    "paragraph_spacing": true
+  },
+  "metadata": {
+    "word_count": 484,
+    "character_count": 3258,
+    "estimated_reading_time": "2 minutes",
+    "language": "en"
+  },
+  "timing": {
+    "words": [
+      {
+        "word": "Objective",
+        "start_ms": 0,
+        "end_ms": 1335,
+        "char_start": 2,
+        "char_end": 11,
+        "sentence_index": 0
+      },
+      {
+        "word": "The",
+        "start_ms": 1335,
+        "end_ms": 2142,
+        "char_start": 12,
+        "char_end": 15,
+        "sentence_index": 0
+      },
+      {
+        "word": "objective",
+        "start_ms": 2142,
+        "end_ms": 2623,
+        "char_start": 16,
+        "char_end": 25,
+        "sentence_index": 0
+      },
+      {
+        "word": "of",
+        "start_ms": 2623,
+        "end_ms": 2717,
+        "char_start": 26,
+        "char_end": 28,
+        "sentence_index": 0
+      },
+      {
+        "word": "this",
+        "start_ms": 2717,
+        "end_ms": 2902,
+        "char_start": 29,
+        "char_end": 33,
+        "sentence_index": 0
+      },
+      {
+        "word": "lesson",
+        "start_ms": 2902,
+        "end_ms": 3291,
+        "char_start": 34,
+        "char_end": 40,
+        "sentence_index": 0
+      },
+      {
+        "word": "is",
+        "start_ms": 3291,
+        "end_ms": 3448,
+        "char_start": 41,
+        "char_end": 43,
+        "sentence_index": 0
+      },
+      {
+        "word": "to",
+        "start_ms": 3448,
+        "end_ms": 3564,
+        "char_start": 44,
+        "char_end": 46,
+        "sentence_index": 0
+      },
+      {
+        "word": "demonstrate",
+        "start_ms": 3564,
+        "end_ms": 4144,
+        "char_start": 47,
+        "char_end": 58,
+        "sentence_index": 0
+      },
+      {
+        "word": "the",
+        "start_ms": 4144,
+        "end_ms": 4255,
+        "char_start": 59,
+        "char_end": 62,
+        "sentence_index": 0
+      },
+      {
+        "word": "critical",
+        "start_ms": 4255,
+        "end_ms": 4760,
+        "char_start": 63,
+        "char_end": 71,
+        "sentence_index": 0
+      },
+      {
+        "word": "role",
+        "start_ms": 4760,
+        "end_ms": 5103,
+        "char_start": 72,
+        "char_end": 76,
+        "sentence_index": 0
+      },
+      {
+        "word": "of",
+        "start_ms": 5103,
+        "end_ms": 5236,
+        "char_start": 77,
+        "char_end": 79,
+        "sentence_index": 0
+      },
+      {
+        "word": "risk",
+        "start_ms": 5236,
+        "end_ms": 5526,
+        "char_start": 80,
+        "char_end": 84,
+        "sentence_index": 0
+      },
+      {
+        "word": "management",
+        "start_ms": 5526,
+        "end_ms": 6043,
+        "char_start": 85,
+        "char_end": 95,
+        "sentence_index": 0
+      },
+      {
+        "word": "and",
+        "start_ms": 6043,
+        "end_ms": 6200,
+        "char_start": 96,
+        "char_end": 99,
+        "sentence_index": 0
+      },
+      {
+        "word": "insurance",
+        "start_ms": 6200,
+        "end_ms": 6699,
+        "char_start": 100,
+        "char_end": 109,
+        "sentence_index": 0
+      },
+      {
+        "word": "in",
+        "start_ms": 6699,
+        "end_ms": 6803,
+        "char_start": 110,
+        "char_end": 112,
+        "sentence_index": 0
+      },
+      {
+        "word": "society.",
+        "start_ms": 6803,
+        "end_ms": 7999,
+        "char_start": 113,
+        "char_end": 121,
+        "sentence_index": 0
+      },
+      {
+        "word": "Let's",
+        "start_ms": 7999,
+        "end_ms": 8707,
+        "char_start": 122,
+        "char_end": 127,
+        "sentence_index": 1
+      },
+      {
+        "word": "begin.",
+        "start_ms": 8707,
+        "end_ms": 9636,
+        "char_start": 128,
+        "char_end": 134,
+        "sentence_index": 1
+      },
+      {
+        "word": "Before",
+        "start_ms": 9636,
+        "end_ms": 10350,
+        "char_start": 135,
+        "char_end": 141,
+        "sentence_index": 2
+      },
+      {
+        "word": "becoming",
+        "start_ms": 10350,
+        "end_ms": 10722,
+        "char_start": 142,
+        "char_end": 150,
+        "sentence_index": 2
+      },
+      {
+        "word": "a",
+        "start_ms": 10722,
+        "end_ms": 10832,
+        "char_start": 151,
+        "char_end": 152,
+        "sentence_index": 2
+      },
+      {
+        "word": "risk",
+        "start_ms": 10832,
+        "end_ms": 11180,
+        "char_start": 153,
+        "char_end": 157,
+        "sentence_index": 2
+      },
+      {
+        "word": "management",
+        "start_ms": 11180,
+        "end_ms": 11779,
+        "char_start": 158,
+        "char_end": 168,
+        "sentence_index": 2
+      },
+      {
+        "word": "and",
+        "start_ms": 11779,
+        "end_ms": 11930,
+        "char_start": 169,
+        "char_end": 172,
+        "sentence_index": 2
+      },
+      {
+        "word": "insurance",
+        "start_ms": 11930,
+        "end_ms": 12731,
+        "char_start": 173,
+        "char_end": 182,
+        "sentence_index": 2
+      },
+      {
+        "word": "professional,",
+        "start_ms": 12731,
+        "end_ms": 13752,
+        "char_start": 183,
+        "char_end": 196,
+        "sentence_index": 2
+      },
+      {
+        "word": "you",
+        "start_ms": 13752,
+        "end_ms": 14042,
+        "char_start": 197,
+        "char_end": 200,
+        "sentence_index": 2
+      },
+      {
+        "word": "may",
+        "start_ms": 14042,
+        "end_ms": 14170,
+        "char_start": 201,
+        "char_end": 204,
+        "sentence_index": 2
+      },
+      {
+        "word": "have",
+        "start_ms": 14170,
+        "end_ms": 14292,
+        "char_start": 205,
+        "char_end": 209,
+        "sentence_index": 2
+      },
+      {
+        "word": "had",
+        "start_ms": 14292,
+        "end_ms": 14437,
+        "char_start": 210,
+        "char_end": 213,
+        "sentence_index": 2
+      },
+      {
+        "word": "misconceptions",
+        "start_ms": 14437,
+        "end_ms": 15232,
+        "char_start": 214,
+        "char_end": 228,
+        "sentence_index": 2
+      },
+      {
+        "word": "about",
+        "start_ms": 15232,
+        "end_ms": 15435,
+        "char_start": 229,
+        "char_end": 234,
+        "sentence_index": 2
+      },
+      {
+        "word": "the",
+        "start_ms": 15435,
+        "end_ms": 15546,
+        "char_start": 235,
+        "char_end": 238,
+        "sentence_index": 2
+      },
+      {
+        "word": "industry.",
+        "start_ms": 15546,
+        "end_ms": 16416,
+        "char_start": 239,
+        "char_end": 248,
+        "sentence_index": 2
+      },
+      {
+        "word": "Perhaps",
+        "start_ms": 16416,
+        "end_ms": 16968,
+        "char_start": 251,
+        "char_end": 258,
+        "sentence_index": 3
+      },
+      {
+        "word": "you",
+        "start_ms": 16968,
+        "end_ms": 17096,
+        "char_start": 259,
+        "char_end": 262,
+        "sentence_index": 3
+      },
+      {
+        "word": "imagined",
+        "start_ms": 17096,
+        "end_ms": 17549,
+        "char_start": 263,
+        "char_end": 271,
+        "sentence_index": 3
+      },
+      {
+        "word": "door-to-door",
+        "start_ms": 17549,
+        "end_ms": 18210,
+        "char_start": 272,
+        "char_end": 284,
+        "sentence_index": 3
+      },
+      {
+        "word": "salesmen",
+        "start_ms": 18210,
+        "end_ms": 18982,
+        "char_start": 285,
+        "char_end": 293,
+        "sentence_index": 3
+      },
+      {
+        "word": "or",
+        "start_ms": 18982,
+        "end_ms": 19325,
+        "char_start": 294,
+        "char_end": 296,
+        "sentence_index": 3
+      },
+      {
+        "word": "thought",
+        "start_ms": 19325,
+        "end_ms": 19563,
+        "char_start": 297,
+        "char_end": 304,
+        "sentence_index": 3
+      },
+      {
+        "word": "it",
+        "start_ms": 19563,
+        "end_ms": 19650,
+        "char_start": 305,
+        "char_end": 307,
+        "sentence_index": 3
+      },
+      {
+        "word": "sounded",
+        "start_ms": 19650,
+        "end_ms": 19946,
+        "char_start": 308,
+        "char_end": 315,
+        "sentence_index": 3
+      },
+      {
+        "word": "boring.",
+        "start_ms": 19946,
+        "end_ms": 20863,
+        "char_start": 316,
+        "char_end": 323,
+        "sentence_index": 3
+      },
+      {
+        "word": "However,",
+        "start_ms": 20863,
+        "end_ms": 21896,
+        "char_start": 324,
+        "char_end": 332,
+        "sentence_index": 4
+      },
+      {
+        "word": "the",
+        "start_ms": 21896,
+        "end_ms": 22187,
+        "char_start": 333,
+        "char_end": 336,
+        "sentence_index": 4
+      },
+      {
+        "word": "reality",
+        "start_ms": 22187,
+        "end_ms": 22564,
+        "char_start": 337,
+        "char_end": 344,
+        "sentence_index": 4
+      },
+      {
+        "word": "is",
+        "start_ms": 22564,
+        "end_ms": 22756,
+        "char_start": 345,
+        "char_end": 347,
+        "sentence_index": 4
+      },
+      {
+        "word": "that",
+        "start_ms": 22756,
+        "end_ms": 23162,
+        "char_start": 348,
+        "char_end": 352,
+        "sentence_index": 4
+      },
+      {
+        "word": "risk",
+        "start_ms": 23162,
+        "end_ms": 23609,
+        "char_start": 353,
+        "char_end": 357,
+        "sentence_index": 4
+      },
+      {
+        "word": "management",
+        "start_ms": 23609,
+        "end_ms": 24259,
+        "char_start": 358,
+        "char_end": 368,
+        "sentence_index": 4
+      },
+      {
+        "word": "and",
+        "start_ms": 24259,
+        "end_ms": 24573,
+        "char_start": 369,
+        "char_end": 372,
+        "sentence_index": 4
+      },
+      {
+        "word": "insurance",
+        "start_ms": 24573,
+        "end_ms": 25368,
+        "char_start": 373,
+        "char_end": 382,
+        "sentence_index": 4
+      },
+      {
+        "word": "make",
+        "start_ms": 25368,
+        "end_ms": 25710,
+        "char_start": 383,
+        "char_end": 387,
+        "sentence_index": 4
+      },
+      {
+        "word": "many",
+        "start_ms": 25710,
+        "end_ms": 25919,
+        "char_start": 388,
+        "char_end": 392,
+        "sentence_index": 4
+      },
+      {
+        "word": "things",
+        "start_ms": 25919,
+        "end_ms": 26169,
+        "char_start": 393,
+        "char_end": 399,
+        "sentence_index": 4
+      },
+      {
+        "word": "possible",
+        "start_ms": 26169,
+        "end_ms": 26697,
+        "char_start": 400,
+        "char_end": 408,
+        "sentence_index": 4
+      },
+      {
+        "word": "in",
+        "start_ms": 26697,
+        "end_ms": 26784,
+        "char_start": 409,
+        "char_end": 411,
+        "sentence_index": 4
+      },
+      {
+        "word": "our",
+        "start_ms": 26784,
+        "end_ms": 26924,
+        "char_start": 412,
+        "char_end": 415,
+        "sentence_index": 4
+      },
+      {
+        "word": "society.",
+        "start_ms": 26924,
+        "end_ms": 27945,
+        "char_start": 416,
+        "char_end": 424,
+        "sentence_index": 4
+      },
+      {
+        "word": "Let's",
+        "start_ms": 27945,
+        "end_ms": 28526,
+        "char_start": 427,
+        "char_end": 432,
+        "sentence_index": 5
+      },
+      {
+        "word": "consider",
+        "start_ms": 28526,
+        "end_ms": 28938,
+        "char_start": 433,
+        "char_end": 441,
+        "sentence_index": 5
+      },
+      {
+        "word": "some",
+        "start_ms": 28938,
+        "end_ms": 29136,
+        "char_start": 442,
+        "char_end": 446,
+        "sentence_index": 5
+      },
+      {
+        "word": "specific",
+        "start_ms": 29136,
+        "end_ms": 29739,
+        "char_start": 447,
+        "char_end": 455,
+        "sentence_index": 5
+      },
+      {
+        "word": "examples",
+        "start_ms": 29739,
+        "end_ms": 30267,
+        "char_start": 456,
+        "char_end": 464,
+        "sentence_index": 5
+      },
+      {
+        "word": "to",
+        "start_ms": 30267,
+        "end_ms": 30372,
+        "char_start": 465,
+        "char_end": 467,
+        "sentence_index": 5
+      },
+      {
+        "word": "illustrate",
+        "start_ms": 30372,
+        "end_ms": 30778,
+        "char_start": 468,
+        "char_end": 478,
+        "sentence_index": 5
+      },
+      {
+        "word": "this",
+        "start_ms": 30778,
+        "end_ms": 30941,
+        "char_start": 479,
+        "char_end": 483,
+        "sentence_index": 5
+      },
+      {
+        "word": "point.",
+        "start_ms": 30941,
+        "end_ms": 31800,
+        "char_start": 484,
+        "char_end": 490,
+        "sentence_index": 5
+      },
+      {
+        "word": "First,",
+        "start_ms": 31800,
+        "end_ms": 32845,
+        "char_start": 491,
+        "char_end": 497,
+        "sentence_index": 6
+      },
+      {
+        "word": "the",
+        "start_ms": 32845,
+        "end_ms": 33135,
+        "char_start": 498,
+        "char_end": 501,
+        "sentence_index": 6
+      },
+      {
+        "word": "entertainment",
+        "start_ms": 33135,
+        "end_ms": 33634,
+        "char_start": 502,
+        "char_end": 515,
+        "sentence_index": 6
+      },
+      {
+        "word": "industry.",
+        "start_ms": 33634,
+        "end_ms": 34598,
+        "char_start": 516,
+        "char_end": 525,
+        "sentence_index": 6
+      },
+      {
+        "word": "Large",
+        "start_ms": 34598,
+        "end_ms": 35242,
+        "char_start": 526,
+        "char_end": 531,
+        "sentence_index": 7
+      },
+      {
+        "word": "concerts,",
+        "start_ms": 35242,
+        "end_ms": 35730,
+        "char_start": 532,
+        "char_end": 541,
+        "sentence_index": 7
+      },
+      {
+        "word": "like",
+        "start_ms": 35730,
+        "end_ms": 35904,
+        "char_start": 542,
+        "char_end": 546,
+        "sentence_index": 7
+      },
+      {
+        "word": "those",
+        "start_ms": 35904,
+        "end_ms": 36171,
+        "char_start": 547,
+        "char_end": 552,
+        "sentence_index": 7
+      },
+      {
+        "word": "by",
+        "start_ms": 36171,
+        "end_ms": 36362,
+        "char_start": 553,
+        "char_end": 555,
+        "sentence_index": 7
+      },
+      {
+        "word": "Beyoncé,",
+        "start_ms": 36362,
+        "end_ms": 37379,
+        "char_start": 556,
+        "char_end": 564,
+        "sentence_index": 7
+      },
+      {
+        "word": "require",
+        "start_ms": 37379,
+        "end_ms": 37976,
+        "char_start": 565,
+        "char_end": 572,
+        "sentence_index": 7
+      },
+      {
+        "word": "complex",
+        "start_ms": 37976,
+        "end_ms": 38615,
+        "char_start": 573,
+        "char_end": 580,
+        "sentence_index": 7
+      },
+      {
+        "word": "risk",
+        "start_ms": 38615,
+        "end_ms": 38917,
+        "char_start": 581,
+        "char_end": 585,
+        "sentence_index": 7
+      },
+      {
+        "word": "management.",
+        "start_ms": 38917,
+        "end_ms": 39834,
+        "char_start": 586,
+        "char_end": 597,
+        "sentence_index": 7
+      },
+      {
+        "word": "Without",
+        "start_ms": 39834,
+        "end_ms": 40438,
+        "char_start": 600,
+        "char_end": 607,
+        "sentence_index": 8
+      },
+      {
+        "word": "proper",
+        "start_ms": 40438,
+        "end_ms": 40769,
+        "char_start": 608,
+        "char_end": 614,
+        "sentence_index": 8
+      },
+      {
+        "word": "risk",
+        "start_ms": 40769,
+        "end_ms": 41013,
+        "char_start": 615,
+        "char_end": 619,
+        "sentence_index": 8
+      },
+      {
+        "word": "management",
+        "start_ms": 41013,
+        "end_ms": 41471,
+        "char_start": 620,
+        "char_end": 630,
+        "sentence_index": 8
+      },
+      {
+        "word": "and",
+        "start_ms": 41471,
+        "end_ms": 41605,
+        "char_start": 631,
+        "char_end": 634,
+        "sentence_index": 8
+      },
+      {
+        "word": "insurance,",
+        "start_ms": 41605,
+        "end_ms": 42620,
+        "char_start": 635,
+        "char_end": 645,
+        "sentence_index": 8
+      },
+      {
+        "word": "these",
+        "start_ms": 42620,
+        "end_ms": 43004,
+        "char_start": 646,
+        "char_end": 651,
+        "sentence_index": 8
+      },
+      {
+        "word": "massive",
+        "start_ms": 43004,
+        "end_ms": 43392,
+        "char_start": 652,
+        "char_end": 659,
+        "sentence_index": 8
+      },
+      {
+        "word": "events",
+        "start_ms": 43392,
+        "end_ms": 43717,
+        "char_start": 660,
+        "char_end": 666,
+        "sentence_index": 8
+      },
+      {
+        "word": "simply",
+        "start_ms": 43717,
+        "end_ms": 44078,
+        "char_start": 667,
+        "char_end": 673,
+        "sentence_index": 8
+      },
+      {
+        "word": "couldn't",
+        "start_ms": 44078,
+        "end_ms": 44408,
+        "char_start": 674,
+        "char_end": 682,
+        "sentence_index": 8
+      },
+      {
+        "word": "happen.",
+        "start_ms": 44408,
+        "end_ms": 44971,
+        "char_start": 683,
+        "char_end": 690,
+        "sentence_index": 8
+      },
+      {
+        "word": "Picture",
+        "start_ms": 44971,
+        "end_ms": 45390,
+        "char_start": 691,
+        "char_end": 698,
+        "sentence_index": 9
+      },
+      {
+        "word": "one",
+        "start_ms": 45390,
+        "end_ms": 45546,
+        "char_start": 699,
+        "char_end": 702,
+        "sentence_index": 9
+      },
+      {
+        "word": "of",
+        "start_ms": 45546,
+        "end_ms": 45633,
+        "char_start": 703,
+        "char_end": 705,
+        "sentence_index": 9
+      },
+      {
+        "word": "her",
+        "start_ms": 45633,
+        "end_ms": 45761,
+        "char_start": 706,
+        "char_end": 709,
+        "sentence_index": 9
+      },
+      {
+        "word": "concerts",
+        "start_ms": 45761,
+        "end_ms": 46260,
+        "char_start": 710,
+        "char_end": 718,
+        "sentence_index": 9
+      },
+      {
+        "word": "with",
+        "start_ms": 46260,
+        "end_ms": 46463,
+        "char_start": 719,
+        "char_end": 723,
+        "sentence_index": 9
+      },
+      {
+        "word": "thousands",
+        "start_ms": 46463,
+        "end_ms": 46986,
+        "char_start": 724,
+        "char_end": 733,
+        "sentence_index": 9
+      },
+      {
+        "word": "of",
+        "start_ms": 46986,
+        "end_ms": 47102,
+        "char_start": 734,
+        "char_end": 736,
+        "sentence_index": 9
+      },
+      {
+        "word": "screaming",
+        "start_ms": 47102,
+        "end_ms": 47525,
+        "char_start": 737,
+        "char_end": 746,
+        "sentence_index": 9
+      },
+      {
+        "word": "fans",
+        "start_ms": 47525,
+        "end_ms": 47938,
+        "char_start": 747,
+        "char_end": 751,
+        "sentence_index": 9
+      },
+      {
+        "word": "and",
+        "start_ms": 47938,
+        "end_ms": 48095,
+        "char_start": 752,
+        "char_end": 755,
+        "sentence_index": 9
+      },
+      {
+        "word": "complex",
+        "start_ms": 48095,
+        "end_ms": 48617,
+        "char_start": 756,
+        "char_end": 763,
+        "sentence_index": 9
+      },
+      {
+        "word": "equipment",
+        "start_ms": 48617,
+        "end_ms": 49041,
+        "char_start": 764,
+        "char_end": 773,
+        "sentence_index": 9
+      },
+      {
+        "word": "on",
+        "start_ms": 49041,
+        "end_ms": 49169,
+        "char_start": 774,
+        "char_end": 776,
+        "sentence_index": 9
+      },
+      {
+        "word": "stage.",
+        "start_ms": 49169,
+        "end_ms": 50156,
+        "char_start": 777,
+        "char_end": 783,
+        "sentence_index": 9
+      },
+      {
+        "word": "Insurance",
+        "start_ms": 50156,
+        "end_ms": 50916,
+        "char_start": 786,
+        "char_end": 795,
+        "sentence_index": 10
+      },
+      {
+        "word": "covers",
+        "start_ms": 50916,
+        "end_ms": 51247,
+        "char_start": 796,
+        "char_end": 802,
+        "sentence_index": 10
+      },
+      {
+        "word": "potential",
+        "start_ms": 51247,
+        "end_ms": 51706,
+        "char_start": 803,
+        "char_end": 812,
+        "sentence_index": 10
+      },
+      {
+        "word": "issues",
+        "start_ms": 51706,
+        "end_ms": 52083,
+        "char_start": 813,
+        "char_end": 819,
+        "sentence_index": 10
+      },
+      {
+        "word": "like",
+        "start_ms": 52083,
+        "end_ms": 52408,
+        "char_start": 820,
+        "char_end": 824,
+        "sentence_index": 10
+      },
+      {
+        "word": "artist",
+        "start_ms": 52408,
+        "end_ms": 52890,
+        "char_start": 825,
+        "char_end": 831,
+        "sentence_index": 10
+      },
+      {
+        "word": "illness,",
+        "start_ms": 52890,
+        "end_ms": 53441,
+        "char_start": 832,
+        "char_end": 840,
+        "sentence_index": 10
+      },
+      {
+        "word": "venue",
+        "start_ms": 53441,
+        "end_ms": 53743,
+        "char_start": 841,
+        "char_end": 846,
+        "sentence_index": 10
+      },
+      {
+        "word": "damage,",
+        "start_ms": 53743,
+        "end_ms": 54585,
+        "char_start": 847,
+        "char_end": 854,
+        "sentence_index": 10
+      },
+      {
+        "word": "or",
+        "start_ms": 54585,
+        "end_ms": 54846,
+        "char_start": 855,
+        "char_end": 857,
+        "sentence_index": 10
+      },
+      {
+        "word": "injuries",
+        "start_ms": 54846,
+        "end_ms": 55252,
+        "char_start": 858,
+        "char_end": 866,
+        "sentence_index": 10
+      },
+      {
+        "word": "to",
+        "start_ms": 55252,
+        "end_ms": 55380,
+        "char_start": 867,
+        "char_end": 869,
+        "sentence_index": 10
+      },
+      {
+        "word": "concertgoers.",
+        "start_ms": 55380,
+        "end_ms": 56796,
+        "char_start": 870,
+        "char_end": 883,
+        "sentence_index": 10
+      },
+      {
+        "word": "If",
+        "start_ms": 56796,
+        "end_ms": 57278,
+        "char_start": 884,
+        "char_end": 886,
+        "sentence_index": 11
+      },
+      {
+        "word": "Beyoncé",
+        "start_ms": 57278,
+        "end_ms": 57708,
+        "char_start": 887,
+        "char_end": 894,
+        "sentence_index": 11
+      },
+      {
+        "word": "gets",
+        "start_ms": 57708,
+        "end_ms": 57917,
+        "char_start": 895,
+        "char_end": 899,
+        "sentence_index": 11
+      },
+      {
+        "word": "sick",
+        "start_ms": 57917,
+        "end_ms": 58196,
+        "char_start": 900,
+        "char_end": 904,
+        "sentence_index": 11
+      },
+      {
+        "word": "and",
+        "start_ms": 58196,
+        "end_ms": 58335,
+        "char_start": 905,
+        "char_end": 908,
+        "sentence_index": 11
+      },
+      {
+        "word": "has",
+        "start_ms": 58335,
+        "end_ms": 58498,
+        "char_start": 909,
+        "char_end": 912,
+        "sentence_index": 11
+      },
+      {
+        "word": "to",
+        "start_ms": 58498,
+        "end_ms": 58614,
+        "char_start": 913,
+        "char_end": 915,
+        "sentence_index": 11
+      },
+      {
+        "word": "postpone",
+        "start_ms": 58614,
+        "end_ms": 59095,
+        "char_start": 916,
+        "char_end": 924,
+        "sentence_index": 11
+      },
+      {
+        "word": "or",
+        "start_ms": 59095,
+        "end_ms": 59194,
+        "char_start": 925,
+        "char_end": 927,
+        "sentence_index": 11
+      },
+      {
+        "word": "cancel",
+        "start_ms": 59194,
+        "end_ms": 59548,
+        "char_start": 928,
+        "char_end": 934,
+        "sentence_index": 11
+      },
+      {
+        "word": "the",
+        "start_ms": 59548,
+        "end_ms": 59658,
+        "char_start": 935,
+        "char_end": 938,
+        "sentence_index": 11
+      },
+      {
+        "word": "concert,",
+        "start_ms": 59658,
+        "end_ms": 60459,
+        "char_start": 939,
+        "char_end": 947,
+        "sentence_index": 11
+      },
+      {
+        "word": "there",
+        "start_ms": 60459,
+        "end_ms": 60831,
+        "char_start": 948,
+        "char_end": 953,
+        "sentence_index": 11
+      },
+      {
+        "word": "are",
+        "start_ms": 60831,
+        "end_ms": 60953,
+        "char_start": 954,
+        "char_end": 957,
+        "sentence_index": 11
+      },
+      {
+        "word": "significant",
+        "start_ms": 60953,
+        "end_ms": 61586,
+        "char_start": 958,
+        "char_end": 969,
+        "sentence_index": 11
+      },
+      {
+        "word": "financial",
+        "start_ms": 61586,
+        "end_ms": 62056,
+        "char_start": 970,
+        "char_end": 979,
+        "sentence_index": 11
+      },
+      {
+        "word": "implications",
+        "start_ms": 62056,
+        "end_ms": 62776,
+        "char_start": 980,
+        "char_end": 992,
+        "sentence_index": 11
+      },
+      {
+        "word": "for",
+        "start_ms": 62776,
+        "end_ms": 62938,
+        "char_start": 993,
+        "char_end": 996,
+        "sentence_index": 11
+      },
+      {
+        "word": "many",
+        "start_ms": 62938,
+        "end_ms": 63153,
+        "char_start": 997,
+        "char_end": 1001,
+        "sentence_index": 11
+      },
+      {
+        "word": "people",
+        "start_ms": 63153,
+        "end_ms": 63437,
+        "char_start": 1002,
+        "char_end": 1008,
+        "sentence_index": 11
+      },
+      {
+        "word": "involved.",
+        "start_ms": 63437,
+        "end_ms": 64459,
+        "char_start": 1009,
+        "char_end": 1018,
+        "sentence_index": 11
+      },
+      {
+        "word": "Second,",
+        "start_ms": 64459,
+        "end_ms": 65510,
+        "char_start": 1021,
+        "char_end": 1028,
+        "sentence_index": 12
+      },
+      {
+        "word": "the",
+        "start_ms": 65510,
+        "end_ms": 65689,
+        "char_start": 1029,
+        "char_end": 1032,
+        "sentence_index": 12
+      },
+      {
+        "word": "construction",
+        "start_ms": 65689,
+        "end_ms": 66235,
+        "char_start": 1033,
+        "char_end": 1045,
+        "sentence_index": 12
+      },
+      {
+        "word": "industry.",
+        "start_ms": 66235,
+        "end_ms": 67176,
+        "char_start": 1046,
+        "char_end": 1055,
+        "sentence_index": 12
+      },
+      {
+        "word": "Risk",
+        "start_ms": 67176,
+        "end_ms": 67767,
+        "char_start": 1056,
+        "char_end": 1060,
+        "sentence_index": 13
+      },
+      {
+        "word": "management",
+        "start_ms": 67767,
+        "end_ms": 68354,
+        "char_start": 1061,
+        "char_end": 1071,
+        "sentence_index": 13
+      },
+      {
+        "word": "and",
+        "start_ms": 68354,
+        "end_ms": 68650,
+        "char_start": 1072,
+        "char_end": 1075,
+        "sentence_index": 13
+      },
+      {
+        "word": "insurance",
+        "start_ms": 68650,
+        "end_ms": 69335,
+        "char_start": 1076,
+        "char_end": 1085,
+        "sentence_index": 13
+      },
+      {
+        "word": "enable",
+        "start_ms": 69335,
+        "end_ms": 69677,
+        "char_start": 1086,
+        "char_end": 1092,
+        "sentence_index": 13
+      },
+      {
+        "word": "the",
+        "start_ms": 69677,
+        "end_ms": 69788,
+        "char_start": 1093,
+        "char_end": 1096,
+        "sentence_index": 13
+      },
+      {
+        "word": "building",
+        "start_ms": 69788,
+        "end_ms": 70188,
+        "char_start": 1097,
+        "char_end": 1105,
+        "sentence_index": 13
+      },
+      {
+        "word": "of",
+        "start_ms": 70188,
+        "end_ms": 70362,
+        "char_start": 1106,
+        "char_end": 1108,
+        "sentence_index": 13
+      },
+      {
+        "word": "skyscrapers",
+        "start_ms": 70362,
+        "end_ms": 71181,
+        "char_start": 1109,
+        "char_end": 1120,
+        "sentence_index": 13
+      },
+      {
+        "word": "and",
+        "start_ms": 71181,
+        "end_ms": 71309,
+        "char_start": 1121,
+        "char_end": 1124,
+        "sentence_index": 13
+      },
+      {
+        "word": "stadiums.",
+        "start_ms": 71309,
+        "end_ms": 72214,
+        "char_start": 1125,
+        "char_end": 1134,
+        "sentence_index": 13
+      },
+      {
+        "word": "These",
+        "start_ms": 72214,
+        "end_ms": 72736,
+        "char_start": 1137,
+        "char_end": 1142,
+        "sentence_index": 14
+      },
+      {
+        "word": "massive",
+        "start_ms": 72736,
+        "end_ms": 73218,
+        "char_start": 1143,
+        "char_end": 1150,
+        "sentence_index": 14
+      },
+      {
+        "word": "construction",
+        "start_ms": 73218,
+        "end_ms": 73776,
+        "char_start": 1151,
+        "char_end": 1163,
+        "sentence_index": 14
+      },
+      {
+        "word": "projects",
+        "start_ms": 73776,
+        "end_ms": 74258,
+        "char_start": 1164,
+        "char_end": 1172,
+        "sentence_index": 14
+      },
+      {
+        "word": "depend",
+        "start_ms": 74258,
+        "end_ms": 74658,
+        "char_start": 1173,
+        "char_end": 1179,
+        "sentence_index": 14
+      },
+      {
+        "word": "on",
+        "start_ms": 74658,
+        "end_ms": 74803,
+        "char_start": 1180,
+        "char_end": 1182,
+        "sentence_index": 14
+      },
+      {
+        "word": "comprehensive",
+        "start_ms": 74803,
+        "end_ms": 75494,
+        "char_start": 1183,
+        "char_end": 1196,
+        "sentence_index": 14
+      },
+      {
+        "word": "risk",
+        "start_ms": 75494,
+        "end_ms": 75767,
+        "char_start": 1197,
+        "char_end": 1201,
+        "sentence_index": 14
+      },
+      {
+        "word": "management",
+        "start_ms": 75767,
+        "end_ms": 76283,
+        "char_start": 1202,
+        "char_end": 1212,
+        "sentence_index": 14
+      },
+      {
+        "word": "strategies",
+        "start_ms": 76283,
+        "end_ms": 76817,
+        "char_start": 1213,
+        "char_end": 1223,
+        "sentence_index": 14
+      },
+      {
+        "word": "to",
+        "start_ms": 76817,
+        "end_ms": 76928,
+        "char_start": 1224,
+        "char_end": 1226,
+        "sentence_index": 14
+      },
+      {
+        "word": "move",
+        "start_ms": 76928,
+        "end_ms": 77125,
+        "char_start": 1227,
+        "char_end": 1231,
+        "sentence_index": 14
+      },
+      {
+        "word": "forward.",
+        "start_ms": 77125,
+        "end_ms": 77984,
+        "char_start": 1232,
+        "char_end": 1240,
+        "sentence_index": 14
+      },
+      {
+        "word": "Third,",
+        "start_ms": 77984,
+        "end_ms": 78791,
+        "char_start": 1241,
+        "char_end": 1247,
+        "sentence_index": 15
+      },
+      {
+        "word": "the",
+        "start_ms": 78791,
+        "end_ms": 78936,
+        "char_start": 1248,
+        "char_end": 1251,
+        "sentence_index": 15
+      },
+      {
+        "word": "healthcare",
+        "start_ms": 78936,
+        "end_ms": 79354,
+        "char_start": 1252,
+        "char_end": 1262,
+        "sentence_index": 15
+      },
+      {
+        "word": "industry.",
+        "start_ms": 79354,
+        "end_ms": 80399,
+        "char_start": 1263,
+        "char_end": 1272,
+        "sentence_index": 15
+      },
+      {
+        "word": "Healthcare",
+        "start_ms": 80399,
+        "end_ms": 81351,
+        "char_start": 1273,
+        "char_end": 1283,
+        "sentence_index": 16
+      },
+      {
+        "word": "risk",
+        "start_ms": 81351,
+        "end_ms": 81583,
+        "char_start": 1284,
+        "char_end": 1288,
+        "sentence_index": 16
+      },
+      {
+        "word": "management",
+        "start_ms": 81583,
+        "end_ms": 82024,
+        "char_start": 1289,
+        "char_end": 1299,
+        "sentence_index": 16
+      },
+      {
+        "word": "and",
+        "start_ms": 82024,
+        "end_ms": 82152,
+        "char_start": 1300,
+        "char_end": 1303,
+        "sentence_index": 16
+      },
+      {
+        "word": "insurance",
+        "start_ms": 82152,
+        "end_ms": 82872,
+        "char_start": 1304,
+        "char_end": 1313,
+        "sentence_index": 16
+      },
+      {
+        "word": "allow",
+        "start_ms": 82872,
+        "end_ms": 83308,
+        "char_start": 1314,
+        "char_end": 1319,
+        "sentence_index": 16
+      },
+      {
+        "word": "healthcare",
+        "start_ms": 83308,
+        "end_ms": 83766,
+        "char_start": 1320,
+        "char_end": 1330,
+        "sentence_index": 16
+      },
+      {
+        "word": "companies",
+        "start_ms": 83766,
+        "end_ms": 84260,
+        "char_start": 1331,
+        "char_end": 1340,
+        "sentence_index": 16
+      },
+      {
+        "word": "and",
+        "start_ms": 84260,
+        "end_ms": 84445,
+        "char_start": 1341,
+        "char_end": 1344,
+        "sentence_index": 16
+      },
+      {
+        "word": "providers",
+        "start_ms": 84445,
+        "end_ms": 85089,
+        "char_start": 1345,
+        "char_end": 1354,
+        "sentence_index": 16
+      },
+      {
+        "word": "to",
+        "start_ms": 85089,
+        "end_ms": 85363,
+        "char_start": 1355,
+        "char_end": 1357,
+        "sentence_index": 16
+      },
+      {
+        "word": "perform",
+        "start_ms": 85363,
+        "end_ms": 85728,
+        "char_start": 1358,
+        "char_end": 1365,
+        "sentence_index": 16
+      },
+      {
+        "word": "their",
+        "start_ms": 85728,
+        "end_ms": 85914,
+        "char_start": 1366,
+        "char_end": 1371,
+        "sentence_index": 16
+      },
+      {
+        "word": "jobs",
+        "start_ms": 85914,
+        "end_ms": 86297,
+        "char_start": 1372,
+        "char_end": 1376,
+        "sentence_index": 16
+      },
+      {
+        "word": "effectively",
+        "start_ms": 86297,
+        "end_ms": 86877,
+        "char_start": 1377,
+        "char_end": 1388,
+        "sentence_index": 16
+      },
+      {
+        "word": "and",
+        "start_ms": 86877,
+        "end_ms": 87017,
+        "char_start": 1389,
+        "char_end": 1392,
+        "sentence_index": 16
+      },
+      {
+        "word": "safely.",
+        "start_ms": 87017,
+        "end_ms": 87899,
+        "char_start": 1393,
+        "char_end": 1400,
+        "sentence_index": 16
+      },
+      {
+        "word": "This",
+        "start_ms": 87899,
+        "end_ms": 88393,
+        "char_start": 1403,
+        "char_end": 1407,
+        "sentence_index": 17
+      },
+      {
+        "word": "protection",
+        "start_ms": 88393,
+        "end_ms": 88944,
+        "char_start": 1408,
+        "char_end": 1418,
+        "sentence_index": 17
+      },
+      {
+        "word": "enables",
+        "start_ms": 88944,
+        "end_ms": 89339,
+        "char_start": 1419,
+        "char_end": 1426,
+        "sentence_index": 17
+      },
+      {
+        "word": "them",
+        "start_ms": 89339,
+        "end_ms": 89727,
+        "char_start": 1427,
+        "char_end": 1431,
+        "sentence_index": 17
+      },
+      {
+        "word": "to",
+        "start_ms": 89727,
+        "end_ms": 90029,
+        "char_start": 1432,
+        "char_end": 1434,
+        "sentence_index": 17
+      },
+      {
+        "word": "focus",
+        "start_ms": 90029,
+        "end_ms": 90384,
+        "char_start": 1435,
+        "char_end": 1440,
+        "sentence_index": 17
+      },
+      {
+        "word": "on",
+        "start_ms": 90384,
+        "end_ms": 90506,
+        "char_start": 1441,
+        "char_end": 1443,
+        "sentence_index": 17
+      },
+      {
+        "word": "patient",
+        "start_ms": 90506,
+        "end_ms": 90906,
+        "char_start": 1444,
+        "char_end": 1451,
+        "sentence_index": 17
+      },
+      {
+        "word": "care",
+        "start_ms": 90906,
+        "end_ms": 91458,
+        "char_start": 1452,
+        "char_end": 1456,
+        "sentence_index": 17
+      },
+      {
+        "word": "while",
+        "start_ms": 91458,
+        "end_ms": 91823,
+        "char_start": 1457,
+        "char_end": 1462,
+        "sentence_index": 17
+      },
+      {
+        "word": "managing",
+        "start_ms": 91823,
+        "end_ms": 92323,
+        "char_start": 1463,
+        "char_end": 1471,
+        "sentence_index": 17
+      },
+      {
+        "word": "the",
+        "start_ms": 92323,
+        "end_ms": 92508,
+        "char_start": 1472,
+        "char_end": 1475,
+        "sentence_index": 17
+      },
+      {
+        "word": "inherent",
+        "start_ms": 92508,
+        "end_ms": 92967,
+        "char_start": 1476,
+        "char_end": 1484,
+        "sentence_index": 17
+      },
+      {
+        "word": "risks",
+        "start_ms": 92967,
+        "end_ms": 93327,
+        "char_start": 1485,
+        "char_end": 1490,
+        "sentence_index": 17
+      },
+      {
+        "word": "in",
+        "start_ms": 93327,
+        "end_ms": 93443,
+        "char_start": 1491,
+        "char_end": 1493,
+        "sentence_index": 17
+      },
+      {
+        "word": "medical",
+        "start_ms": 93443,
+        "end_ms": 93785,
+        "char_start": 1494,
+        "char_end": 1501,
+        "sentence_index": 17
+      },
+      {
+        "word": "practice.",
+        "start_ms": 93785,
+        "end_ms": 94749,
+        "char_start": 1502,
+        "char_end": 1511,
+        "sentence_index": 17
+      },
+      {
+        "word": "Now,",
+        "start_ms": 94749,
+        "end_ms": 95613,
+        "char_start": 1514,
+        "char_end": 1518,
+        "sentence_index": 18
+      },
+      {
+        "word": "let's",
+        "start_ms": 95613,
+        "end_ms": 96055,
+        "char_start": 1519,
+        "char_end": 1524,
+        "sentence_index": 18
+      },
+      {
+        "word": "test",
+        "start_ms": 96055,
+        "end_ms": 96322,
+        "char_start": 1525,
+        "char_end": 1529,
+        "sentence_index": 18
+      },
+      {
+        "word": "your",
+        "start_ms": 96322,
+        "end_ms": 96449,
+        "char_start": 1530,
+        "char_end": 1534,
+        "sentence_index": 18
+      },
+      {
+        "word": "understanding",
+        "start_ms": 96449,
+        "end_ms": 96972,
+        "char_start": 1535,
+        "char_end": 1548,
+        "sentence_index": 18
+      },
+      {
+        "word": "with",
+        "start_ms": 96972,
+        "end_ms": 97123,
+        "char_start": 1549,
+        "char_end": 1553,
+        "sentence_index": 18
+      },
+      {
+        "word": "a",
+        "start_ms": 97123,
+        "end_ms": 97216,
+        "char_start": 1554,
+        "char_end": 1555,
+        "sentence_index": 18
+      },
+      {
+        "word": "practical",
+        "start_ms": 97216,
+        "end_ms": 97808,
+        "char_start": 1556,
+        "char_end": 1565,
+        "sentence_index": 18
+      },
+      {
+        "word": "scenario.",
+        "start_ms": 97808,
+        "end_ms": 98504,
+        "char_start": 1566,
+        "char_end": 1575,
+        "sentence_index": 18
+      },
+      {
+        "word": "Check",
+        "start_ms": 98504,
+        "end_ms": 98859,
+        "char_start": 1576,
+        "char_end": 1581,
+        "sentence_index": 19
+      },
+      {
+        "word": "Your",
+        "start_ms": 98859,
+        "end_ms": 99027,
+        "char_start": 1582,
+        "char_end": 1586,
+        "sentence_index": 19
+      },
+      {
+        "word": "Understanding",
+        "start_ms": 99027,
+        "end_ms": 100124,
+        "char_start": 1587,
+        "char_end": 1600,
+        "sentence_index": 19
+      },
+      {
+        "word": "Imagine",
+        "start_ms": 100124,
+        "end_ms": 101175,
+        "char_start": 1601,
+        "char_end": 1608,
+        "sentence_index": 19
+      },
+      {
+        "word": "you're",
+        "start_ms": 101175,
+        "end_ms": 101366,
+        "char_start": 1609,
+        "char_end": 1615,
+        "sentence_index": 19
+      },
+      {
+        "word": "working",
+        "start_ms": 101366,
+        "end_ms": 101651,
+        "char_start": 1616,
+        "char_end": 1623,
+        "sentence_index": 19
+      },
+      {
+        "word": "with",
+        "start_ms": 101651,
+        "end_ms": 101790,
+        "char_start": 1624,
+        "char_end": 1628,
+        "sentence_index": 19
+      },
+      {
+        "word": "a",
+        "start_ms": 101790,
+        "end_ms": 101872,
+        "char_start": 1629,
+        "char_end": 1630,
+        "sentence_index": 19
+      },
+      {
+        "word": "manufacturing",
+        "start_ms": 101872,
+        "end_ms": 102609,
+        "char_start": 1631,
+        "char_end": 1644,
+        "sentence_index": 19
+      },
+      {
+        "word": "company",
+        "start_ms": 102609,
+        "end_ms": 102963,
+        "char_start": 1645,
+        "char_end": 1652,
+        "sentence_index": 19
+      },
+      {
+        "word": "called",
+        "start_ms": 102963,
+        "end_ms": 103276,
+        "char_start": 1653,
+        "char_end": 1659,
+        "sentence_index": 19
+      },
+      {
+        "word": "Roundpact,",
+        "start_ms": 103276,
+        "end_ms": 103978,
+        "char_start": 1660,
+        "char_end": 1670,
+        "sentence_index": 19
+      },
+      {
+        "word": "Inc.,",
+        "start_ms": 103978,
+        "end_ms": 104513,
+        "char_start": 1671,
+        "char_end": 1676,
+        "sentence_index": 19
+      },
+      {
+        "word": "which",
+        "start_ms": 104513,
+        "end_ms": 104797,
+        "char_start": 1677,
+        "char_end": 1682,
+        "sentence_index": 19
+      },
+      {
+        "word": "is",
+        "start_ms": 104797,
+        "end_ms": 104965,
+        "char_start": 1683,
+        "char_end": 1685,
+        "sentence_index": 19
+      },
+      {
+        "word": "looking",
+        "start_ms": 104965,
+        "end_ms": 105273,
+        "char_start": 1686,
+        "char_end": 1693,
+        "sentence_index": 19
+      },
+      {
+        "word": "to",
+        "start_ms": 105273,
+        "end_ms": 105383,
+        "char_start": 1694,
+        "char_end": 1696,
+        "sentence_index": 19
+      },
+      {
+        "word": "purchase",
+        "start_ms": 105383,
+        "end_ms": 105795,
+        "char_start": 1697,
+        "char_end": 1705,
+        "sentence_index": 19
+      },
+      {
+        "word": "a",
+        "start_ms": 105795,
+        "end_ms": 105871,
+        "char_start": 1706,
+        "char_end": 1707,
+        "sentence_index": 19
+      },
+      {
+        "word": "commercial",
+        "start_ms": 105871,
+        "end_ms": 106388,
+        "char_start": 1708,
+        "char_end": 1718,
+        "sentence_index": 19
+      },
+      {
+        "word": "insurance",
+        "start_ms": 106388,
+        "end_ms": 106834,
+        "char_start": 1719,
+        "char_end": 1728,
+        "sentence_index": 19
+      },
+      {
+        "word": "policy",
+        "start_ms": 106834,
+        "end_ms": 107317,
+        "char_start": 1729,
+        "char_end": 1735,
+        "sentence_index": 19
+      },
+      {
+        "word": "with",
+        "start_ms": 107317,
+        "end_ms": 107502,
+        "char_start": 1736,
+        "char_end": 1740,
+        "sentence_index": 19
+      },
+      {
+        "word": "your",
+        "start_ms": 107502,
+        "end_ms": 107659,
+        "char_start": 1741,
+        "char_end": 1745,
+        "sentence_index": 19
+      },
+      {
+        "word": "organization.",
+        "start_ms": 107659,
+        "end_ms": 108698,
+        "char_start": 1746,
+        "char_end": 1759,
+        "sentence_index": 19
+      },
+      {
+        "word": "The",
+        "start_ms": 108698,
+        "end_ms": 109040,
+        "char_start": 1762,
+        "char_end": 1765,
+        "sentence_index": 20
+      },
+      {
+        "word": "company",
+        "start_ms": 109040,
+        "end_ms": 109371,
+        "char_start": 1766,
+        "char_end": 1773,
+        "sentence_index": 20
+      },
+      {
+        "word": "is",
+        "start_ms": 109371,
+        "end_ms": 109493,
+        "char_start": 1774,
+        "char_end": 1776,
+        "sentence_index": 20
+      },
+      {
+        "word": "located",
+        "start_ms": 109493,
+        "end_ms": 109981,
+        "char_start": 1777,
+        "char_end": 1784,
+        "sentence_index": 20
+      },
+      {
+        "word": "in",
+        "start_ms": 109981,
+        "end_ms": 110132,
+        "char_start": 1785,
+        "char_end": 1787,
+        "sentence_index": 20
+      },
+      {
+        "word": "Tornado",
+        "start_ms": 110132,
+        "end_ms": 110637,
+        "char_start": 1788,
+        "char_end": 1795,
+        "sentence_index": 20
+      },
+      {
+        "word": "Alley",
+        "start_ms": 110637,
+        "end_ms": 110950,
+        "char_start": 1796,
+        "char_end": 1801,
+        "sentence_index": 20
+      },
+      {
+        "word": "and,",
+        "start_ms": 110950,
+        "end_ms": 111165,
+        "char_start": 1802,
+        "char_end": 1806,
+        "sentence_index": 20
+      },
+      {
+        "word": "naturally,",
+        "start_ms": 111165,
+        "end_ms": 111711,
+        "char_start": 1807,
+        "char_end": 1817,
+        "sentence_index": 20
+      },
+      {
+        "word": "its",
+        "start_ms": 111711,
+        "end_ms": 111885,
+        "char_start": 1818,
+        "char_end": 1821,
+        "sentence_index": 20
+      },
+      {
+        "word": "management",
+        "start_ms": 111885,
+        "end_ms": 112314,
+        "char_start": 1822,
+        "char_end": 1832,
+        "sentence_index": 20
+      },
+      {
+        "word": "team",
+        "start_ms": 112314,
+        "end_ms": 112512,
+        "char_start": 1833,
+        "char_end": 1837,
+        "sentence_index": 20
+      },
+      {
+        "word": "is",
+        "start_ms": 112512,
+        "end_ms": 112628,
+        "char_start": 1838,
+        "char_end": 1840,
+        "sentence_index": 20
+      },
+      {
+        "word": "greatly",
+        "start_ms": 112628,
+        "end_ms": 112994,
+        "char_start": 1841,
+        "char_end": 1848,
+        "sentence_index": 20
+      },
+      {
+        "word": "concerned",
+        "start_ms": 112994,
+        "end_ms": 113475,
+        "char_start": 1849,
+        "char_end": 1858,
+        "sentence_index": 20
+      },
+      {
+        "word": "about",
+        "start_ms": 113475,
+        "end_ms": 113690,
+        "char_start": 1859,
+        "char_end": 1864,
+        "sentence_index": 20
+      },
+      {
+        "word": "how",
+        "start_ms": 113690,
+        "end_ms": 113899,
+        "char_start": 1865,
+        "char_end": 1868,
+        "sentence_index": 20
+      },
+      {
+        "word": "a",
+        "start_ms": 113899,
+        "end_ms": 113992,
+        "char_start": 1869,
+        "char_end": 1870,
+        "sentence_index": 20
+      },
+      {
+        "word": "tornado",
+        "start_ms": 113992,
+        "end_ms": 114462,
+        "char_start": 1871,
+        "char_end": 1878,
+        "sentence_index": 20
+      },
+      {
+        "word": "could",
+        "start_ms": 114462,
+        "end_ms": 114683,
+        "char_start": 1879,
+        "char_end": 1884,
+        "sentence_index": 20
+      },
+      {
+        "word": "damage",
+        "start_ms": 114683,
+        "end_ms": 115031,
+        "char_start": 1885,
+        "char_end": 1891,
+        "sentence_index": 20
+      },
+      {
+        "word": "its",
+        "start_ms": 115031,
+        "end_ms": 115199,
+        "char_start": 1892,
+        "char_end": 1895,
+        "sentence_index": 20
+      },
+      {
+        "word": "property,",
+        "start_ms": 115199,
+        "end_ms": 115873,
+        "char_start": 1896,
+        "char_end": 1905,
+        "sentence_index": 20
+      },
+      {
+        "word": "harm",
+        "start_ms": 115873,
+        "end_ms": 116262,
+        "char_start": 1906,
+        "char_end": 1910,
+        "sentence_index": 20
+      },
+      {
+        "word": "employees,",
+        "start_ms": 116262,
+        "end_ms": 117080,
+        "char_start": 1911,
+        "char_end": 1921,
+        "sentence_index": 20
+      },
+      {
+        "word": "and",
+        "start_ms": 117080,
+        "end_ms": 117324,
+        "char_start": 1922,
+        "char_end": 1925,
+        "sentence_index": 20
+      },
+      {
+        "word": "shut",
+        "start_ms": 117324,
+        "end_ms": 117568,
+        "char_start": 1926,
+        "char_end": 1930,
+        "sentence_index": 20
+      },
+      {
+        "word": "down",
+        "start_ms": 117568,
+        "end_ms": 117806,
+        "char_start": 1931,
+        "char_end": 1935,
+        "sentence_index": 20
+      },
+      {
+        "word": "operations.",
+        "start_ms": 117806,
+        "end_ms": 119025,
+        "char_start": 1936,
+        "char_end": 1947,
+        "sentence_index": 20
+      },
+      {
+        "word": "As",
+        "start_ms": 119025,
+        "end_ms": 119571,
+        "char_start": 1950,
+        "char_end": 1952,
+        "sentence_index": 21
+      },
+      {
+        "word": "Roundpact's",
+        "start_ms": 119571,
+        "end_ms": 120180,
+        "char_start": 1953,
+        "char_end": 1964,
+        "sentence_index": 21
+      },
+      {
+        "word": "risk",
+        "start_ms": 120180,
+        "end_ms": 120523,
+        "char_start": 1965,
+        "char_end": 1969,
+        "sentence_index": 21
+      },
+      {
+        "word": "management",
+        "start_ms": 120523,
+        "end_ms": 121010,
+        "char_start": 1970,
+        "char_end": 1980,
+        "sentence_index": 21
+      },
+      {
+        "word": "and",
+        "start_ms": 121010,
+        "end_ms": 121156,
+        "char_start": 1981,
+        "char_end": 1984,
+        "sentence_index": 21
+      },
+      {
+        "word": "insurance",
+        "start_ms": 121156,
+        "end_ms": 121608,
+        "char_start": 1985,
+        "char_end": 1994,
+        "sentence_index": 21
+      },
+      {
+        "word": "partner,",
+        "start_ms": 121608,
+        "end_ms": 122235,
+        "char_start": 1995,
+        "char_end": 2003,
+        "sentence_index": 21
+      },
+      {
+        "word": "what",
+        "start_ms": 122235,
+        "end_ms": 122554,
+        "char_start": 2004,
+        "char_end": 2008,
+        "sentence_index": 21
+      },
+      {
+        "word": "might",
+        "start_ms": 122554,
+        "end_ms": 122757,
+        "char_start": 2009,
+        "char_end": 2014,
+        "sentence_index": 21
+      },
+      {
+        "word": "you",
+        "start_ms": 122757,
+        "end_ms": 122862,
+        "char_start": 2015,
+        "char_end": 2018,
+        "sentence_index": 21
+      },
+      {
+        "word": "want",
+        "start_ms": 122862,
+        "end_ms": 123018,
+        "char_start": 2019,
+        "char_end": 2023,
+        "sentence_index": 21
+      },
+      {
+        "word": "to",
+        "start_ms": 123018,
+        "end_ms": 123106,
+        "char_start": 2024,
+        "char_end": 2026,
+        "sentence_index": 21
+      },
+      {
+        "word": "tell",
+        "start_ms": 123106,
+        "end_ms": 123350,
+        "char_start": 2027,
+        "char_end": 2031,
+        "sentence_index": 21
+      },
+      {
+        "word": "the",
+        "start_ms": 123350,
+        "end_ms": 123471,
+        "char_start": 2032,
+        "char_end": 2035,
+        "sentence_index": 21
+      },
+      {
+        "word": "company's",
+        "start_ms": 123471,
+        "end_ms": 123901,
+        "char_start": 2036,
+        "char_end": 2045,
+        "sentence_index": 21
+      },
+      {
+        "word": "management",
+        "start_ms": 123901,
+        "end_ms": 124412,
+        "char_start": 2046,
+        "char_end": 2056,
+        "sentence_index": 21
+      },
+      {
+        "word": "team",
+        "start_ms": 124412,
+        "end_ms": 124708,
+        "char_start": 2057,
+        "char_end": 2061,
+        "sentence_index": 21
+      },
+      {
+        "word": "to",
+        "start_ms": 124708,
+        "end_ms": 124824,
+        "char_start": 2062,
+        "char_end": 2064,
+        "sentence_index": 21
+      },
+      {
+        "word": "encourage",
+        "start_ms": 124824,
+        "end_ms": 125288,
+        "char_start": 2065,
+        "char_end": 2074,
+        "sentence_index": 21
+      },
+      {
+        "word": "them",
+        "start_ms": 125288,
+        "end_ms": 125486,
+        "char_start": 2075,
+        "char_end": 2079,
+        "sentence_index": 21
+      },
+      {
+        "word": "to",
+        "start_ms": 125486,
+        "end_ms": 125614,
+        "char_start": 2080,
+        "char_end": 2082,
+        "sentence_index": 21
+      },
+      {
+        "word": "begin",
+        "start_ms": 125614,
+        "end_ms": 125950,
+        "char_start": 2083,
+        "char_end": 2088,
+        "sentence_index": 21
+      },
+      {
+        "word": "thinking",
+        "start_ms": 125950,
+        "end_ms": 126397,
+        "char_start": 2089,
+        "char_end": 2097,
+        "sentence_index": 21
+      },
+      {
+        "word": "about",
+        "start_ms": 126397,
+        "end_ms": 126635,
+        "char_start": 2098,
+        "char_end": 2103,
+        "sentence_index": 21
+      },
+      {
+        "word": "how",
+        "start_ms": 126635,
+        "end_ms": 126751,
+        "char_start": 2104,
+        "char_end": 2107,
+        "sentence_index": 21
+      },
+      {
+        "word": "to",
+        "start_ms": 126751,
+        "end_ms": 126844,
+        "char_start": 2108,
+        "char_end": 2110,
+        "sentence_index": 21
+      },
+      {
+        "word": "protect",
+        "start_ms": 126844,
+        "end_ms": 127251,
+        "char_start": 2111,
+        "char_end": 2118,
+        "sentence_index": 21
+      },
+      {
+        "word": "the",
+        "start_ms": 127251,
+        "end_ms": 127384,
+        "char_start": 2119,
+        "char_end": 2122,
+        "sentence_index": 21
+      },
+      {
+        "word": "business",
+        "start_ms": 127384,
+        "end_ms": 127866,
+        "char_start": 2123,
+        "char_end": 2131,
+        "sentence_index": 21
+      },
+      {
+        "word": "from",
+        "start_ms": 127866,
+        "end_ms": 128039,
+        "char_start": 2132,
+        "char_end": 2136,
+        "sentence_index": 21
+      },
+      {
+        "word": "catastrophes",
+        "start_ms": 128039,
+        "end_ms": 128817,
+        "char_start": 2137,
+        "char_end": 2149,
+        "sentence_index": 21
+      },
+      {
+        "word": "that",
+        "start_ms": 128817,
+        "end_ms": 128957,
+        "char_start": 2150,
+        "char_end": 2154,
+        "sentence_index": 21
+      },
+      {
+        "word": "may",
+        "start_ms": 128957,
+        "end_ms": 129114,
+        "char_start": 2155,
+        "char_end": 2158,
+        "sentence_index": 21
+      },
+      {
+        "word": "take",
+        "start_ms": 129114,
+        "end_ms": 129328,
+        "char_start": 2159,
+        "char_end": 2163,
+        "sentence_index": 21
+      },
+      {
+        "word": "place",
+        "start_ms": 129328,
+        "end_ms": 129607,
+        "char_start": 2164,
+        "char_end": 2169,
+        "sentence_index": 21
+      },
+      {
+        "word": "in",
+        "start_ms": 129607,
+        "end_ms": 129723,
+        "char_start": 2170,
+        "char_end": 2172,
+        "sentence_index": 21
+      },
+      {
+        "word": "other",
+        "start_ms": 129723,
+        "end_ms": 129966,
+        "char_start": 2173,
+        "char_end": 2178,
+        "sentence_index": 21
+      },
+      {
+        "word": "regions",
+        "start_ms": 129966,
+        "end_ms": 130373,
+        "char_start": 2179,
+        "char_end": 2186,
+        "sentence_index": 21
+      },
+      {
+        "word": "or",
+        "start_ms": 130373,
+        "end_ms": 130513,
+        "char_start": 2187,
+        "char_end": 2189,
+        "sentence_index": 21
+      },
+      {
+        "word": "areas",
+        "start_ms": 130513,
+        "end_ms": 130843,
+        "char_start": 2190,
+        "char_end": 2195,
+        "sentence_index": 21
+      },
+      {
+        "word": "of",
+        "start_ms": 130843,
+        "end_ms": 130948,
+        "char_start": 2196,
+        "char_end": 2198,
+        "sentence_index": 21
+      },
+      {
+        "word": "the",
+        "start_ms": 130948,
+        "end_ms": 131070,
+        "char_start": 2199,
+        "char_end": 2202,
+        "sentence_index": 21
+      },
+      {
+        "word": "world",
+        "start_ms": 131070,
+        "end_ms": 131366,
+        "char_start": 2203,
+        "char_end": 2208,
+        "sentence_index": 21
+      },
+      {
+        "word": "as",
+        "start_ms": 131366,
+        "end_ms": 131482,
+        "char_start": 2209,
+        "char_end": 2211,
+        "sentence_index": 21
+      },
+      {
+        "word": "well?",
+        "start_ms": 131482,
+        "end_ms": 132086,
+        "char_start": 2212,
+        "char_end": 2217,
+        "sentence_index": 21
+      },
+      {
+        "word": "The",
+        "start_ms": 132086,
+        "end_ms": 132492,
+        "char_start": 2220,
+        "char_end": 2223,
+        "sentence_index": 22
+      },
+      {
+        "word": "Answer",
+        "start_ms": 132492,
+        "end_ms": 133398,
+        "char_start": 2224,
+        "char_end": 2230,
+        "sentence_index": 22
+      },
+      {
+        "word": "It's",
+        "start_ms": 133398,
+        "end_ms": 134095,
+        "char_start": 2231,
+        "char_end": 2235,
+        "sentence_index": 22
+      },
+      {
+        "word": "not",
+        "start_ms": 134095,
+        "end_ms": 134286,
+        "char_start": 2236,
+        "char_end": 2239,
+        "sentence_index": 22
+      },
+      {
+        "word": "just",
+        "start_ms": 134286,
+        "end_ms": 134548,
+        "char_start": 2240,
+        "char_end": 2244,
+        "sentence_index": 22
+      },
+      {
+        "word": "local",
+        "start_ms": 134548,
+        "end_ms": 134971,
+        "char_start": 2245,
+        "char_end": 2250,
+        "sentence_index": 22
+      },
+      {
+        "word": "catastrophes",
+        "start_ms": 134971,
+        "end_ms": 135831,
+        "char_start": 2251,
+        "char_end": 2263,
+        "sentence_index": 22
+      },
+      {
+        "word": "that",
+        "start_ms": 135831,
+        "end_ms": 135987,
+        "char_start": 2264,
+        "char_end": 2268,
+        "sentence_index": 22
+      },
+      {
+        "word": "Roundpact",
+        "start_ms": 135987,
+        "end_ms": 136603,
+        "char_start": 2269,
+        "char_end": 2278,
+        "sentence_index": 22
+      },
+      {
+        "word": "must",
+        "start_ms": 136603,
+        "end_ms": 137026,
+        "char_start": 2279,
+        "char_end": 2283,
+        "sentence_index": 22
+      },
+      {
+        "word": "account",
+        "start_ms": 137026,
+        "end_ms": 137346,
+        "char_start": 2284,
+        "char_end": 2291,
+        "sentence_index": 22
+      },
+      {
+        "word": "for",
+        "start_ms": 137346,
+        "end_ms": 137538,
+        "char_start": 2292,
+        "char_end": 2295,
+        "sentence_index": 22
+      },
+      {
+        "word": "in",
+        "start_ms": 137538,
+        "end_ms": 137648,
+        "char_start": 2296,
+        "char_end": 2298,
+        "sentence_index": 22
+      },
+      {
+        "word": "its",
+        "start_ms": 137648,
+        "end_ms": 137799,
+        "char_start": 2299,
+        "char_end": 2302,
+        "sentence_index": 22
+      },
+      {
+        "word": "risk",
+        "start_ms": 137799,
+        "end_ms": 138054,
+        "char_start": 2303,
+        "char_end": 2307,
+        "sentence_index": 22
+      },
+      {
+        "word": "management",
+        "start_ms": 138054,
+        "end_ms": 138489,
+        "char_start": 2308,
+        "char_end": 2318,
+        "sentence_index": 22
+      },
+      {
+        "word": "plans.",
+        "start_ms": 138489,
+        "end_ms": 139354,
+        "char_start": 2319,
+        "char_end": 2325,
+        "sentence_index": 22
+      },
+      {
+        "word": "The",
+        "start_ms": 139354,
+        "end_ms": 139802,
+        "char_start": 2328,
+        "char_end": 2331,
+        "sentence_index": 23
+      },
+      {
+        "word": "company",
+        "start_ms": 139802,
+        "end_ms": 140155,
+        "char_start": 2332,
+        "char_end": 2339,
+        "sentence_index": 23
+      },
+      {
+        "word": "must",
+        "start_ms": 140155,
+        "end_ms": 140370,
+        "char_start": 2340,
+        "char_end": 2344,
+        "sentence_index": 23
+      },
+      {
+        "word": "prepare",
+        "start_ms": 140370,
+        "end_ms": 140806,
+        "char_start": 2345,
+        "char_end": 2352,
+        "sentence_index": 23
+      },
+      {
+        "word": "for",
+        "start_ms": 140806,
+        "end_ms": 140974,
+        "char_start": 2353,
+        "char_end": 2356,
+        "sentence_index": 23
+      },
+      {
+        "word": "how",
+        "start_ms": 140974,
+        "end_ms": 141165,
+        "char_start": 2357,
+        "char_end": 2360,
+        "sentence_index": 23
+      },
+      {
+        "word": "catastrophes",
+        "start_ms": 141165,
+        "end_ms": 142135,
+        "char_start": 2361,
+        "char_end": 2373,
+        "sentence_index": 23
+      },
+      {
+        "word": "in",
+        "start_ms": 142135,
+        "end_ms": 142292,
+        "char_start": 2374,
+        "char_end": 2376,
+        "sentence_index": 23
+      },
+      {
+        "word": "other",
+        "start_ms": 142292,
+        "end_ms": 142518,
+        "char_start": 2377,
+        "char_end": 2382,
+        "sentence_index": 23
+      },
+      {
+        "word": "parts",
+        "start_ms": 142518,
+        "end_ms": 142768,
+        "char_start": 2383,
+        "char_end": 2388,
+        "sentence_index": 23
+      },
+      {
+        "word": "of",
+        "start_ms": 142768,
+        "end_ms": 142855,
+        "char_start": 2389,
+        "char_end": 2391,
+        "sentence_index": 23
+      },
+      {
+        "word": "the",
+        "start_ms": 142855,
+        "end_ms": 142965,
+        "char_start": 2392,
+        "char_end": 2395,
+        "sentence_index": 23
+      },
+      {
+        "word": "world",
+        "start_ms": 142965,
+        "end_ms": 143516,
+        "char_start": 2396,
+        "char_end": 2401,
+        "sentence_index": 23
+      },
+      {
+        "word": "could",
+        "start_ms": 143516,
+        "end_ms": 143894,
+        "char_start": 2402,
+        "char_end": 2407,
+        "sentence_index": 23
+      },
+      {
+        "word": "affect",
+        "start_ms": 143894,
+        "end_ms": 144161,
+        "char_start": 2408,
+        "char_end": 2414,
+        "sentence_index": 23
+      },
+      {
+        "word": "the",
+        "start_ms": 144161,
+        "end_ms": 144259,
+        "char_start": 2415,
+        "char_end": 2418,
+        "sentence_index": 23
+      },
+      {
+        "word": "organization.",
+        "start_ms": 144259,
+        "end_ms": 145298,
+        "char_start": 2419,
+        "char_end": 2432,
+        "sentence_index": 23
+      },
+      {
+        "word": "For",
+        "start_ms": 145298,
+        "end_ms": 145717,
+        "char_start": 2435,
+        "char_end": 2438,
+        "sentence_index": 24
+      },
+      {
+        "word": "example,",
+        "start_ms": 145717,
+        "end_ms": 146181,
+        "char_start": 2439,
+        "char_end": 2447,
+        "sentence_index": 24
+      },
+      {
+        "word": "a",
+        "start_ms": 146181,
+        "end_ms": 146274,
+        "char_start": 2448,
+        "char_end": 2449,
+        "sentence_index": 24
+      },
+      {
+        "word": "key",
+        "start_ms": 146274,
+        "end_ms": 146553,
+        "char_start": 2450,
+        "char_end": 2453,
+        "sentence_index": 24
+      },
+      {
+        "word": "supplier",
+        "start_ms": 146553,
+        "end_ms": 147069,
+        "char_start": 2454,
+        "char_end": 2462,
+        "sentence_index": 24
+      },
+      {
+        "word": "of",
+        "start_ms": 147069,
+        "end_ms": 147191,
+        "char_start": 2463,
+        "char_end": 2465,
+        "sentence_index": 24
+      },
+      {
+        "word": "parts",
+        "start_ms": 147191,
+        "end_ms": 147557,
+        "char_start": 2466,
+        "char_end": 2471,
+        "sentence_index": 24
+      },
+      {
+        "word": "along",
+        "start_ms": 147557,
+        "end_ms": 147800,
+        "char_start": 2472,
+        "char_end": 2477,
+        "sentence_index": 24
+      },
+      {
+        "word": "the",
+        "start_ms": 147800,
+        "end_ms": 147946,
+        "char_start": 2478,
+        "char_end": 2481,
+        "sentence_index": 24
+      },
+      {
+        "word": "Gulf",
+        "start_ms": 147946,
+        "end_ms": 148317,
+        "char_start": 2482,
+        "char_end": 2486,
+        "sentence_index": 24
+      },
+      {
+        "word": "Coast",
+        "start_ms": 148317,
+        "end_ms": 148619,
+        "char_start": 2487,
+        "char_end": 2492,
+        "sentence_index": 24
+      },
+      {
+        "word": "of",
+        "start_ms": 148619,
+        "end_ms": 148712,
+        "char_start": 2493,
+        "char_end": 2495,
+        "sentence_index": 24
+      },
+      {
+        "word": "Florida",
+        "start_ms": 148712,
+        "end_ms": 149235,
+        "char_start": 2496,
+        "char_end": 2503,
+        "sentence_index": 24
+      },
+      {
+        "word": "could",
+        "start_ms": 149235,
+        "end_ms": 149560,
+        "char_start": 2504,
+        "char_end": 2509,
+        "sentence_index": 24
+      },
+      {
+        "word": "be",
+        "start_ms": 149560,
+        "end_ms": 149641,
+        "char_start": 2510,
+        "char_end": 2512,
+        "sentence_index": 24
+      },
+      {
+        "word": "affected",
+        "start_ms": 149641,
+        "end_ms": 150036,
+        "char_start": 2513,
+        "char_end": 2521,
+        "sentence_index": 24
+      },
+      {
+        "word": "by",
+        "start_ms": 150036,
+        "end_ms": 150245,
+        "char_start": 2522,
+        "char_end": 2524,
+        "sentence_index": 24
+      },
+      {
+        "word": "a",
+        "start_ms": 150245,
+        "end_ms": 150349,
+        "char_start": 2525,
+        "char_end": 2526,
+        "sentence_index": 24
+      },
+      {
+        "word": "hurricane",
+        "start_ms": 150349,
+        "end_ms": 150843,
+        "char_start": 2527,
+        "char_end": 2536,
+        "sentence_index": 24
+      },
+      {
+        "word": "or",
+        "start_ms": 150843,
+        "end_ms": 150959,
+        "char_start": 2537,
+        "char_end": 2539,
+        "sentence_index": 24
+      },
+      {
+        "word": "flood,",
+        "start_ms": 150959,
+        "end_ms": 151551,
+        "char_start": 2540,
+        "char_end": 2546,
+        "sentence_index": 24
+      },
+      {
+        "word": "and",
+        "start_ms": 151551,
+        "end_ms": 151870,
+        "char_start": 2547,
+        "char_end": 2550,
+        "sentence_index": 24
+      },
+      {
+        "word": "any",
+        "start_ms": 151870,
+        "end_ms": 152201,
+        "char_start": 2551,
+        "char_end": 2554,
+        "sentence_index": 24
+      },
+      {
+        "word": "disruption",
+        "start_ms": 152201,
+        "end_ms": 152729,
+        "char_start": 2555,
+        "char_end": 2565,
+        "sentence_index": 24
+      },
+      {
+        "word": "to",
+        "start_ms": 152729,
+        "end_ms": 152840,
+        "char_start": 2566,
+        "char_end": 2568,
+        "sentence_index": 24
+      },
+      {
+        "word": "that",
+        "start_ms": 152840,
+        "end_ms": 152996,
+        "char_start": 2569,
+        "char_end": 2573,
+        "sentence_index": 24
+      },
+      {
+        "word": "business",
+        "start_ms": 152996,
+        "end_ms": 153629,
+        "char_start": 2574,
+        "char_end": 2582,
+        "sentence_index": 24
+      },
+      {
+        "word": "could",
+        "start_ms": 153629,
+        "end_ms": 154012,
+        "char_start": 2583,
+        "char_end": 2588,
+        "sentence_index": 24
+      },
+      {
+        "word": "interrupt",
+        "start_ms": 154012,
+        "end_ms": 154453,
+        "char_start": 2589,
+        "char_end": 2598,
+        "sentence_index": 24
+      },
+      {
+        "word": "Roundpact's",
+        "start_ms": 154453,
+        "end_ms": 155098,
+        "char_start": 2599,
+        "char_end": 2610,
+        "sentence_index": 24
+      },
+      {
+        "word": "operations.",
+        "start_ms": 155098,
+        "end_ms": 156224,
+        "char_start": 2611,
+        "char_end": 2622,
+        "sentence_index": 24
+      },
+      {
+        "word": "Helping",
+        "start_ms": 156224,
+        "end_ms": 156921,
+        "char_start": 2625,
+        "char_end": 2632,
+        "sentence_index": 25
+      },
+      {
+        "word": "companies",
+        "start_ms": 156921,
+        "end_ms": 157356,
+        "char_start": 2633,
+        "char_end": 2642,
+        "sentence_index": 25
+      },
+      {
+        "word": "identify",
+        "start_ms": 157356,
+        "end_ms": 157907,
+        "char_start": 2643,
+        "char_end": 2651,
+        "sentence_index": 25
+      },
+      {
+        "word": "and",
+        "start_ms": 157907,
+        "end_ms": 158035,
+        "char_start": 2652,
+        "char_end": 2655,
+        "sentence_index": 25
+      },
+      {
+        "word": "devise",
+        "start_ms": 158035,
+        "end_ms": 158633,
+        "char_start": 2656,
+        "char_end": 2662,
+        "sentence_index": 25
+      },
+      {
+        "word": "risk",
+        "start_ms": 158633,
+        "end_ms": 159011,
+        "char_start": 2663,
+        "char_end": 2667,
+        "sentence_index": 25
+      },
+      {
+        "word": "management",
+        "start_ms": 159011,
+        "end_ms": 159527,
+        "char_start": 2668,
+        "char_end": 2678,
+        "sentence_index": 25
+      },
+      {
+        "word": "strategies",
+        "start_ms": 159527,
+        "end_ms": 160113,
+        "char_start": 2679,
+        "char_end": 2689,
+        "sentence_index": 25
+      },
+      {
+        "word": "and",
+        "start_ms": 160113,
+        "end_ms": 160270,
+        "char_start": 2690,
+        "char_end": 2693,
+        "sentence_index": 25
+      },
+      {
+        "word": "insurance",
+        "start_ms": 160270,
+        "end_ms": 160740,
+        "char_start": 2694,
+        "char_end": 2703,
+        "sentence_index": 25
+      },
+      {
+        "word": "coverages",
+        "start_ms": 160740,
+        "end_ms": 161460,
+        "char_start": 2704,
+        "char_end": 2713,
+        "sentence_index": 25
+      },
+      {
+        "word": "to",
+        "start_ms": 161460,
+        "end_ms": 161814,
+        "char_start": 2714,
+        "char_end": 2716,
+        "sentence_index": 25
+      },
+      {
+        "word": "deal",
+        "start_ms": 161814,
+        "end_ms": 162011,
+        "char_start": 2717,
+        "char_end": 2721,
+        "sentence_index": 25
+      },
+      {
+        "word": "with",
+        "start_ms": 162011,
+        "end_ms": 162157,
+        "char_start": 2722,
+        "char_end": 2726,
+        "sentence_index": 25
+      },
+      {
+        "word": "these",
+        "start_ms": 162157,
+        "end_ms": 162336,
+        "char_start": 2727,
+        "char_end": 2732,
+        "sentence_index": 25
+      },
+      {
+        "word": "types",
+        "start_ms": 162336,
+        "end_ms": 162615,
+        "char_start": 2733,
+        "char_end": 2738,
+        "sentence_index": 25
+      },
+      {
+        "word": "of",
+        "start_ms": 162615,
+        "end_ms": 162749,
+        "char_start": 2739,
+        "char_end": 2741,
+        "sentence_index": 25
+      },
+      {
+        "word": "unknown",
+        "start_ms": 162749,
+        "end_ms": 163190,
+        "char_start": 2742,
+        "char_end": 2749,
+        "sentence_index": 25
+      },
+      {
+        "word": "exposures",
+        "start_ms": 163190,
+        "end_ms": 164072,
+        "char_start": 2750,
+        "char_end": 2759,
+        "sentence_index": 25
+      },
+      {
+        "word": "is",
+        "start_ms": 164072,
+        "end_ms": 164467,
+        "char_start": 2760,
+        "char_end": 2762,
+        "sentence_index": 25
+      },
+      {
+        "word": "a",
+        "start_ms": 164467,
+        "end_ms": 164572,
+        "char_start": 2763,
+        "char_end": 2764,
+        "sentence_index": 25
+      },
+      {
+        "word": "key",
+        "start_ms": 164572,
+        "end_ms": 164938,
+        "char_start": 2765,
+        "char_end": 2768,
+        "sentence_index": 25
+      },
+      {
+        "word": "way",
+        "start_ms": 164938,
+        "end_ms": 165123,
+        "char_start": 2769,
+        "char_end": 2772,
+        "sentence_index": 25
+      },
+      {
+        "word": "the",
+        "start_ms": 165123,
+        "end_ms": 165245,
+        "char_start": 2773,
+        "char_end": 2776,
+        "sentence_index": 25
+      },
+      {
+        "word": "insurance",
+        "start_ms": 165245,
+        "end_ms": 165785,
+        "char_start": 2777,
+        "char_end": 2786,
+        "sentence_index": 25
+      },
+      {
+        "word": "industry",
+        "start_ms": 165785,
+        "end_ms": 166313,
+        "char_start": 2787,
+        "char_end": 2795,
+        "sentence_index": 25
+      },
+      {
+        "word": "benefits",
+        "start_ms": 166313,
+        "end_ms": 166865,
+        "char_start": 2796,
+        "char_end": 2804,
+        "sentence_index": 25
+      },
+      {
+        "word": "society.",
+        "start_ms": 166865,
+        "end_ms": 167904,
+        "char_start": 2805,
+        "char_end": 2813,
+        "sentence_index": 25
+      },
+      {
+        "word": "It",
+        "start_ms": 167904,
+        "end_ms": 168362,
+        "char_start": 2814,
+        "char_end": 2816,
+        "sentence_index": 26
+      },
+      {
+        "word": "also",
+        "start_ms": 168362,
+        "end_ms": 168624,
+        "char_start": 2817,
+        "char_end": 2821,
+        "sentence_index": 26
+      },
+      {
+        "word": "helps",
+        "start_ms": 168624,
+        "end_ms": 168902,
+        "char_start": 2822,
+        "char_end": 2827,
+        "sentence_index": 26
+      },
+      {
+        "word": "distinguish",
+        "start_ms": 168902,
+        "end_ms": 169657,
+        "char_start": 2828,
+        "char_end": 2839,
+        "sentence_index": 26
+      },
+      {
+        "word": "industry",
+        "start_ms": 169657,
+        "end_ms": 170394,
+        "char_start": 2840,
+        "char_end": 2848,
+        "sentence_index": 26
+      },
+      {
+        "word": "professionals",
+        "start_ms": 170394,
+        "end_ms": 171253,
+        "char_start": 2849,
+        "char_end": 2862,
+        "sentence_index": 26
+      },
+      {
+        "word": "as",
+        "start_ms": 171253,
+        "end_ms": 171642,
+        "char_start": 2863,
+        "char_end": 2865,
+        "sentence_index": 26
+      },
+      {
+        "word": "critical",
+        "start_ms": 171642,
+        "end_ms": 172142,
+        "char_start": 2866,
+        "char_end": 2874,
+        "sentence_index": 26
+      },
+      {
+        "word": "thinkers",
+        "start_ms": 172142,
+        "end_ms": 172687,
+        "char_start": 2875,
+        "char_end": 2883,
+        "sentence_index": 26
+      },
+      {
+        "word": "and",
+        "start_ms": 172687,
+        "end_ms": 173012,
+        "char_start": 2884,
+        "char_end": 2887,
+        "sentence_index": 26
+      },
+      {
+        "word": "leaders.",
+        "start_ms": 173012,
+        "end_ms": 174011,
+        "char_start": 2888,
+        "char_end": 2896,
+        "sentence_index": 26
+      },
+      {
+        "word": "The",
+        "start_ms": 174011,
+        "end_ms": 174528,
+        "char_start": 2899,
+        "char_end": 2902,
+        "sentence_index": 27
+      },
+      {
+        "word": "Bottom",
+        "start_ms": 174528,
+        "end_ms": 174847,
+        "char_start": 2903,
+        "char_end": 2909,
+        "sentence_index": 27
+      },
+      {
+        "word": "Line",
+        "start_ms": 174847,
+        "end_ms": 175648,
+        "char_start": 2910,
+        "char_end": 2914,
+        "sentence_index": 27
+      },
+      {
+        "word": "The",
+        "start_ms": 175648,
+        "end_ms": 176228,
+        "char_start": 2915,
+        "char_end": 2918,
+        "sentence_index": 27
+      },
+      {
+        "word": "insurance",
+        "start_ms": 176228,
+        "end_ms": 176768,
+        "char_start": 2919,
+        "char_end": 2928,
+        "sentence_index": 27
+      },
+      {
+        "word": "industry",
+        "start_ms": 176768,
+        "end_ms": 177215,
+        "char_start": 2929,
+        "char_end": 2937,
+        "sentence_index": 27
+      },
+      {
+        "word": "exists",
+        "start_ms": 177215,
+        "end_ms": 177598,
+        "char_start": 2938,
+        "char_end": 2944,
+        "sentence_index": 27
+      },
+      {
+        "word": "to",
+        "start_ms": 177598,
+        "end_ms": 177732,
+        "char_start": 2945,
+        "char_end": 2947,
+        "sentence_index": 27
+      },
+      {
+        "word": "help",
+        "start_ms": 177732,
+        "end_ms": 177940,
+        "char_start": 2948,
+        "char_end": 2952,
+        "sentence_index": 27
+      },
+      {
+        "word": "people",
+        "start_ms": 177940,
+        "end_ms": 178272,
+        "char_start": 2953,
+        "char_end": 2959,
+        "sentence_index": 27
+      },
+      {
+        "word": "take",
+        "start_ms": 178272,
+        "end_ms": 178527,
+        "char_start": 2960,
+        "char_end": 2964,
+        "sentence_index": 27
+      },
+      {
+        "word": "calculated",
+        "start_ms": 178527,
+        "end_ms": 179200,
+        "char_start": 2965,
+        "char_end": 2975,
+        "sentence_index": 27
+      },
+      {
+        "word": "risks,",
+        "start_ms": 179200,
+        "end_ms": 179995,
+        "char_start": 2976,
+        "char_end": 2982,
+        "sentence_index": 27
+      },
+      {
+        "word": "prevent",
+        "start_ms": 179995,
+        "end_ms": 180669,
+        "char_start": 2983,
+        "char_end": 2990,
+        "sentence_index": 27
+      },
+      {
+        "word": "and",
+        "start_ms": 180669,
+        "end_ms": 181006,
+        "char_start": 2991,
+        "char_end": 2994,
+        "sentence_index": 27
+      },
+      {
+        "word": "mitigate",
+        "start_ms": 181006,
+        "end_ms": 181511,
+        "char_start": 2995,
+        "char_end": 3003,
+        "sentence_index": 27
+      },
+      {
+        "word": "losses,",
+        "start_ms": 181511,
+        "end_ms": 182306,
+        "char_start": 3004,
+        "char_end": 3011,
+        "sentence_index": 27
+      },
+      {
+        "word": "and",
+        "start_ms": 182306,
+        "end_ms": 182678,
+        "char_start": 3012,
+        "char_end": 3015,
+        "sentence_index": 27
+      },
+      {
+        "word": "recover",
+        "start_ms": 182678,
+        "end_ms": 183073,
+        "char_start": 3016,
+        "char_end": 3023,
+        "sentence_index": 27
+      },
+      {
+        "word": "from",
+        "start_ms": 183073,
+        "end_ms": 183334,
+        "char_start": 3024,
+        "char_end": 3028,
+        "sentence_index": 27
+      },
+      {
+        "word": "losses",
+        "start_ms": 183334,
+        "end_ms": 183769,
+        "char_start": 3029,
+        "char_end": 3035,
+        "sentence_index": 27
+      },
+      {
+        "word": "when",
+        "start_ms": 183769,
+        "end_ms": 183920,
+        "char_start": 3036,
+        "char_end": 3040,
+        "sentence_index": 27
+      },
+      {
+        "word": "they",
+        "start_ms": 183920,
+        "end_ms": 184082,
+        "char_start": 3041,
+        "char_end": 3045,
+        "sentence_index": 27
+      },
+      {
+        "word": "occur.",
+        "start_ms": 184082,
+        "end_ms": 185005,
+        "char_start": 3046,
+        "char_end": 3052,
+        "sentence_index": 27
+      },
+      {
+        "word": "Our",
+        "start_ms": 185005,
+        "end_ms": 185656,
+        "char_start": 3053,
+        "char_end": 3056,
+        "sentence_index": 28
+      },
+      {
+        "word": "industry",
+        "start_ms": 185656,
+        "end_ms": 186126,
+        "char_start": 3057,
+        "char_end": 3065,
+        "sentence_index": 28
+      },
+      {
+        "word": "makes",
+        "start_ms": 186126,
+        "end_ms": 186376,
+        "char_start": 3066,
+        "char_end": 3071,
+        "sentence_index": 28
+      },
+      {
+        "word": "an",
+        "start_ms": 186376,
+        "end_ms": 186532,
+        "char_start": 3072,
+        "char_end": 3074,
+        "sentence_index": 28
+      },
+      {
+        "word": "undeniable",
+        "start_ms": 186532,
+        "end_ms": 187525,
+        "char_start": 3075,
+        "char_end": 3085,
+        "sentence_index": 28
+      },
+      {
+        "word": "positive",
+        "start_ms": 187525,
+        "end_ms": 188065,
+        "char_start": 3086,
+        "char_end": 3094,
+        "sentence_index": 28
+      },
+      {
+        "word": "impact",
+        "start_ms": 188065,
+        "end_ms": 188477,
+        "char_start": 3095,
+        "char_end": 3101,
+        "sentence_index": 28
+      },
+      {
+        "word": "on",
+        "start_ms": 188477,
+        "end_ms": 188587,
+        "char_start": 3102,
+        "char_end": 3104,
+        "sentence_index": 28
+      },
+      {
+        "word": "this",
+        "start_ms": 188587,
+        "end_ms": 188756,
+        "char_start": 3105,
+        "char_end": 3109,
+        "sentence_index": 28
+      },
+      {
+        "word": "world",
+        "start_ms": 188756,
+        "end_ms": 189307,
+        "char_start": 3110,
+        "char_end": 3115,
+        "sentence_index": 28
+      },
+      {
+        "word": "and",
+        "start_ms": 189307,
+        "end_ms": 189731,
+        "char_start": 3116,
+        "char_end": 3119,
+        "sentence_index": 28
+      },
+      {
+        "word": "the",
+        "start_ms": 189731,
+        "end_ms": 189841,
+        "char_start": 3120,
+        "char_end": 3123,
+        "sentence_index": 28
+      },
+      {
+        "word": "people",
+        "start_ms": 189841,
+        "end_ms": 190172,
+        "char_start": 3124,
+        "char_end": 3130,
+        "sentence_index": 28
+      },
+      {
+        "word": "in",
+        "start_ms": 190172,
+        "end_ms": 190335,
+        "char_start": 3131,
+        "char_end": 3133,
+        "sentence_index": 28
+      },
+      {
+        "word": "it.",
+        "start_ms": 190335,
+        "end_ms": 190938,
+        "char_start": 3134,
+        "char_end": 3137,
+        "sentence_index": 28
+      },
+      {
+        "word": "Risk",
+        "start_ms": 190938,
+        "end_ms": 191542,
+        "char_start": 3138,
+        "char_end": 3142,
+        "sentence_index": 29
+      },
+      {
+        "word": "management",
+        "start_ms": 191542,
+        "end_ms": 192129,
+        "char_start": 3143,
+        "char_end": 3153,
+        "sentence_index": 29
+      },
+      {
+        "word": "and",
+        "start_ms": 192129,
+        "end_ms": 192291,
+        "char_start": 3154,
+        "char_end": 3157,
+        "sentence_index": 29
+      },
+      {
+        "word": "insurance",
+        "start_ms": 192291,
+        "end_ms": 192743,
+        "char_start": 3158,
+        "char_end": 3167,
+        "sentence_index": 29
+      },
+      {
+        "word": "professionals",
+        "start_ms": 192743,
+        "end_ms": 193307,
+        "char_start": 3168,
+        "char_end": 3181,
+        "sentence_index": 29
+      },
+      {
+        "word": "play",
+        "start_ms": 193307,
+        "end_ms": 193562,
+        "char_start": 3182,
+        "char_end": 3186,
+        "sentence_index": 29
+      },
+      {
+        "word": "a",
+        "start_ms": 193562,
+        "end_ms": 193667,
+        "char_start": 3187,
+        "char_end": 3188,
+        "sentence_index": 29
+      },
+      {
+        "word": "vital",
+        "start_ms": 193667,
+        "end_ms": 194061,
+        "char_start": 3189,
+        "char_end": 3194,
+        "sentence_index": 29
+      },
+      {
+        "word": "role",
+        "start_ms": 194061,
+        "end_ms": 194642,
+        "char_start": 3195,
+        "char_end": 3199,
+        "sentence_index": 29
+      },
+      {
+        "word": "in",
+        "start_ms": 194642,
+        "end_ms": 194950,
+        "char_start": 3200,
+        "char_end": 3202,
+        "sentence_index": 29
+      },
+      {
+        "word": "enabling",
+        "start_ms": 194950,
+        "end_ms": 195524,
+        "char_start": 3203,
+        "char_end": 3211,
+        "sentence_index": 29
+      },
+      {
+        "word": "the",
+        "start_ms": 195524,
+        "end_ms": 195728,
+        "char_start": 3212,
+        "char_end": 3215,
+        "sentence_index": 29
+      },
+      {
+        "word": "activities",
+        "start_ms": 195728,
+        "end_ms": 196436,
+        "char_start": 3216,
+        "char_end": 3226,
+        "sentence_index": 29
+      },
+      {
+        "word": "and",
+        "start_ms": 196436,
+        "end_ms": 196587,
+        "char_start": 3227,
+        "char_end": 3230,
+        "sentence_index": 29
+      },
+      {
+        "word": "innovations",
+        "start_ms": 196587,
+        "end_ms": 197213,
+        "char_start": 3231,
+        "char_end": 3242,
+        "sentence_index": 29
+      },
+      {
+        "word": "that",
+        "start_ms": 197213,
+        "end_ms": 197382,
+        "char_start": 3243,
+        "char_end": 3247,
+        "sentence_index": 29
+      },
+      {
+        "word": "drive",
+        "start_ms": 197382,
+        "end_ms": 197875,
+        "char_start": 3248,
+        "char_end": 3253,
+        "sentence_index": 29
+      },
+      {
+        "word": "our",
+        "start_ms": 197875,
+        "end_ms": 198061,
+        "char_start": 3254,
+        "char_end": 3257,
+        "sentence_index": 29
+      },
+      {
+        "word": "society",
+        "start_ms": 198061,
+        "end_ms": 198589,
+        "char_start": 3258,
+        "char_end": 3265,
+        "sentence_index": 29
+      },
+      {
+        "word": "forward.",
+        "start_ms": 198589,
+        "end_ms": 199367,
+        "char_start": 3266,
+        "char_end": 3274,
+        "sentence_index": 29
+      }
+    ],
+    "sentences": [
+      {
+        "text": "Objective The objective of this lesson is to demonstrate the critical role of risk management and insurance in society. Le",
+        "start_ms": 0,
+        "end_ms": 7999,
+        "sentence_index": 0,
+        "word_start_index": 0,
+        "word_end_index": 18,
+        "char_start": 0,
+        "char_end": 121,
+        "break_reason": "period"
+      },
+      {
+        "text": "t's begin. Be",
+        "start_ms": 7999,
+        "end_ms": 9636,
+        "sentence_index": 1,
+        "word_start_index": 19,
+        "word_end_index": 20,
+        "char_start": 122,
+        "char_end": 134,
+        "break_reason": "period"
+      },
+      {
+        "text": "fore becoming a risk management and insurance professional, you may have had misconceptions about the industry.\n\nP",
+        "start_ms": 9636,
+        "end_ms": 16416,
+        "sentence_index": 2,
+        "word_start_index": 21,
+        "word_end_index": 36,
+        "char_start": 135,
+        "char_end": 248,
+        "break_reason": "period"
+      },
+      {
+        "text": "erhaps you imagined door-to-door salesmen or thought it sounded boring. How",
+        "start_ms": 16416,
+        "end_ms": 20863,
+        "sentence_index": 3,
+        "word_start_index": 37,
+        "word_end_index": 46,
+        "char_start": 249,
+        "char_end": 323,
+        "break_reason": "period"
+      },
+      {
+        "text": "ever, the reality is that risk management and insurance make many things possible in our society.\n\nLe",
+        "start_ms": 20863,
+        "end_ms": 27945,
+        "sentence_index": 4,
+        "word_start_index": 47,
+        "word_end_index": 62,
+        "char_start": 324,
+        "char_end": 424,
+        "break_reason": "period"
+      },
+      {
+        "text": "t's consider some specific examples to illustrate this point. Firs",
+        "start_ms": 27945,
+        "end_ms": 31800,
+        "sentence_index": 5,
+        "word_start_index": 63,
+        "word_end_index": 71,
+        "char_start": 425,
+        "char_end": 490,
+        "break_reason": "period"
+      },
+      {
+        "text": "t, the entertainment industry. Larg",
+        "start_ms": 31800,
+        "end_ms": 34598,
+        "sentence_index": 6,
+        "word_start_index": 72,
+        "word_end_index": 75,
+        "char_start": 491,
+        "char_end": 525,
+        "break_reason": "period"
+      },
+      {
+        "text": "e concerts, like those by Beyoncé, require complex risk management.\n\nWit",
+        "start_ms": 34598,
+        "end_ms": 39834,
+        "sentence_index": 7,
+        "word_start_index": 76,
+        "word_end_index": 85,
+        "char_start": 526,
+        "char_end": 597,
+        "break_reason": "period"
+      },
+      {
+        "text": "hout proper risk management and insurance, these massive events simply couldn't happen. Pictu",
+        "start_ms": 39834,
+        "end_ms": 44971,
+        "sentence_index": 8,
+        "word_start_index": 86,
+        "word_end_index": 97,
+        "char_start": 598,
+        "char_end": 690,
+        "break_reason": "period"
+      },
+      {
+        "text": "re one of her concerts with thousands of screaming fans and complex equipment on stage.\n\nInsu",
+        "start_ms": 44971,
+        "end_ms": 50156,
+        "sentence_index": 9,
+        "word_start_index": 98,
+        "word_end_index": 112,
+        "char_start": 691,
+        "char_end": 783,
+        "break_reason": "period"
+      },
+      {
+        "text": "rance covers potential issues like artist illness, venue damage, or injuries to concertgoers. If Bey",
+        "start_ms": 50156,
+        "end_ms": 56796,
+        "sentence_index": 10,
+        "word_start_index": 113,
+        "word_end_index": 125,
+        "char_start": 784,
+        "char_end": 883,
+        "break_reason": "period"
+      },
+      {
+        "text": "oncé gets sick and has to postpone or cancel the concert, there are significant financial implications for many people involved.\n\nSecon",
+        "start_ms": 56796,
+        "end_ms": 64459,
+        "sentence_index": 11,
+        "word_start_index": 126,
+        "word_end_index": 146,
+        "char_start": 884,
+        "char_end": 1018,
+        "break_reason": "period"
+      },
+      {
+        "text": "d, the construction industry. Risk ma",
+        "start_ms": 64459,
+        "end_ms": 67176,
+        "sentence_index": 12,
+        "word_start_index": 147,
+        "word_end_index": 150,
+        "char_start": 1019,
+        "char_end": 1055,
+        "break_reason": "period"
+      },
+      {
+        "text": "nagement and insurance enable the building of skyscrapers and stadiums.\n\nThese",
+        "start_ms": 67176,
+        "end_ms": 72214,
+        "sentence_index": 13,
+        "word_start_index": 151,
+        "word_end_index": 161,
+        "char_start": 1056,
+        "char_end": 1134,
+        "break_reason": "period"
+      },
+      {
+        "text": "massive construction projects depend on comprehensive risk management strategies to move forward. Third, t",
+        "start_ms": 72214,
+        "end_ms": 77984,
+        "sentence_index": 14,
+        "word_start_index": 162,
+        "word_end_index": 174,
+        "char_start": 1135,
+        "char_end": 1240,
+        "break_reason": "period"
+      },
+      {
+        "text": "he healthcare industry. Healthca",
+        "start_ms": 77984,
+        "end_ms": 80399,
+        "sentence_index": 15,
+        "word_start_index": 175,
+        "word_end_index": 178,
+        "char_start": 1241,
+        "char_end": 1272,
+        "break_reason": "period"
+      },
+      {
+        "text": "re risk management and insurance allow healthcare companies and providers to perform their jobs effectively and safely.\n\nThis pr",
+        "start_ms": 80399,
+        "end_ms": 87899,
+        "sentence_index": 16,
+        "word_start_index": 179,
+        "word_end_index": 195,
+        "char_start": 1273,
+        "char_end": 1400,
+        "break_reason": "period"
+      },
+      {
+        "text": "otection enables them to focus on patient care while managing the inherent risks in medical practice.\n\nNow, let",
+        "start_ms": 87899,
+        "end_ms": 94749,
+        "sentence_index": 17,
+        "word_start_index": 196,
+        "word_end_index": 212,
+        "char_start": 1401,
+        "char_end": 1511,
+        "break_reason": "period"
+      },
+      {
+        "text": "'s test your understanding with a practical scenario. Check Your",
+        "start_ms": 94749,
+        "end_ms": 98504,
+        "sentence_index": 18,
+        "word_start_index": 213,
+        "word_end_index": 221,
+        "char_start": 1512,
+        "char_end": 1575,
+        "break_reason": "period"
+      },
+      {
+        "text": "Understanding Imagine you're working with a manufacturing company called Roundpact, Inc., which is looking to purchase a commercial insurance policy with your organization.\n\nThe compa",
+        "start_ms": 98504,
+        "end_ms": 108698,
+        "sentence_index": 19,
+        "word_start_index": 222,
+        "word_end_index": 246,
+        "char_start": 1576,
+        "char_end": 1759,
+        "break_reason": "period"
+      },
+      {
+        "text": "ny is located in Tornado Alley and, naturally, its management team is greatly concerned about how a tornado could damage its property, harm employees, and shut down operations.\n\nAs Roundpa",
+        "start_ms": 108698,
+        "end_ms": 119025,
+        "sentence_index": 20,
+        "word_start_index": 247,
+        "word_end_index": 275,
+        "char_start": 1760,
+        "char_end": 1947,
+        "break_reason": "period"
+      },
+      {
+        "text": "ct's risk management and insurance partner, what might you want to tell the company's management team to encourage them to begin thinking about how to protect the business from catastrophes that may take place in other regions or areas of the world as well?\n\nThe Answer",
+        "start_ms": 119025,
+        "end_ms": 132086,
+        "sentence_index": 21,
+        "word_start_index": 276,
+        "word_end_index": 320,
+        "char_start": 1948,
+        "char_end": 2217,
+        "break_reason": "exclamation/question"
+      },
+      {
+        "text": "It's not just local catastrophes that Roundpact must account for in its risk management plans.\n\nThe company",
+        "start_ms": 132086,
+        "end_ms": 139354,
+        "sentence_index": 22,
+        "word_start_index": 321,
+        "word_end_index": 337,
+        "char_start": 2218,
+        "char_end": 2325,
+        "break_reason": "period"
+      },
+      {
+        "text": "must prepare for how catastrophes in other parts of the world could affect the organization.\n\nFor example,",
+        "start_ms": 139354,
+        "end_ms": 145298,
+        "sentence_index": 23,
+        "word_start_index": 338,
+        "word_end_index": 354,
+        "char_start": 2326,
+        "char_end": 2432,
+        "break_reason": "period"
+      },
+      {
+        "text": "a key supplier of parts along the Gulf Coast of Florida could be affected by a hurricane or flood, and any disruption to that business could interrupt Roundpact's operations.\n\nHelping compan",
+        "start_ms": 145298,
+        "end_ms": 156224,
+        "sentence_index": 24,
+        "word_start_index": 355,
+        "word_end_index": 385,
+        "char_start": 2433,
+        "char_end": 2622,
+        "break_reason": "period"
+      },
+      {
+        "text": "ies identify and devise risk management strategies and insurance coverages to deal with these types of unknown exposures is a key way the insurance industry benefits society. It also helps di",
+        "start_ms": 156224,
+        "end_ms": 167904,
+        "sentence_index": 25,
+        "word_start_index": 386,
+        "word_end_index": 413,
+        "char_start": 2623,
+        "char_end": 2813,
+        "break_reason": "period"
+      },
+      {
+        "text": "stinguish industry professionals as critical thinkers and leaders.\n\nThe Bottom Line",
+        "start_ms": 167904,
+        "end_ms": 174011,
+        "sentence_index": 26,
+        "word_start_index": 414,
+        "word_end_index": 424,
+        "char_start": 2814,
+        "char_end": 2896,
+        "break_reason": "period"
+      },
+      {
+        "text": "The insurance industry exists to help people take calculated risks, prevent and mitigate losses, and recover from losses when they occur.\n\nOur industry mak",
+        "start_ms": 174011,
+        "end_ms": 185005,
+        "sentence_index": 27,
+        "word_start_index": 425,
+        "word_end_index": 448,
+        "char_start": 2897,
+        "char_end": 3052,
+        "break_reason": "period"
+      },
+      {
+        "text": "es an undeniable positive impact on this world and the people in it. Risk management",
+        "start_ms": 185005,
+        "end_ms": 190938,
+        "sentence_index": 28,
+        "word_start_index": 449,
+        "word_end_index": 463,
+        "char_start": 3053,
+        "char_end": 3137,
+        "break_reason": "period"
+      },
+      {
+        "text": "and insurance professionals play a vital role in enabling the activities and innovations that drive our society forward.",
+        "start_ms": 190938,
+        "end_ms": 199367,
+        "sentence_index": 29,
+        "word_start_index": 464,
+        "word_end_index": 483,
+        "char_start": 3138,
+        "char_end": 3274,
+        "break_reason": "period"
+      }
+    ],
+    "total_duration_ms": 199367
+  }
+}
