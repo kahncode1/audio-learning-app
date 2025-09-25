@@ -28,11 +28,11 @@ import 'screens/assignments_screen.dart';
 import 'screens/course_detail_screen.dart';
 import 'screens/enhanced_audio_player_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/settings_screen.dart';
 
-// Debug-only screens
-import 'screens/cdn_download_test_screen.dart' if (dart.library.io) 'screens/cdn_download_test_screen.dart';
-import 'screens/local_content_test_screen.dart' if (dart.library.io) 'screens/local_content_test_screen.dart';
+// Providers
+import 'providers/auth_providers.dart';
 
 // Theme
 import 'theme/app_theme.dart';
@@ -163,14 +163,10 @@ class AudioLearningApp extends ConsumerWidget {
           )
         : const SplashScreen(),
       routes: {
+        '/login': (context) => const LoginScreen(),
         '/main': (context) => const MainNavigationScreen(),
         '/home': (context) => const HomePage(),
         '/settings': (context) => const SettingsScreen(),
-        // Debug-only routes
-        if (kDebugMode)
-          '/local-content-test': (context) => const LocalContentTestScreen(),
-        if (kDebugMode)
-          '/cdn-download-test': (context) => const CDNDownloadTestScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/course-detail') {
@@ -221,23 +217,49 @@ class AudioLearningApp extends ConsumerWidget {
   }
 }
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Simulate loading and navigate to main screen
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
+    _checkAuthenticationStatus();
+  }
+
+  Future<void> _checkAuthenticationStatus() async {
+    await Future.delayed(const Duration(seconds: 2)); // Show splash for min 2 seconds
+
+    if (!mounted) return;
+
+    try {
+      // Initialize authentication service
+      final authService = ref.read(authServiceProvider);
+      await authService.initialize();
+
+      // Check if user is authenticated
+      final session = await authService.getCurrentSession();
+      final isAuthenticated = session?.isSignedIn ?? false;
+
+      if (!mounted) return;
+
+      // Navigate based on auth status
+      if (isAuthenticated) {
         Navigator.pushReplacementNamed(context, '/main');
+      } else {
+        Navigator.pushReplacementNamed(context, '/login');
       }
-    });
+    } catch (e) {
+      AppLogger.error('Authentication check failed', error: e);
+      // On error, redirect to login
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
   }
 
   @override

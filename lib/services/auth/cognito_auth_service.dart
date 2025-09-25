@@ -13,6 +13,7 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart' as amplify;
 import 'package:supabase_flutter/supabase_flutter.dart' as supa;
 import '../../config/amplifyconfiguration.dart';
+import '../../utils/app_logger.dart';
 import 'auth_service_interface.dart';
 
 class CognitoAuthService implements AuthServiceInterface {
@@ -68,9 +69,9 @@ class CognitoAuthService implements AuthServiceInterface {
         _scheduleTokenRefresh();
       }
 
-      print('✅ CognitoAuthService initialized');
+      AppLogger.info('CognitoAuthService initialized successfully');
     } catch (e) {
-      print('❌ Failed to initialize CognitoAuthService: $e');
+      AppLogger.error('Failed to initialize CognitoAuthService', error: e);
       throw Exception('Authentication initialization failed: $e');
     }
   }
@@ -96,7 +97,7 @@ class CognitoAuthService implements AuthServiceInterface {
 
       return result;
     } on amplify.AuthException catch (e) {
-      print('❌ Sign in failed: ${e.message}');
+      AppLogger.error('Sign in failed: ${e.message}', error: e);
       throw e;
     }
   }
@@ -113,9 +114,9 @@ class CognitoAuthService implements AuthServiceInterface {
       await _clearSupabaseSession();
 
       _authStateController?.add(false);
-      print('✅ User signed out successfully');
+      AppLogger.info('User signed out successfully');
     } catch (e) {
-      print('❌ Sign out failed: $e');
+      AppLogger.error('Sign out failed', error: e);
       throw Exception('Sign out failed: $e');
     }
   }
@@ -126,7 +127,7 @@ class CognitoAuthService implements AuthServiceInterface {
       final user = await Amplify.Auth.getCurrentUser();
       return user;
     } catch (e) {
-      print('No current user: $e');
+      // No current user - this is expected when not logged in
       return null;
     }
   }
@@ -137,8 +138,19 @@ class CognitoAuthService implements AuthServiceInterface {
       final session = await Amplify.Auth.fetchAuthSession();
       return session.isSignedIn;
     } catch (e) {
-      print('Failed to check sign-in status: $e');
+      AppLogger.warning('Failed to check sign-in status');
       return false;
+    }
+  }
+
+  @override
+  Future<amplify.AuthSession?> getCurrentSession() async {
+    try {
+      final session = await Amplify.Auth.fetchAuthSession();
+      return session;
+    } catch (e) {
+      AppLogger.warning('Failed to get current session');
+      return null;
     }
   }
 
@@ -152,7 +164,7 @@ class CognitoAuthService implements AuthServiceInterface {
       final idToken = session.userPoolTokensResult.value.idToken.raw;
       return idToken;
     } catch (e) {
-      print('Failed to get JWT token: $e');
+      AppLogger.warning('Failed to get JWT token');
       return null;
     }
   }
@@ -167,10 +179,10 @@ class CognitoAuthService implements AuthServiceInterface {
       if (session.isSignedIn) {
         await _bridgeToSupabase();
         _scheduleTokenRefresh();
-        print('✅ Tokens refreshed successfully');
+        AppLogger.info('Tokens refreshed successfully');
       }
     } on amplify.AuthException catch (e) {
-      print('❌ Token refresh failed: ${e.message}');
+      AppLogger.error('Token refresh failed: ${e.message}', error: e);
       // If refresh fails, user needs to re-authenticate
       await signOut();
       throw e;
@@ -189,7 +201,7 @@ class CognitoAuthService implements AuthServiceInterface {
     try {
       final idToken = await getJwtToken();
       if (idToken == null) {
-        print('❌ No JWT token available for Supabase bridge');
+        AppLogger.warning('No JWT token available for Supabase bridge');
         return;
       }
 
@@ -208,18 +220,18 @@ class CognitoAuthService implements AuthServiceInterface {
             .limit(1)
             .maybeSingle();
 
-        print('✅ Successfully bridged to Supabase with JWT');
+        AppLogger.info('Successfully bridged to Supabase with JWT');
 
         // Sync user profile data
         await _syncUserProfile();
       } catch (e) {
-        print('❌ JWT validation failed: $e');
+        AppLogger.warning('JWT validation failed: $e');
         // Clear the header if validation fails
         supa.Supabase.instance.client.headers.remove('Authorization');
         throw e;
       }
     } catch (e) {
-      print('❌ Supabase bridge failed: $e');
+      AppLogger.warning('Supabase bridge failed: $e');
       // Don't throw - allow app to work even if Supabase bridge fails
     }
   }
@@ -229,9 +241,9 @@ class CognitoAuthService implements AuthServiceInterface {
     try {
       // Remove the Authorization header when signing out
       supa.Supabase.instance.client.headers.remove('Authorization');
-      print('✅ Supabase session cleared');
+      AppLogger.info('Supabase session cleared');
     } catch (e) {
-      print('❌ Failed to clear Supabase session: $e');
+      AppLogger.warning('Failed to clear Supabase session: $e');
     }
   }
 
@@ -264,9 +276,9 @@ class CognitoAuthService implements AuthServiceInterface {
         'updated_at': DateTime.now().toIso8601String(),
       });
 
-      print('✅ User profile synced to Supabase');
+      AppLogger.info('User profile synced to Supabase');
     } catch (e) {
-      print('❌ Failed to sync user profile: $e');
+      AppLogger.warning('Failed to sync user profile: $e');
       // Don't throw - this is not critical for app functionality
     }
   }
@@ -282,11 +294,11 @@ class CognitoAuthService implements AuthServiceInterface {
       try {
         await refreshTokens();
       } catch (e) {
-        print('❌ Scheduled token refresh failed: $e');
+        AppLogger.error('Scheduled token refresh failed', error: e);
         timer.cancel();
       }
     });
 
-    print('✅ Token refresh scheduled');
+    AppLogger.info('Token refresh scheduled for every 55 minutes');
   }
 }

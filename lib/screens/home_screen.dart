@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import '../models/course.dart';
 import '../providers/database_providers.dart';
 import '../providers/audio_providers.dart';
@@ -18,144 +16,6 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  bool _isDownloading = false;
-  String _downloadStatus = '';
-  double _downloadProgress = 0.0;
-  bool _isDeleting = false;
-
-  Future<void> _deleteAllDownloads() async {
-    setState(() {
-      _isDeleting = true;
-      _downloadStatus = 'Deleting downloads...';
-    });
-
-    try {
-      // Get the local database service
-      final localDb = ref.read(localDatabaseServiceProvider);
-
-      // Clear all courses, assignments, and learning objects from database
-      await localDb.deleteAllCourses();
-
-      // Also delete downloaded files
-      final documentsDir = await getApplicationDocumentsDirectory();
-      final audioLearningDir = Directory('${documentsDir.path}/audio_learning');
-      if (await audioLearningDir.exists()) {
-        await audioLearningDir.delete(recursive: true);
-        AppLogger.info('Deleted all downloaded content files');
-      }
-
-      // Refresh the courses list
-      ref.invalidate(localCoursesProvider);
-
-      if (mounted) {
-        setState(() {
-          _isDeleting = false;
-          _downloadStatus = 'All downloads deleted!';
-        });
-
-        // Clear status after a delay
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            setState(() {
-              _downloadStatus = '';
-            });
-          }
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('All downloads deleted successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      AppLogger.error('Failed to delete downloads', error: e);
-      if (mounted) {
-        setState(() {
-          _isDeleting = false;
-          _downloadStatus = 'Failed to delete downloads';
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to delete downloads: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _downloadTestCourse() async {
-    setState(() {
-      _isDownloading = true;
-      _downloadStatus = 'Initializing download...';
-    });
-
-    try {
-      // Get the download service
-      final downloadService = ref.read(courseDownloadApiServiceProvider);
-
-      // Use a real course ID from Supabase
-      const testCourseId = 'e3d85ff7-cb25-4702-b2ba-813e8a24f16d';
-      const testUserId = 'test-user-001';
-
-      // Listen to download progress
-      downloadService.progressStream.listen((progress) {
-        if (mounted) {
-          setState(() {
-            _downloadProgress = progress.percentage / 100;
-            final percentage = progress.percentage.toStringAsFixed(0);
-            _downloadStatus =
-                '${progress.message ?? "Downloading"} ($percentage%)';
-          });
-        }
-      });
-
-      // Start the download
-      await downloadService.downloadCourse(
-        courseId: testCourseId,
-        userId: testUserId,
-      );
-
-      // Refresh the courses list
-      ref.invalidate(localCoursesProvider);
-
-      if (mounted) {
-        setState(() {
-          _isDownloading = false;
-          _downloadStatus = 'Download complete!';
-          _downloadProgress = 1.0;
-        });
-
-        // Clear status after a delay
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            setState(() {
-              _downloadStatus = '';
-              _downloadProgress = 0.0;
-            });
-          }
-        });
-      }
-    } catch (e) {
-      AppLogger.error('Failed to download test course', error: e);
-      if (mounted) {
-        setState(() {
-          _isDownloading = false;
-          _downloadStatus = 'Download failed: $e';
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to download course: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,60 +51,16 @@ class _HomePageState extends ConsumerState<HomePage> {
                       color: Colors.grey,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'No courses available',
-                      style: TextStyle(
-                        fontSize: 18,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Download a course to get started',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    if (_downloadStatus.isNotEmpty) ...[
-                      Text(
-                        _downloadStatus,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (_isDownloading)
-                        LinearProgressIndicator(
-                          value: _downloadProgress,
-                          backgroundColor: Colors.grey[300],
-                          valueColor:
-                              const AlwaysStoppedAnimation<Color>(Colors.blue),
-                        ),
-                      const SizedBox(height: 16),
-                    ],
-                    ElevatedButton.icon(
-                      onPressed: _isDownloading ? null : _downloadTestCourse,
-                      icon: _isDownloading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Icon(Icons.download),
-                      label: Text(_isDownloading
-                          ? 'Downloading...'
-                          : 'Download Test Course'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
-                      ),
+                    Text(
+                      'Your courses will appear here',
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -285,28 +101,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
         error: (error, stack) => Center(
           child: Text('Error loading courses: $error'),
-        ),
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: FloatingActionButton.extended(
-          onPressed: _isDeleting ? null : _deleteAllDownloads,
-          backgroundColor: Colors.red,
-          extendedPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          icon: _isDeleting
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : const Icon(Icons.delete_forever, size: 28),
-          label: Text(
-            _isDeleting ? 'Deleting...' : 'Delete All Downloads',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
         ),
       ),
     );
@@ -352,8 +146,7 @@ class CourseCard extends ConsumerWidget {
               children: [
                 Text(
                   course.courseNumber,
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: Theme.of(context).colorScheme.primary,
                   ),

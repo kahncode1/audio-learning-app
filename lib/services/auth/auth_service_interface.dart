@@ -24,6 +24,9 @@ abstract class AuthServiceInterface {
   /// Refresh the current user's tokens
   Future<void> refreshTokens();
 
+  /// Get current auth session
+  Future<amplify.AuthSession?> getCurrentSession();
+
   /// Stream of authentication state changes
   Stream<bool> get authStateChanges;
 

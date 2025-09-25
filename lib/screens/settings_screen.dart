@@ -1,9 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../config/env_config.dart';
+import '../providers/auth_providers.dart';
 import '../providers/theme_provider.dart';
-import 'auth_test_screen.dart';
+import '../utils/app_logger.dart';
 
 /// SettingsScreen provides app configuration options
 /// This is a placeholder implementation for Milestone 1
@@ -19,12 +18,31 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         children: [
           const SizedBox(height: 20),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Account'),
-            subtitle: const Text('Not logged in'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
+          Consumer(
+            builder: (context, ref, child) {
+              final authAsync = ref.watch(currentUserProvider);
+              return authAsync.when(
+                data: (user) => ListTile(
+                  leading: const Icon(Icons.person),
+                  title: const Text('Account'),
+                  subtitle: Text(user?.email ?? 'Loading...'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {},
+                ),
+                loading: () => const ListTile(
+                  leading: Icon(Icons.person),
+                  title: Text('Account'),
+                  subtitle: Text('Loading...'),
+                  trailing: Icon(Icons.chevron_right),
+                ),
+                error: (_, __) => const ListTile(
+                  leading: Icon(Icons.person),
+                  title: Text('Account'),
+                  subtitle: Text('Not logged in'),
+                  trailing: Icon(Icons.chevron_right),
+                ),
+              );
+            },
           ),
           const Divider(),
           ListTile(
@@ -62,60 +80,65 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () {},
           ),
           const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Sign Out'),
-            textColor: Colors.red,
-            onTap: () {},
-            enabled: false, // Disabled until auth is implemented
-          ),
+          Consumer(
+            builder: (context, ref, child) {
+              return ListTile(
+                leading: const Icon(Icons.logout, color: Colors.red),
+                title: const Text('Sign Out'),
+                textColor: Colors.red,
+                onTap: () async {
+                  try {
+                    // Show confirmation dialog
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Sign Out'),
+                        content: const Text('Are you sure you want to sign out?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text(
+                              'Sign Out',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
 
-          // Developer section - only show in debug mode
-          if (kDebugMode && EnvConfig.isDevelopment) ...[
-            const Divider(thickness: 2),
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Developer Tools',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.purple,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.download_done, color: Colors.green),
-              title: const Text('Local Content Test'),
-              subtitle: const Text('Test download-first architecture'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.pushNamed(context, '/local-content-test');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.cloud_download, color: Colors.blue),
-              title: const Text('CDN Download Test'),
-              subtitle: const Text('Test Supabase CDN download flow'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.pushNamed(context, '/cdn-download-test');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.security, color: Colors.orange),
-              title: const Text('Cognito OAuth Test'),
-              subtitle: const Text('Test AWS Cognito authentication flow'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AuthTestScreen(),
-                  ),
-                );
-              },
-            ),
-          ],
+                    if (confirmed ?? false) {
+                      final authService = ref.read(authServiceProvider);
+                      await authService.signOut();
+
+                      AppLogger.info('User signed out successfully');
+
+                      // Navigate to login screen
+                      if (context.mounted) {
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/login',
+                          (route) => false,
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    AppLogger.error('Sign out failed', error: e);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Sign out failed: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                },
+              );
+            },
+          ),
         ],
       ),
     );

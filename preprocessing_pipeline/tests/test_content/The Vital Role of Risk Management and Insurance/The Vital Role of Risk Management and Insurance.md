@@ -1,0 +1,17 @@
+Objective
+The objective of this lesson is to demonstrate the critical role of risk management and insurance in society.
+Let's begin.
+Before becoming a risk management and insurance professional, you may have had misconceptions about the industry. Perhaps you imagined door-to-door salesmen or thought it sounded boring. However, the reality is that risk management and insurance make many things possible in our society.
+Let's consider some specific examples to illustrate this point.
+First, the entertainment industry. Large concerts, like those by Beyoncé, require complex risk management. Without proper risk management and insurance, these massive events simply couldn't happen. Picture one of her concerts with thousands of screaming fans and complex equipment on stage. Insurance covers potential issues like artist illness, venue damage, or injuries to concertgoers. If Beyoncé gets sick and has to postpone or cancel the concert, there are significant financial implications for many people involved.
+Second, the construction industry. Risk management and insurance enable the building of skyscrapers and stadiums. These massive construction projects depend on comprehensive risk management strategies to move forward.
+Third, the healthcare industry. Healthcare risk management and insurance allow healthcare companies and providers to perform their jobs effectively and safely. This protection enables them to focus on patient care while managing the inherent risks in medical practice.
+Now, let's test your understanding with a practical scenario.
+Check Your Understanding
+Imagine you're working with a manufacturing company called Roundpact, Inc., which is looking to purchase a commercial insurance policy with your organization. The company is located in Tornado Alley and, naturally, its management team is greatly concerned about how a tornado could damage its property, harm employees, and shut down operations.
+As Roundpact's risk management and insurance partner, what might you want to tell the company's management team to encourage them to begin thinking about how to protect the business from catastrophes that may take place in other regions or areas of the world as well?
+The Answer
+It's not just local catastrophes that Roundpact must account for in its risk management plans. The company must prepare for how catastrophes in other parts of the world could affect the organization. For example, a key supplier of parts along the Gulf Coast of Florida could be affected by a hurricane or flood, and any disruption to that business could interrupt Roundpact's operations.
+Helping companies identify and devise risk management strategies and insurance coverages to deal with these types of unknown exposures is a key way the insurance industry benefits society. It also helps distinguish industry professionals as critical thinkers and leaders.
+The Bottom Line
+The insurance industry exists to help people take calculated risks, prevent and mitigate losses, and recover from losses when they occur. Our industry makes an undeniable positive impact on this world and the people in it. Risk management and insurance professionals play a vital role in enabling the activities and innovations that drive our society forward.

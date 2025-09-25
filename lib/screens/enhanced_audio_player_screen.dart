@@ -449,6 +449,7 @@ class _EnhancedAudioPlayerScreenState
                                 Theme.of(context).sentenceHighlight,
                             wordHighlightColor: Theme.of(context).wordHighlight,
                             scrollController: _scrollController,
+                            preserveCourseFont: true,  // Keep Literata for course content
                           )
                         : Center(
                             child: Text(

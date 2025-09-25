@@ -23,6 +23,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/word_timing_service_simplified.dart';
 import '../models/word_timing.dart';
 import '../utils/app_logger.dart';
@@ -37,6 +38,7 @@ class SimplifiedDualLevelHighlightedText extends ConsumerStatefulWidget {
   final Color? sentenceHighlightColor;
   final Color? wordHighlightColor;
   final ScrollController? scrollController;
+  final bool preserveCourseFont;
 
   /// Average number of characters per line for scroll estimation
   /// This can be overridden based on actual font metrics
@@ -50,6 +52,7 @@ class SimplifiedDualLevelHighlightedText extends ConsumerStatefulWidget {
     this.sentenceHighlightColor,
     this.wordHighlightColor,
     this.scrollController,
+    this.preserveCourseFont = false,
   });
 
   @override
@@ -334,7 +337,18 @@ class _SimplifiedDualLevelHighlightedTextState
               controller: widget.scrollController,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Text(widget.text, style: widget.baseStyle),
+                child: Text(
+                  widget.text,
+                  style: widget.preserveCourseFont
+                    ? GoogleFonts.literata(
+                        fontSize: widget.baseStyle.fontSize,
+                        height: widget.baseStyle.height,
+                        letterSpacing: widget.baseStyle.letterSpacing,
+                        fontWeight: widget.baseStyle.fontWeight,
+                        color: widget.baseStyle.color,
+                      )
+                    : widget.baseStyle,
+                ),
               ),
             ),
           ),
@@ -414,8 +428,21 @@ class _SimplifiedDualLevelHighlightedTextState
     OptimizedHighlightPainter.clearTextBoxCache();
 
     // Set up the TextPainter once with the full text
+    // Apply font preservation if requested (for course content)
+    TextStyle finalStyle = widget.baseStyle;
+    if (widget.preserveCourseFont) {
+      // Use Literata for course text content
+      finalStyle = GoogleFonts.literata(
+        fontSize: widget.baseStyle.fontSize,
+        height: widget.baseStyle.height,
+        letterSpacing: widget.baseStyle.letterSpacing,
+        fontWeight: widget.baseStyle.fontWeight,
+        color: widget.baseStyle.color,
+      );
+    }
+
     // This will never be modified during paint cycles
-    _textPainter.text = TextSpan(text: widget.text, style: widget.baseStyle);
+    _textPainter.text = TextSpan(text: widget.text, style: finalStyle);
     _textPainter.layout(maxWidth: maxWidth);
   }
 

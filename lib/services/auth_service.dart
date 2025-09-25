@@ -370,6 +370,17 @@ class AuthService implements AuthServiceInterface {
   @override
   Stream<bool> get authStateChanges =>
       _authStateStream.map((state) => state == AuthState.authenticated);
+
+  @override
+  Future<amplify.AuthSession?> getCurrentSession() async {
+    try {
+      final session = await Amplify.Auth.fetchAuthSession();
+      return session;
+    } catch (e) {
+      safePrint('Error getting current session: $e');
+      return null;
+    }
+  }
 }
 
 /// Authentication state enum

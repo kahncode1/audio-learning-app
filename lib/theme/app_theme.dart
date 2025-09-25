@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 /// App Theme Configuration
 ///
 /// Provides Material 3 (Material You) light and dark theme configurations.
-/// Uses Literata serif font for improved readability.
+/// Uses Montserrat sans-serif font for UI elements.
 /// Implements dynamic color schemes with proper accessibility contrast.
 class AppTheme {
   // Private constructor to prevent instantiation
@@ -35,7 +35,7 @@ class AppTheme {
 
   /// Light theme configuration with Material 3
   static ThemeData get lightTheme {
-    final textTheme = GoogleFonts.literataTextTheme().apply(
+    final textTheme = GoogleFonts.montserratTextTheme().apply(
       bodyColor: lightTextPrimary,
       displayColor: lightTextPrimary,
     );
@@ -96,7 +96,7 @@ class AppTheme {
         backgroundColor: lightPrimary,
         foregroundColor: Colors.white,
         elevation: 2,
-        titleTextStyle: GoogleFonts.literata(
+        titleTextStyle: GoogleFonts.montserrat(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: Colors.white,
@@ -161,7 +161,7 @@ class AppTheme {
 
   /// Dark theme configuration with Material 3
   static ThemeData get darkTheme {
-    final textTheme = GoogleFonts.literataTextTheme().apply(
+    final textTheme = GoogleFonts.montserratTextTheme().apply(
       bodyColor: darkTextPrimary,
       displayColor: darkTextPrimary,
     );
@@ -222,7 +222,7 @@ class AppTheme {
         backgroundColor: darkSurface,
         foregroundColor: darkTextPrimary,
         elevation: 0,
-        titleTextStyle: GoogleFonts.literata(
+        titleTextStyle: GoogleFonts.montserrat(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: darkTextPrimary,
