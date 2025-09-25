@@ -1,0 +1,127 @@
+{
+  "titles": [
+    "Dr", "Mr", "Mrs", "Ms", "Miss", "Prof", "Professor", "Rev", "Reverend",
+    "Sr", "Jr", "Esq", "Hon", "Honorable", "Pres", "President", "VP", "Vice President",
+    "Gen", "General", "Col", "Colonel", "Maj", "Major", "Capt", "Captain",
+    "Lt", "Lieutenant", "Sgt", "Sergeant", "Cpl", "Corporal", "Pvt", "Private",
+    "Adm", "Admiral", "Cmdr", "Commander", "Fr", "Father", "Br", "Brother",
+    "Sr", "Sister", "Rabbi", "Imam", "Pastor", "Deacon"
+  ],
+  "academic": [
+    "Ph.D", "M.D", "M.A", "B.A", "M.S", "B.S", "MBA", "JD", "LLB", "LLM",
+    "Ed.D", "Psy.D", "D.Phil", "Th.D", "Sc.D", "D.Sc", "D.Litt", "D.Min",
+    "M.Ed", "B.Ed", "M.Phil", "M.Sc", "B.Sc", "M.Eng", "B.Eng", "B.Tech",
+    "M.Tech", "BFA", "MFA", "B.Com", "M.Com", "B.B.A", "DDS", "DMD", "DVM",
+    "BSN", "MSN", "DNP", "RN", "LPN", "CPA", "CFA", "CFP", "PE", "PMP"
+  ],
+  "months": [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Sept",
+    "Oct", "Nov", "Dec", "January", "February", "March", "April", "June",
+    "July", "August", "September", "October", "November", "December"
+  ],
+  "days": [
+    "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
+    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+  ],
+  "time": [
+    "a.m", "p.m", "A.M", "P.M", "am", "pm", "AM", "PM",
+    "hr", "hrs", "min", "mins", "sec", "secs", "yr", "yrs", "mo", "mos"
+  ],
+  "locations": [
+    "St", "Street", "Ave", "Avenue", "Rd", "Road", "Blvd", "Boulevard",
+    "Dr", "Drive", "Ct", "Court", "Ln", "Lane", "Pkwy", "Parkway",
+    "Pl", "Place", "Sq", "Square", "Cir", "Circle", "Ter", "Terrace",
+    "Way", "Aly", "Alley", "Hwy", "Highway", "Fwy", "Freeway", "Rte", "Route",
+    "N", "S", "E", "W", "NE", "NW", "SE", "SW", "North", "South", "East", "West",
+    "Apt", "Suite", "Ste", "Bldg", "Fl", "Floor", "Rm", "Room"
+  ],
+  "measurements": [
+    "ft", "feet", "in", "inch", "inches", "yd", "yard", "yards", "mi", "mile", "miles",
+    "km", "kilometer", "kilometers", "m", "meter", "meters", "cm", "centimeter", "centimeters",
+    "mm", "millimeter", "millimeters", "nm", "nanometer",
+    "kg", "kilogram", "kilograms", "g", "gram", "grams", "mg", "milligram", "milligrams",
+    "lb", "lbs", "pound", "pounds", "oz", "ounce", "ounces", "ton", "tons",
+    "L", "liter", "liters", "ml", "milliliter", "milliliters", "gal", "gallon", "gallons",
+    "qt", "quart", "quarts", "pt", "pint", "pints", "fl", "oz",
+    "mph", "kph", "kmh", "rpm", "fps", "mps"
+  ],
+  "currencies": [
+    "USD", "EUR", "GBP", "JPY", "CNY", "CAD", "AUD", "CHF", "INR", "KRW",
+    "BRL", "MXN", "SGD", "HKD", "NZD", "SEK", "NOK", "DKK", "RUB", "ZAR"
+  ],
+  "countries": [
+    "U.S", "U.S.A", "USA", "U.K", "UK", "E.U", "EU", "U.A.E", "UAE",
+    "P.R.C", "PRC", "R.O.C", "ROC", "U.S.S.R", "USSR"
+  ],
+  "states": [
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+    "D.C", "DC", "Ala", "Ariz", "Ark", "Calif", "Colo", "Conn", "Del",
+    "Fla", "Ga", "Ill", "Ind", "Kan", "Ky", "La", "Mass", "Md", "Mich",
+    "Minn", "Miss", "Mo", "Mont", "Neb", "Nev", "N.H", "N.J", "N.M",
+    "N.Y", "N.C", "N.D", "Okla", "Ore", "Pa", "R.I", "S.C", "S.D",
+    "Tenn", "Tex", "Va", "Vt", "Wash", "W.Va", "Wis", "Wyo"
+  ],
+  "organizations": [
+    "Inc", "Incorporated", "Corp", "Corporation", "Ltd", "Limited",
+    "LLC", "L.L.C", "LLP", "L.L.P", "Co", "Company", "Assoc", "Association",
+    "Bros", "Brothers", "Dept", "Department", "Div", "Division", "Org", "Organization",
+    "Intl", "International", "Natl", "National", "Fed", "Federal", "Govt", "Government"
+  ],
+  "government_agencies": [
+    "NASA", "FBI", "CIA", "NSA", "EPA", "FDA", "FCC", "SEC", "IRS", "DOJ",
+    "DOD", "DOS", "DOT", "DOE", "DHS", "HHS", "HUD", "USDA", "VA", "SSA",
+    "NATO", "UN", "UNESCO", "WHO", "WTO", "IMF", "EU", "OPEC", "ASEAN", "NAFTA"
+  ],
+  "insurance_terms": [
+    "ins", "coverage", "prem", "premium", "ded", "deductible", "liab", "liability",
+    "comp", "comprehensive", "coll", "collision", "med", "medical", "PIP",
+    "UM", "UIM", "BI", "PD", "adj", "adjuster", "clm", "claim", "pol", "policy",
+    "agt", "agent", "brkr", "broker", "underwrt", "underwriter", "reinsr", "reinsurer",
+    "HO", "homeowners", "WC", "workers comp", "GL", "general liability",
+    "E&O", "errors and omissions", "D&O", "directors and officers"
+  ],
+  "medical_terms": [
+    "Dr", "MD", "DO", "RN", "LPN", "NP", "PA", "EMT", "PT", "OT",
+    "mg", "mcg", "ml", "cc", "IV", "IM", "PO", "PRN", "BID", "TID", "QID",
+    "BP", "HR", "RR", "O2", "EKG", "ECG", "MRI", "CT", "PET", "lab",
+    "dx", "diagnosis", "tx", "treatment", "rx", "prescription", "sx", "symptoms",
+    "hx", "history", "pt", "patient", "hosp", "hospital", "ER", "ED", "OR", "ICU"
+  ],
+  "legal_terms": [
+    "v", "vs", "versus", "et al", "etc", "viz", "i.e", "e.g", "cf", "ibid",
+    "id", "supra", "infra", "ante", "post", "inter alia", "per se", "prima facie",
+    "res ipsa loquitur", "habeas corpus", "amicus curiae", "pro bono",
+    "J", "Judge", "JJ", "Justices", "C.J", "Chief Justice", "A.J", "Associate Justice",
+    "Atty", "Attorney", "Esq", "Esquire", "P.C", "Professional Corporation",
+    "P.A", "Professional Association", "LLP", "Limited Liability Partnership"
+  ],
+  "business_terms": [
+    "CEO", "CFO", "COO", "CTO", "CIO", "CMO", "VP", "SVP", "EVP", "Pres",
+    "Mgr", "Manager", "Dir", "Director", "Supv", "Supervisor", "Coord", "Coordinator",
+    "Admin", "Administrator", "Asst", "Assistant", "Assoc", "Associate",
+    "ROI", "KPI", "SOP", "ERP", "CRM", "B2B", "B2C", "P&L", "R&D",
+    "HR", "IT", "PR", "QA", "QC", "PM", "BA", "SME", "EOD", "COB", "FYI"
+  ],
+  "technology_terms": [
+    "IT", "IP", "URL", "URI", "HTTP", "HTTPS", "FTP", "SSH", "SSL", "TLS",
+    "API", "SDK", "IDE", "GUI", "CLI", "OS", "DB", "SQL", "NoSQL", "AI", "ML",
+    "IoT", "SaaS", "PaaS", "IaaS", "CPU", "GPU", "RAM", "ROM", "SSD", "HDD",
+    "LAN", "WAN", "VPN", "DNS", "TCP", "UDP", "HTML", "CSS", "JS", "XML", "JSON"
+  ],
+  "common": [
+    "etc", "et cetera", "vs", "versus", "eg", "e.g", "ie", "i.e", "cf", "compare",
+    "al", "et al", "ibid", "ibidem", "id", "idem", "no", "number", "nos", "numbers",
+    "vol", "volume", "vols", "volumes", "ed", "edition", "eds", "editions",
+    "rev", "revised", "trans", "translator", "transl", "translation",
+    "p", "page", "pp", "pages", "para", "paragraph", "ch", "chapter", "chs", "chapters",
+    "sec", "section", "secs", "sections", "art", "article", "arts", "articles",
+    "fig", "figure", "figs", "figures", "tbl", "table", "tbls", "tables",
+    "approx", "approximately", "est", "estimated", "min", "minimum", "max", "maximum",
+    "avg", "average", "std", "standard", "dev", "deviation", "var", "variable",
+    "temp", "temperature", "qty", "quantity", "amt", "amount", "pct", "percent"
+  ]
+}

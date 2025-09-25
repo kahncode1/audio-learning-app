@@ -1,0 +1,56 @@
+{
+  "sentence_detection": {
+    "use_enhanced_detection": true,
+    "handle_lists": true,
+    "split_long_quotes": true,
+    "preserve_equations": true,
+    "max_sentence_length_ms": 20000,
+    "abbreviation_database": "abbreviations.json",
+    "custom_rules": [],
+    "edge_case_handling": {
+      "colon_lists": {
+        "enabled": true,
+        "split_items": true,
+        "min_items_for_list": 2
+      },
+      "numbered_lists": {
+        "enabled": true,
+        "patterns": ["^(\\d+)[.)] ", "^(\\d+)\\. "]
+      },
+      "bulleted_lists": {
+        "enabled": true,
+        "bullet_chars": ["•", "·", "▪", "▫", "◦", "‣", "⁃", "-", "*", "+"]
+      },
+      "quotations": {
+        "enabled": true,
+        "max_quote_length_ms": 10000,
+        "split_long_quotes": true
+      },
+      "mathematical": {
+        "enabled": true,
+        "preserve_equations": true,
+        "preserve_ratios": true
+      },
+      "abbreviations": {
+        "enabled": true,
+        "use_external_database": true,
+        "database_path": "abbreviations.json"
+      },
+      "special_punctuation": {
+        "handle_ellipses": true,
+        "handle_em_dashes": true,
+        "handle_semicolons": true
+      }
+    }
+  },
+  "preprocessing": {
+    "preserve_original_formatting": true,
+    "maintain_paragraph_breaks": true,
+    "extract_headers": true
+  },
+  "output": {
+    "include_debug_info": true,
+    "include_break_reasons": true,
+    "version": "2.0"
+  }
+}

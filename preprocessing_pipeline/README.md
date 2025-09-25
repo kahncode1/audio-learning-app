@@ -1,99 +1,52 @@
-# ElevenLabs Audio Content Preprocessing Pipeline
+# Preprocessing Pipeline
 
-## Overview
+This directory contains scripts for preprocessing audio content with ElevenLabs timing data.
 
-Converts ElevenLabs TTS output with character-level timing data into an optimized JSON format for the Audio Learning App's dual-level word and sentence highlighting system with O(1) lookup performance.
-
-## Key Features
-
-- **Character-to-Word Conversion**: Transforms character arrays into word-level timing
-- **Intelligent Sentence Detection**: Handles abbreviations, lists, quotes, and edge cases
-- **Continuous Coverage**: Eliminates timing gaps for smooth highlighting
-- **O(1) Lookup Tables**: Generates position lookup tables for instant 60fps performance
-- **Paragraph Preservation**: Maintains original text formatting
-- **Snake_case Output**: Matches Flutter app field expectations
-- **Configurable Processing**: Customizable via config.json
-- **Supabase Integration**: Direct upload to database with embedded lookup tables
-
-## Quick Start
-
-```bash
-# Basic preprocessing
-python process_elevenlabs_complete.py input.json
-
-# With output path
-python process_elevenlabs_complete.py input.json -o output.json
-
-# With original content for formatting
-python process_elevenlabs_complete.py input.json -c original.json -o output.json
-
-# Upload to Supabase with embedded lookup table
-python upload_to_supabase.py output.json \
-  --id <learning-object-id> \
-  --assignment-id <assignment-id> \
-  --title "Learning Object Title" \
-  --audio-file audio.mp3
-```
-
-## Documentation
-
-- [**Complete Usage Guide**](USAGE.md) - Installation, configuration, edge cases, troubleshooting
-- [**JSON Schema Reference**](SCHEMA.md) - Output format specification and field definitions
-
-## Project Structure
+## Directory Structure
 
 ```
 preprocessing_pipeline/
-├── process_elevenlabs_complete.py  # Main processing script
-├── upload_to_supabase.py          # Database upload with lookup tables
-├── edge_case_handlers.py          # Enhanced sentence detection
-├── config.json                    # Processing configuration
-├── abbreviations.json             # Abbreviation database (500+ entries)
-├── tests/                         # Test scripts and data
-│   ├── test_edge_case_handling.py # Edge case tests
-│   ├── test_lookup_generation.py  # Lookup table tests
-│   └── data/                      # Test data files
-└── Test_LO_Content/               # Production test content
+├── scripts/           # Processing scripts and configuration
+│   ├── process_elevenlabs_complete_with_paragraphs.py  # Main processing script
+│   ├── edge_case_handlers.py                           # Edge case handling
+│   ├── upload_to_supabase.py                          # Upload to Supabase
+│   └── config files (.json)                           # Configuration files
+├── docs/             # Documentation
+│   ├── README.md     # Main documentation
+│   ├── SCHEMA.md     # JSON schema documentation
+│   └── USAGE.md      # Usage instructions
+├── tests/            # Test content and data
+├── processed/        # Processed output files (gitignored)
+└── output/           # Temporary test outputs (gitignored)
 ```
 
-## Input/Output
+## Quick Start
 
-**Input**: ElevenLabs JSON with character-level timing
-```json
-{
-  "alignment": {
-    "characters": ["T", "h", "e", " ", ...],
-    "character_start_times_seconds": [0.0, 0.058, ...],
-    "character_end_times_seconds": [0.058, 0.093, ...]
-  }
-}
+Use the main processing script for all content:
+
+```bash
+cd scripts
+python3 process_elevenlabs_complete_with_paragraphs.py \
+    input.json \
+    -c original.md \
+    -o ../processed/output.json
 ```
 
-**Output**: Enhanced content JSON with word/sentence timing and O(1) lookup table
-```json
-{
-  "version": "1.0",
-  "display_text": "Full text with paragraph breaks",
-  "timing": {
-    "words": [{"word": "The", "start_ms": 0, "end_ms": 116, ...}],
-    "sentences": [{"text": "The objective...", "start_ms": 0, ...}],
-    "total_duration_ms": 95764,
-    "lookup_table": {
-      "version": "1.0",
-      "interval": 10,
-      "totalDurationMs": 95764,
-      "lookup": [[0, 0], [0, 0], ...]  // Word & sentence indices at each 10ms
-    }
-  }
-}
-```
+This single script handles:
+- ✅ Word and sentence timing extraction
+- ✅ Edge case handling (abbreviations, lists, etc.)
+- ✅ Paragraph preservation with proper spacing
+- ✅ Character position accuracy for highlighting
 
-## Requirements
+## Key Features
 
-- Python 3.7+
-- No external dependencies for preprocessing (uses standard library only)
-- For Supabase upload: `pip install supabase python-dotenv dio`
+- **Paragraph Formatting**: Preserves original paragraph structure with `\n\n` spacing
+- **Edge Case Handling**: Comprehensive handling of abbreviations, lists, quotes, etc.
+- **Character Accuracy**: Maintains exact character positions for highlighting system
+- **O(1) Lookup**: Generates efficient lookup tables for real-time performance
 
-## License
+## Documentation
 
-Part of the Audio Learning App project
+- See `docs/USAGE.md` for detailed usage instructions
+- See `docs/SCHEMA.md` for JSON output schema
+- See `docs/UPLOAD_GUIDE.md` for Supabase upload instructions

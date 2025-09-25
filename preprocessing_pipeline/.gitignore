@@ -1,0 +1,25 @@
+# Temporary and output files
+output/
+processed/
+
+# Test outputs
+test_*.json
+*_test.json
+*_temp.json
+
+# Mac system files
+.DS_Store
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE files
+.vscode/
+.idea/
+
+# Local environment
+.env
+venv/
+env/
