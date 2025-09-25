@@ -39,6 +39,7 @@ import 'theme/app_theme.dart';
 
 // Widgets
 import 'widgets/mini_audio_player.dart';
+import 'widgets/performance_overlay.dart' as app_overlay;
 
 void main() async {
   // Run the app in a guarded zone to catch all errors
@@ -156,7 +157,11 @@ class AudioLearningApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: const SplashScreen(),
+      home: kDebugMode
+        ? app_overlay.AppPerformanceOverlay(
+            child: const SplashScreen(),
+          )
+        : const SplashScreen(),
       routes: {
         '/main': (context) => const MainNavigationScreen(),
         '/home': (context) => const HomePage(),
