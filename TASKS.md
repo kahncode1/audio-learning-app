@@ -18,8 +18,16 @@
 ### Immediate Action Needed
 The Supabase Storage CDN is configured but audio files need to be uploaded:
 1. Process audio files through ElevenLabs TTS pipeline
-2. Upload MP3 files to Supabase Storage using guide at `/preprocessing_pipeline/UPLOAD_TO_SUPABASE.md`
+2. Upload MP3 files to Supabase Storage using guide at `/preprocessing_pipeline/docs/UPLOAD_GUIDE.md`
 3. Files will be immediately available via CDN for app downloads
+
+### Preprocessing Pipeline Status (Updated Sep 25, 2025)
+- ✅ Enhanced preprocessing script with paragraph preservation
+- ✅ Character position accuracy maintained for highlighting
+- ✅ Edge case handling (abbreviations, lists, quotes, etc.)
+- ✅ Directory structure organized (scripts/, docs/, tests/)
+- **Main Script:** `/preprocessing_pipeline/scripts/process_elevenlabs_complete_with_paragraphs.py`
+- **Documentation:** `/preprocessing_pipeline/README.md`
 
 ## 📱 Mobile Platform Tasks
 

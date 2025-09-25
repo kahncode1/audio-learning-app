@@ -13,12 +13,20 @@
 
 ## ✅ PRODUCTION-READY STATUS
 
-**Current State:** Grade A (93/100) - Production ready with AWS Cognito (September 23, 2025)
+**Current State:** Grade A (93/100) - Production ready with AWS Cognito (September 25, 2025)
 - **Authentication:** AWS Cognito fully implemented, all mock code removed
 - **Data Architecture:** Offline-first SQLite with Supabase sync
 - **Services:** LocalDatabaseService, CourseDownloadApiService, DataSyncService
 - **Performance:** All targets met (60fps highlighting, <2s load times)
 - **Test Coverage:** 87.9% (532/605 tests passing)
+- **Preprocessing:** Enhanced with paragraph preservation (September 25, 2025)
+
+## 📊 Latest Git Updates (Most Recent First)
+- `eab3f52` - Organize preprocessing_pipeline directory structure (Sep 25, 2025)
+- `7a4a3ea` - Add paragraph preservation to preprocessing pipeline (Sep 25, 2025)
+- `48ec722` - Production release: Remove dev tools and implement Cognito (Sep 23, 2025)
+- `81d79fa` - Add performance monitoring and optimizations
+- `8b89b5d` - Optimize highlighting performance for 60fps target
 
 ## Project Overview
 
@@ -100,14 +108,18 @@ audio_learning_app/
 - `AudioPlayerServiceLocal` - Plays local MP3 files
 - `WordTimingServiceSimplified` - Uses pre-processed timing data
 - `SimplifiedDualLevelHighlightedText` - Optimized highlighting widget
-- `/preprocessing_pipeline/process_elevenlabs_complete.py` - Content preprocessing
+- `/preprocessing_pipeline/scripts/process_elevenlabs_complete_with_paragraphs.py` - Enhanced preprocessing
 
-**Preprocessing Documentation:**
+**Preprocessing Pipeline (Updated Sep 25, 2025):**
+- **Main Script:** `/preprocessing_pipeline/scripts/process_elevenlabs_complete_with_paragraphs.py`
+  - Handles word/sentence timing extraction
+  - Preserves paragraph formatting with \n\n spacing
+  - Maintains accurate character positions for highlighting
+  - Includes comprehensive edge case handling
 - **Pipeline Guide:** `/preprocessing_pipeline/README.md` - Complete preprocessing overview
-- **Schema Definition:** `/preprocessing_pipeline/SCHEMA.md` - JSON schema with snake_case fields
-- **Usage Guide:** `/preprocessing_pipeline/USAGE.md` - Step-by-step preprocessing instructions
-- **Upload Guide:** `/preprocessing_pipeline/UPLOAD_TO_SUPABASE.md` - Audio file upload to CDN
-- **Architecture:** `/DOWNLOAD_ARCHITECTURE_PLAN.md` - System design documentation
+- **Schema Definition:** `/preprocessing_pipeline/docs/SCHEMA.md` - JSON schema with snake_case fields
+- **Usage Guide:** `/preprocessing_pipeline/docs/USAGE.md` - Step-by-step preprocessing instructions
+- **Upload Guide:** `/preprocessing_pipeline/docs/UPLOAD_GUIDE.md` - Audio file upload to CDN
 
 Full documentation: `/DOWNLOAD_ARCHITECTURE_PLAN.md`
 
