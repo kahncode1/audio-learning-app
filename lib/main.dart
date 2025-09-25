@@ -271,25 +271,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/images/the-institutes-logo.png',
-              height: 80,
+              'assets/images/TheInstitutesLogo.png',
+              height: 120,  // Sized appropriately for full logo
               errorBuilder: (context, error, stackTrace) {
                 // Fallback if logo doesn't load
                 return Icon(
                   Icons.business,
-                  size: 80,
+                  size: 120,
                   color: Theme.of(context).primaryColor,
                 );
               },
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'The Institutes',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF003366), // Professional dark blue
-              ),
             ),
             const SizedBox(height: 40),
             const CircularProgressIndicator(),

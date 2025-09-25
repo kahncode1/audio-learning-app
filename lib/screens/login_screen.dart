@@ -32,7 +32,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       if (result.isSignedIn) {
         AppLogger.info('User signed in successfully');
-        // Navigation will be handled by auth state listener in main.dart
+        // Navigate to main screen after successful login
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/main');
+        }
+      } else {
+        // Sign in was not successful (e.g., user cancelled)
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     } catch (e) {
       AppLogger.error('Sign in failed', error: e);
@@ -47,121 +57,161 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 28.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // The Institutes Logo
-                Image.asset(
-                  'assets/images/the-institutes-logo.png',
-                  height: 80,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Fallback if logo doesn't load
-                    return Icon(
-                      Icons.business,
-                      size: 80,
-                      color: theme.primaryColor,
-                    );
-                  },
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'The Institutes',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF003366), // Professional dark blue
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    'Welcome to the Audio Courses App!',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                // Logo Section
+                Column(
+                  children: [
+                    Image.asset(
+                      'assets/images/TheInstitutesLogo.png',
+                      height: 72,  // Optimized logo size per specs
+                      errorBuilder: (context, error, stackTrace) {
+                        // Fallback if logo doesn't load
+                        return Icon(
+                          Icons.business,
+                          size: 72,
+                          color: const Color(0xFF003B7B),
+                        );
+                      },
                     ),
-                    textAlign: TextAlign.center,
-                  ),
+                    // Logo already contains text, no separate brand name needed
+                  ],
                 ),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    'Use your Institutes credentials to access audio versions of your enrolled courses',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.textTheme.bodySmall?.color,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 48), // Logo Section to Welcome spacing
 
-                // Sign In Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleSignIn,
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                // Welcome Section
+                Column(
+                  children: [
+                    Text(
+                      'Audio Courses',
+                      style: TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1D1D1F),
+                        letterSpacing: -0.8,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 14), // Welcome title to subtitle spacing
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 240),
+                      child: Text(
+                        'Access audio versions of your enrolled courses',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF6E6E73),
+                          height: 1.41, // 24px line height
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ],
+                ),
+                const SizedBox(height: 56), // Welcome Section to Button spacing
+
+                // Action Section
+                Column(
+                  children: [
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 264),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _handleSignIn,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF007AFF),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
                             ),
-                          )
-                        : const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.login, size: 24),
-                              SizedBox(width: 12),
-                              Text(
-                                'Sign in',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                            elevation: 0,
                           ),
-                  ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      String.fromCharCode(0x2192), // Right arrow
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'Sign in',
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: -0.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20), // Button to helper text spacing
+                    Text(
+                      'Use your Institutes credentials\nto access your courses',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF8E8E93),
+                        height: 1.38, // 18px line height
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
 
                 // Error Message
                 if (_errorMessage != null) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.red.shade50,
+                      color: const Color(0xFFFFF3E0),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.shade200),
+                      border: Border.all(
+                        color: const Color(0xFFFFE0B2),
+                      ),
                     ),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.error_outline,
-                          color: Colors.red.shade700,
+                        Icon(
+                          Icons.info_outline,
+                          color: const Color(0xFFE65100),
                           size: 20,
                         ),
                         const SizedBox(width: 8),
-                        Expanded(
+                        Flexible(
                           child: Text(
                             _errorMessage!,
                             style: TextStyle(
-                              color: Colors.red.shade700,
+                              color: const Color(0xFFE65100),
                               fontSize: 14,
                             ),
                           ),
