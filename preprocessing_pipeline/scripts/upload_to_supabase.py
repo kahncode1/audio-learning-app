@@ -103,21 +103,21 @@ class SupabaseUploader:
         # Extract timing data (without lookup table now)
         timing = enhanced_data.get('timing', {})
 
-        # Create word_timings JSONB structure
-        word_timings = {
+        # Create words JSONB structure (new schema)
+        words_data = {
             'words': timing.get('words', []),
             'sentences': timing.get('sentences', []),
             'totalDurationMs': timing.get('total_duration_ms', 0),
             'createdAt': enhanced_data.get('metadata', {}).get('generated_at', '')
         }
 
-        # Add lookup table to word_timings if provided
+        # Add lookup table to words_data if provided
         if lookup_json_path and os.path.exists(lookup_json_path):
             with open(lookup_json_path, 'r') as f:
                 lookup_data = json.load(f)
 
-            # Add the lookup table to word_timings
-            word_timings['lookupTable'] = lookup_data
+            # Add the lookup table to words_data
+            words_data['lookupTable'] = lookup_data
 
             print(f"   ✅ Lookup table: {len(lookup_data.get('lookup', []))} entries")
             print(f"      Interval: {lookup_data.get('interval', 0)}ms")
@@ -150,8 +150,8 @@ class SupabaseUploader:
             'display_text': enhanced_data.get('display_text', ''),
             'order_index': order_index,
             'total_duration_ms': timing.get('total_duration_ms', 0),
-            'word_timings': word_timings,  # JSONB field with embedded lookup table
-            'sentence_timings': timing.get('sentences', []),  # Separate sentence timings field
+            'words': words_data,  # JSONB field with embedded lookup table
+            'sentences': timing.get('sentences', []),  # Separate sentence timings field
             'metadata': enhanced_data.get('metadata', {}),
             'paragraphs': enhanced_data.get('paragraphs', []),
             'headers': enhanced_data.get('headers', []),
@@ -159,7 +159,9 @@ class SupabaseUploader:
             'audio_url': audio_url or '',  # Required field
             'audio_size_bytes': audio_size_bytes,  # Required field
             'audio_format': 'mp3',
-            'audio_codec': 'mp3_128'
+            'audio_codec': 'mp3_128',
+            'content_version': '1.0',  # New versioning column
+            'preprocessing_source': 'elevenlabs-complete-with-paragraphs'  # Track preprocessing source
         }
 
         # Upload to Supabase (upsert to handle updates)
@@ -182,14 +184,14 @@ class SupabaseUploader:
         Returns:
             True if lookup table exists, False otherwise
         """
-        result = self.client.table('learning_objects').select('word_timings').eq('id', learning_object_id).execute()
+        result = self.client.table('learning_objects').select('words').eq('id', learning_object_id).execute()
 
         if result.data and len(result.data) > 0:
-            word_timings = result.data[0].get('word_timings', {})
-            has_lookup = 'lookupTable' in word_timings and word_timings['lookupTable'] is not None
+            words_data = result.data[0].get('words', {})
+            has_lookup = 'lookupTable' in words_data and words_data['lookupTable'] is not None
 
             if has_lookup:
-                lookup = word_timings['lookupTable']
+                lookup = words_data['lookupTable']
                 print(f"✅ Verified lookup table for {learning_object_id}")
                 print(f"   Entries: {len(lookup.get('lookup', []))}")
                 print(f"   Version: {lookup.get('version', 'unknown')}")

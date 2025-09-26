@@ -345,9 +345,9 @@ class LocalContentService {
     String learningObjectId, {
     String? lookupJsonString,
   }) {
-    // Parse word timings (support both snake_case and camelCase)
+    // Parse word timings
     final words = <WordTiming>[];
-    final wordList = timingJson['word_timings'] ?? timingJson['words'];
+    final wordList = timingJson['words'] ?? timingJson['word_timings'];  // Check new name first
     if (wordList != null) {
       for (final wordData in wordList) {
         words.add(WordTiming(
@@ -361,9 +361,9 @@ class LocalContentService {
       }
     }
 
-    // Parse sentence data (support both snake_case and camelCase)
+    // Parse sentence data
     final sentences = <SentenceTiming>[];
-    final sentenceList = timingJson['sentence_timings'] ?? timingJson['sentences'];
+    final sentenceList = timingJson['sentences'] ?? timingJson['sentence_timings'];  // Check new name first
     if (sentenceList != null) {
       int sentenceIndex = 0;
       for (final sentData in sentenceList) {
@@ -392,8 +392,53 @@ class LocalContentService {
       totalDurationMs: (timingJson['total_duration_ms'] ?? timingJson['totalDurationMs']) as int,
     );
 
-    // Load and set position lookup table if available
-    if (lookupJsonString != null) {
+    // Check for embedded lookup table in timing JSON first
+    if (timingJson.containsKey('lookup_table')) {
+      try {
+        final embeddedLookup = timingJson['lookup_table'] as Map<String, dynamic>;
+
+        // Convert dict-based lookup to array format
+        final lookupArray = <List<int>>[];
+        final interval = 10; // Default interval from preprocessing script
+        final maxTime = timingData.totalDurationMs;
+
+        for (int timeMs = 0; timeMs <= maxTime; timeMs += interval) {
+          final key = timeMs.toString();
+          if (embeddedLookup.containsKey(key)) {
+            final entry = embeddedLookup[key] as Map<String, dynamic>;
+            lookupArray.add([
+              entry['word_index'] as int,
+              entry['sentence_index'] as int,
+            ]);
+          } else {
+            // Fill missing entries
+            lookupArray.add([-1, -1]);
+          }
+        }
+
+        final lookupTable = PositionLookupTable(
+          version: '1.0',
+          interval: interval,
+          totalDurationMs: timingData.totalDurationMs,
+          lookup: lookupArray,
+        );
+
+        timingData.setLookupTable(lookupTable);
+
+        AppLogger.info('LocalContentService: Loaded embedded lookup table', {
+          'learningObjectId': learningObjectId,
+          'entries': lookupTable.lookup.length,
+          'interval': '${lookupTable.interval}ms',
+        });
+      } catch (e) {
+        AppLogger.warning(
+            'LocalContentService: Failed to load embedded lookup table', {
+          'error': e.toString(),
+        });
+      }
+    }
+    // Also check for separate lookup file
+    else if (lookupJsonString != null) {
       try {
         final lookupJson =
             json.decode(lookupJsonString) as Map<String, dynamic>;
@@ -418,7 +463,7 @@ class LocalContentService {
       'wordCount': words.length,
       'sentenceCount': sentences.length,
       'duration': '${timingData.totalDurationMs / 1000}s',
-      'hasLookupTable': lookupJsonString != null,
+      'hasLookupTable': timingData.lookupTable != null,
     });
 
     return timingData;

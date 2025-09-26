@@ -40,8 +40,13 @@ class LearningObjectV2 {
   final int audioSizeBytes;
   final String audioFormat;
 
+  // Lookup table URL (for O(1) position lookups)
+  final String? lookupTableUrl;
+
   // Version control
   final int fileVersion;
+  final String? contentVersion;
+  final String? preprocessingSource;
 
   // Timestamps
   final DateTime createdAt;
@@ -72,7 +77,10 @@ class LearningObjectV2 {
     required this.audioUrl,
     required this.audioSizeBytes,
     required this.audioFormat,
+    this.lookupTableUrl,
     required this.fileVersion,
+    this.contentVersion,
+    this.preprocessingSource,
     required this.createdAt,
     required this.updatedAt,
     this.isCompleted,
@@ -142,17 +150,16 @@ class LearningObjectV2 {
             language: 'en',
           );
 
-    // Parse word timings - can be either List or Map (with embedded lookup table)
+    // Parse word timings - check both 'words' (new) and 'word_timings' (old)
     List<WordTiming> wordTimings = [];
-    final wordTimingsJson = json['word_timings'];
-    if (wordTimingsJson is List) {
-      // Legacy format - just a list of word timings
-      wordTimings = wordTimingsJson
+    final wordsJson = json['words'] ?? json['word_timings'];
+    if (wordsJson is List) {
+      wordTimings = wordsJson
           .map((w) => WordTiming.fromJson(w as Map<String, dynamic>))
           .toList();
-    } else if (wordTimingsJson is Map) {
-      // New format with embedded lookup table
-      final wordsArray = wordTimingsJson['words'] as List?;
+    } else if (wordsJson is Map) {
+      // Handle case where it might be wrapped in an object
+      final wordsArray = wordsJson['words'] as List?;
       if (wordsArray != null) {
         wordTimings = wordsArray
             .map((w) => WordTiming.fromJson(w as Map<String, dynamic>))
@@ -160,18 +167,17 @@ class LearningObjectV2 {
       }
     }
 
-    // Parse sentence timings - can be from word_timings Map or separate field
+    // Parse sentence timings - check both 'sentences' (new) and 'sentence_timings' (old)
     List<SentenceTiming> sentenceTimings = [];
-    if (wordTimingsJson is Map && wordTimingsJson['sentences'] != null) {
-      // Sentences embedded in word_timings Map
-      final sentencesArray = wordTimingsJson['sentences'] as List;
-      sentenceTimings = sentencesArray
+    final sentencesJson = json['sentences'] ?? json['sentence_timings'];
+    if (sentencesJson is List) {
+      sentenceTimings = sentencesJson
           .map((s) => SentenceTiming.fromJson(s as Map<String, dynamic>))
           .toList();
-    } else if (json['sentence_timings'] is List) {
-      // Separate sentence_timings field
-      final sentenceTimingsJson = json['sentence_timings'] as List;
-      sentenceTimings = sentenceTimingsJson
+    } else if (sentencesJson is Map && sentencesJson['sentences'] != null) {
+      // Handle case where it might be wrapped in an object
+      final sentencesArray = sentencesJson['sentences'] as List;
+      sentenceTimings = sentencesArray
           .map((s) => SentenceTiming.fromJson(s as Map<String, dynamic>))
           .toList();
     }
@@ -193,7 +199,10 @@ class LearningObjectV2 {
       audioUrl: json['audio_url'] as String? ?? '',
       audioSizeBytes: json['audio_size_bytes'] as int? ?? 0,
       audioFormat: json['audio_format'] as String? ?? 'mp3',
+      lookupTableUrl: json['lookup_table_url'] as String?,
       fileVersion: json['file_version'] as int? ?? 1,
+      contentVersion: json['content_version'] as String?,
+      preprocessingSource: json['preprocessing_source'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       // Progress fields (may be null if not joined)
@@ -219,8 +228,8 @@ class LearningObjectV2 {
       'headers': headers,
       'formatting': formatting.toJson(),
       'metadata': metadata.toJson(),
-      'word_timings': wordTimings.map((w) => w.toJson()).toList(),
-      'sentence_timings': sentenceTimings.map((s) => s.toJson()).toList(),
+      'words': wordTimings.map((w) => w.toJson()).toList(),
+      'sentences': sentenceTimings.map((s) => s.toJson()).toList(),
       'total_duration_ms': totalDurationMs,
       'audio_url': audioUrl,
       'audio_size_bytes': audioSizeBytes,

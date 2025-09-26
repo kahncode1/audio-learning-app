@@ -363,34 +363,35 @@ class CourseDownloadApiService {
       // Create timing data file
       final timingFile = File('${contentDir.path}/timing.json');
 
-      // Extract word_timings JSONB
-      final wordTimingsData = learningObject['word_timings'];
+      // Extract words JSONB (check both new 'words' and old 'word_timings' for compatibility)
+      final wordsData = learningObject['words'] ?? learningObject['word_timings'];
+      final sentencesData = learningObject['sentences'] ?? learningObject['sentence_timings'];
       Map<String, dynamic> timingData;
       Map<String, dynamic>? lookupTableData;
 
-      if (wordTimingsData is Map<String, dynamic>) {
-        // New format from Supabase JSONB
+      if (wordsData is Map<String, dynamic>) {
+        // New format from Supabase JSONB with embedded data
         timingData = {
           'version': 2,
-          'word_timings': wordTimingsData['words'] ?? [],
-          'sentence_timings': wordTimingsData['sentences'] ?? [],
-          'total_duration_ms': wordTimingsData['totalDurationMs'] ?? 0,
+          'word_timings': wordsData['words'] ?? [],
+          'sentence_timings': wordsData['sentences'] ?? [],
+          'total_duration_ms': wordsData['totalDurationMs'] ?? 0,
         };
 
         // Extract embedded lookup table if present
-        if (wordTimingsData['lookupTable'] != null) {
-          lookupTableData = wordTimingsData['lookupTable'] as Map<String, dynamic>;
+        if (wordsData['lookupTable'] != null) {
+          lookupTableData = wordsData['lookupTable'] as Map<String, dynamic>;
           AppLogger.info('Found embedded lookup table', {
             'entries': (lookupTableData['lookup'] as List?)?.length ?? 0,
             'interval': lookupTableData['interval'],
           });
         }
       } else {
-        // Legacy format
+        // Direct format (new schema or legacy)
         timingData = {
           'version': 2,
-          'word_timings': wordTimingsData ?? [],
-          'sentence_timings': learningObject['sentence_timings'] ?? [],
+          'word_timings': wordsData ?? [],
+          'sentence_timings': sentencesData ?? [],
           'total_duration_ms': learningObject['total_duration_ms'] ?? 0,
         };
       }
@@ -467,7 +468,7 @@ class CourseDownloadApiService {
         'path': contentDir.path,
         'hasDisplayText': displayText.isNotEmpty,
         'hasWordTimings':
-            (learningObject['word_timings'] as List?)?.isNotEmpty ?? false,
+            ((learningObject['words'] ?? learningObject['word_timings']) as List?)?.isNotEmpty ?? false,
       });
     } catch (e) {
       AppLogger.error('Failed to save content data', error: e, data: {
@@ -501,6 +502,91 @@ class CourseDownloadApiService {
   Future<void> deleteCourse(String courseId) async {
     final db = await _localDb.database;
     await db.delete('courses', where: 'id = ?', whereArgs: [courseId]);
+  }
+
+  /// Download all available courses
+  Future<void> downloadAllCourses() async {
+    try {
+      // Get current user - use a default ID for mock auth
+      final user = _supabase.auth.currentUser;
+      final userId = user?.id ?? 'mock-user-id';
+
+      // Get all courses from Supabase
+      _emitProgress(DownloadProgress(
+        courseId: 'all',
+        status: 'starting',
+        percentage: 0,
+        message: 'Fetching course list...',
+      ));
+
+      final response = await _supabase
+          .from('courses')
+          .select('*')
+          .order('course_number');
+
+      final courses = (response as List).cast<Map<String, dynamic>>();
+
+      if (courses.isEmpty) {
+        _emitProgress(DownloadProgress(
+          courseId: 'all',
+          status: 'completed',
+          percentage: 100,
+          message: 'No courses found to download',
+        ));
+        return;
+      }
+
+      AppLogger.info('Found ${courses.length} courses to download');
+
+      // Download each course
+      int courseIndex = 0;
+      for (final course in courses) {
+        final courseId = course['id'] as String;
+        final courseTitle = course['title'] as String? ?? 'Unknown Course';
+
+        courseIndex++;
+        final overallProgress = (courseIndex / courses.length * 100).round();
+
+        _emitProgress(DownloadProgress(
+          courseId: courseId,
+          status: 'downloading',
+          percentage: overallProgress,
+          message: 'Downloading course $courseIndex of ${courses.length}: $courseTitle',
+        ));
+
+        // Check if already downloaded
+        final isDownloaded = await isCourseDownloaded(courseId);
+        if (isDownloaded) {
+          AppLogger.info('Course already downloaded: $courseTitle');
+          continue;
+        }
+
+        try {
+          await downloadCourse(courseId: courseId, userId: userId);
+          AppLogger.info('Successfully downloaded course: $courseTitle');
+        } catch (e) {
+          AppLogger.error('Failed to download course: $courseTitle', error: e);
+          // Continue with next course even if one fails
+        }
+      }
+
+      _emitProgress(DownloadProgress(
+        courseId: 'all',
+        status: 'completed',
+        percentage: 100,
+        message: 'All courses downloaded successfully',
+      ));
+
+    } catch (e) {
+      AppLogger.error('Failed to download all courses', error: e);
+      _emitProgress(DownloadProgress(
+        courseId: 'all',
+        status: 'failed',
+        percentage: 0,
+        message: 'Error: ${e.toString()}',
+      ));
+      rethrow;
+    }
   }
 
   /// Emit progress update

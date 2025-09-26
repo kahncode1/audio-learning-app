@@ -31,7 +31,7 @@ class LocalDatabaseService {
 
   static Database? _database;
   static const String _dbName = 'audio_learning_app.db';
-  static const int _dbVersion = 2;
+  static const int _dbVersion = 3;
 
   /// Get database instance
   Future<Database> get database async {
@@ -102,8 +102,8 @@ class LocalDatabaseService {
         headers TEXT DEFAULT '[]',
         formatting TEXT DEFAULT '{"bold_headers": false, "paragraph_spacing": true}',
         metadata TEXT NOT NULL,
-        word_timings TEXT NOT NULL,
-        sentence_timings TEXT NOT NULL,
+        words TEXT NOT NULL,
+        sentences TEXT NOT NULL,
         total_duration_ms INTEGER NOT NULL,
         audio_url TEXT NOT NULL,
         audio_size_bytes INTEGER NOT NULL,
@@ -264,6 +264,21 @@ class LocalDatabaseService {
       // Recreate all tables with new schema
       await _createDatabase(db, newVersion);
     }
+
+    // Handle migration from version 2 to 3
+    // Simply recreate the tables with new column names
+    if (oldVersion == 2 && newVersion >= 3) {
+      // Drop and recreate to get the new column names
+      await db.execute('DROP TABLE IF EXISTS download_cache');
+      await db.execute('DROP TABLE IF EXISTS user_course_progress');
+      await db.execute('DROP TABLE IF EXISTS user_progress');
+      await db.execute('DROP TABLE IF EXISTS learning_objects');
+      await db.execute('DROP TABLE IF EXISTS assignments');
+      await db.execute('DROP TABLE IF EXISTS courses');
+
+      // Recreate all tables with new schema
+      await _createDatabase(db, newVersion);
+    }
   }
 
   /// Insert or update a course
@@ -338,19 +353,23 @@ class LocalDatabaseService {
       dbRecord['metadata'] = learningObject['metadata'];
     }
 
-    // Handle word_timings - could be Map (with embedded lookup table) or List
-    if (learningObject['word_timings'] is Map) {
-      dbRecord['word_timings'] = jsonEncode(learningObject['word_timings']);
-    } else if (learningObject['word_timings'] is List) {
-      dbRecord['word_timings'] = jsonEncode(learningObject['word_timings']);
+    // Handle words - could be Map (with embedded lookup table) or List
+    // Check both new 'words' field and old 'word_timings' for compatibility
+    final wordsData = learningObject['words'] ?? learningObject['word_timings'];
+    if (wordsData is Map) {
+      dbRecord['words'] = jsonEncode(wordsData);
+    } else if (wordsData is List) {
+      dbRecord['words'] = jsonEncode(wordsData);
     } else {
-      dbRecord['word_timings'] = learningObject['word_timings'];
+      dbRecord['words'] = wordsData;
     }
 
-    if (learningObject['sentence_timings'] is List) {
-      dbRecord['sentence_timings'] = jsonEncode(learningObject['sentence_timings']);
+    // Handle sentences - check both new 'sentences' field and old 'sentence_timings'
+    final sentencesData = learningObject['sentences'] ?? learningObject['sentence_timings'];
+    if (sentencesData is List) {
+      dbRecord['sentences'] = jsonEncode(sentencesData);
     } else {
-      dbRecord['sentence_timings'] = learningObject['sentence_timings'];
+      dbRecord['sentences'] = sentencesData;
     }
 
     return await db.insert(
@@ -435,48 +454,48 @@ class LocalDatabaseService {
       if (result['metadata'] is String) {
         result['metadata'] = jsonDecode(result['metadata'] as String);
       }
-      if (result['word_timings'] is String) {
+      if (result['words'] is String) {
         try {
-          final wordTimingsStr = result['word_timings'] as String;
+          final wordsStr = result['words'] as String;
           // Check if it looks like valid JSON before parsing
-          if (wordTimingsStr.isNotEmpty &&
-              (wordTimingsStr.startsWith('[') || wordTimingsStr.startsWith('{'))) {
-            result['word_timings'] = jsonDecode(wordTimingsStr);
+          if (wordsStr.isNotEmpty &&
+              (wordsStr.startsWith('[') || wordsStr.startsWith('{'))) {
+            result['words'] = jsonDecode(wordsStr);
           } else {
             // Invalid or empty, set to empty list
-            result['word_timings'] = [];
-            AppLogger.warning('Invalid word_timings JSON, using empty list', {
+            result['words'] = [];
+            AppLogger.warning('Invalid words JSON, using empty list', {
               'id': result['id'],
-              'data': wordTimingsStr.substring(0, wordTimingsStr.length > 100 ? 100 : wordTimingsStr.length),
+              'data': wordsStr.substring(0, wordsStr.length > 100 ? 100 : wordsStr.length),
             });
           }
         } catch (e) {
-          AppLogger.error('Failed to parse word_timings', error: e, data: {
+          AppLogger.error('Failed to parse words', error: e, data: {
             'id': result['id'],
           });
-          result['word_timings'] = [];
+          result['words'] = [];
         }
       }
-      if (result['sentence_timings'] is String) {
+      if (result['sentences'] is String) {
         try {
-          final sentenceTimingsStr = result['sentence_timings'] as String;
+          final sentencesStr = result['sentences'] as String;
           // Check if it looks like valid JSON before parsing
-          if (sentenceTimingsStr.isNotEmpty &&
-              (sentenceTimingsStr.startsWith('[') || sentenceTimingsStr.startsWith('{'))) {
-            result['sentence_timings'] = jsonDecode(sentenceTimingsStr);
+          if (sentencesStr.isNotEmpty &&
+              (sentencesStr.startsWith('[') || sentencesStr.startsWith('{'))) {
+            result['sentences'] = jsonDecode(sentencesStr);
           } else {
             // Invalid or empty, set to empty list
-            result['sentence_timings'] = [];
-            AppLogger.warning('Invalid sentence_timings JSON, using empty list', {
+            result['sentences'] = [];
+            AppLogger.warning('Invalid sentences JSON, using empty list', {
               'id': result['id'],
-              'data': sentenceTimingsStr.substring(0, sentenceTimingsStr.length > 100 ? 100 : sentenceTimingsStr.length),
+              'data': sentencesStr.substring(0, sentencesStr.length > 100 ? 100 : sentencesStr.length),
             });
           }
         } catch (e) {
-          AppLogger.error('Failed to parse sentence_timings', error: e, data: {
+          AppLogger.error('Failed to parse sentences', error: e, data: {
             'id': result['id'],
           });
-          result['sentence_timings'] = [];
+          result['sentences'] = [];
         }
       }
     }
@@ -511,12 +530,12 @@ class LocalDatabaseService {
     if (result['metadata'] is String) {
       result['metadata'] = jsonDecode(result['metadata'] as String);
     }
-    if (result['word_timings'] is String) {
-      result['word_timings'] = jsonDecode(result['word_timings'] as String);
+    if (result['words'] is String) {
+      result['words'] = jsonDecode(result['words'] as String);
     }
-    if (result['sentence_timings'] is String) {
-      result['sentence_timings'] =
-          jsonDecode(result['sentence_timings'] as String);
+    if (result['sentences'] is String) {
+      result['sentences'] =
+          jsonDecode(result['sentences'] as String);
     }
 
     return result;

@@ -52,14 +52,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No courses available',
+                      'Welcome to Audio Learning',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Your courses will appear here',
+                      'Your audio courses are being prepared',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -83,7 +83,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       course: course,
                       onTap: () => Navigator.pushNamed(
                         context,
-                        '/assignments',
+                        '/course-options',
                         arguments: {
                           'courseNumber': course.courseNumber,
                           'courseId': course.id,
@@ -161,29 +161,66 @@ class CourseCard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${course.totalAssignments} Assignments • ${course.totalLearningObjects} Learning Objects',
+                  '${course.totalAssignments} Assignment${course.totalAssignments != 1 ? 's' : ''} • ${course.totalLearningObjects} Learning Object${course.totalLearningObjects != 1 ? 's' : ''}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  progressLabel,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12),
-                ),
-                const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(2),
-                  child: LinearProgressIndicator(
-                    value: completionPercentage / 100,
-                    minHeight: 4,
-                    color: completionPercentage == 0
-                        ? Theme.of(context).dividerColor.withValues(alpha: 0.3)
-                        : Colors.green,
-                    backgroundColor:
-                        Theme.of(context).dividerColor.withValues(alpha: 0.3),
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.headset,
+                            size: 14,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Audio Available',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.quiz,
+                            size: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Exam Prep Soon',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
