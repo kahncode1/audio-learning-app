@@ -308,14 +308,17 @@ class _EnhancedAudioPlayerScreenState
     // Spacebar: Play/Pause
     if (key == LogicalKeyboardKey.space) {
       _audioService.togglePlayPause();
+      _restartFullscreenTimerOnInteraction();
     }
     // Right arrow: Skip forward 30s
     else if (key == LogicalKeyboardKey.arrowRight) {
       _audioService.skipForward();
+      _restartFullscreenTimerOnInteraction();
     }
     // Left arrow: Skip backward 30s
     else if (key == LogicalKeyboardKey.arrowLeft) {
       _audioService.skipBackward();
+      _restartFullscreenTimerOnInteraction();
     }
   }
 

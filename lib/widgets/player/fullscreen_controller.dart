@@ -5,7 +5,7 @@
 /// - flutter/services.dart (for system UI control)
 ///
 /// Features:
-/// - Auto-hide controls after 3 seconds of inactivity
+/// - Auto-hide controls after 5 seconds of inactivity
 /// - System UI overlay management
 /// - Timer management for fullscreen mode
 /// - Clean disposal of resources
@@ -27,7 +27,7 @@ class FullscreenController {
   /// Start fullscreen timer when playing
   void startFullscreenTimer() {
     cancelFullscreenTimer();
-    _fullscreenTimer = Timer(const Duration(seconds: 3), () {
+    _fullscreenTimer = Timer(const Duration(seconds: 5), () {
       enterFullscreen();
     });
   }

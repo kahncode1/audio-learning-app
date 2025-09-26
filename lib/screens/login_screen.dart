@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_providers.dart';
+import '../providers/database_providers.dart';
 import '../services/download/course_download_api_service.dart';
 import '../utils/app_logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -54,6 +55,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           userId: userId,
         ).then((_) {
           AppLogger.info('Successfully downloaded course: $courseTitle');
+          // Invalidate the courses provider to refresh the UI
+          ref.invalidate(localCoursesProvider);
         }).catchError((error) {
           AppLogger.error('Failed to download course: $courseTitle', error: error);
         });
