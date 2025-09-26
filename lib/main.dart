@@ -264,26 +264,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/images/TheInstitutesLogo.png',
+              isDarkMode
+                  ? 'assets/images/Ent logo-01.png'
+                  : 'assets/images/TheInstitutesLogo.png',
               height: 120,  // Sized appropriately for full logo
               errorBuilder: (context, error, stackTrace) {
                 // Fallback if logo doesn't load
                 return Icon(
                   Icons.business,
                   size: 120,
-                  color: Theme.of(context).primaryColor,
+                  color: isDarkMode
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).primaryColor,
                 );
               },
             ),
             const SizedBox(height: 40),
-            const CircularProgressIndicator(),
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.primary,
+              ),
+            ),
           ],
         ),
       ),

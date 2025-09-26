@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_providers.dart';
+import '../services/download/course_download_api_service.dart';
 import '../utils/app_logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// LoginScreen - Production authentication screen
 ///
@@ -18,6 +20,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  Future<void> _downloadAllAvailableCourses() async {
+    try {
+      AppLogger.info('Starting to download all available courses');
+
+      // Get Supabase client
+      final supabase = Supabase.instance.client;
+      final downloadService = CourseDownloadApiService();
+
+      // Fetch all available courses from Supabase
+      final coursesResponse = await supabase
+          .from('courses')
+          .select('*')
+          .order('course_number');
+
+      final courses = coursesResponse as List<dynamic>;
+
+      AppLogger.info('Found ${courses.length} courses to download');
+
+      // Get the current user ID
+      final userId = supabase.auth.currentUser?.id ?? 'default_user';
+
+      // Download each course in the background
+      for (final course in courses) {
+        final courseId = course['id'] as String;
+        final courseTitle = course['title'] as String;
+
+        AppLogger.info('Downloading course: $courseTitle');
+
+        // Download course in the background - don't await
+        downloadService.downloadCourse(
+          courseId: courseId,
+          userId: userId,
+        ).then((_) {
+          AppLogger.info('Successfully downloaded course: $courseTitle');
+        }).catchError((error) {
+          AppLogger.error('Failed to download course: $courseTitle', error: error);
+        });
+      }
+    } catch (e) {
+      AppLogger.error('Failed to fetch or download courses', error: e);
+      // Don't block login if download fails
+    }
+  }
+
   Future<void> _handleSignIn() async {
     setState(() {
       _isLoading = true;
@@ -32,6 +78,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       if (result.isSignedIn) {
         AppLogger.info('User signed in successfully');
+
+        // Start downloading all available courses after successful login
+        _downloadAllAvailableCourses();
+
         // Navigate to main screen after successful login
         if (mounted) {
           Navigator.pushReplacementNamed(context, '/main');
@@ -57,8 +107,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -70,14 +122,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Column(
                   children: [
                     Image.asset(
-                      'assets/images/TheInstitutesLogo.png',
+                      isDarkMode
+                          ? 'assets/images/Ent logo-01.png'
+                          : 'assets/images/TheInstitutesLogo.png',
                       height: 72,  // Optimized logo size per specs
                       errorBuilder: (context, error, stackTrace) {
                         // Fallback if logo doesn't load
                         return Icon(
                           Icons.business,
                           size: 72,
-                          color: const Color(0xFF003B7B),
+                          color: isDarkMode
+                              ? Theme.of(context).colorScheme.primary
+                              : const Color(0xFF003B7B),
                         );
                       },
                     ),
@@ -94,7 +150,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1D1D1F),
+                        color: Theme.of(context).textTheme.headlineLarge?.color,
                         letterSpacing: -0.8,
                       ),
                       textAlign: TextAlign.center,
@@ -107,7 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w400,
-                          color: const Color(0xFF6E6E73),
+                          color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.7),
                           height: 1.41, // 24px line height
                         ),
                         textAlign: TextAlign.center,
@@ -128,8 +184,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _handleSignIn,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF007AFF),
-                            foregroundColor: Colors.white,
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Theme.of(context).colorScheme.onPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -137,31 +193,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             elevation: 0,
                           ),
                           child: _isLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Theme.of(context).colorScheme.onPrimary,
+                                    ),
                                   ),
                                 )
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      String.fromCharCode(0x2192), // Right arrow
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w400,
-                                      ),
+                                    Icon(
+                                      Icons.arrow_forward,
+                                      size: 20,
+                                      color: Theme.of(context).colorScheme.onPrimary,
                                     ),
                                     const SizedBox(width: 8),
-                                    const Text(
+                                    Text(
                                       'Sign in',
                                       style: TextStyle(
                                         fontSize: 17,
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: -0.2,
+                                        color: Theme.of(context).colorScheme.onPrimary,
                                       ),
                                     ),
                                   ],
@@ -175,7 +232,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
-                        color: const Color(0xFF8E8E93),
+                        color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
                         height: 1.38, // 18px line height
                       ),
                       textAlign: TextAlign.center,
@@ -192,10 +249,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF3E0),
+                      color: isDarkMode
+                          ? Colors.orange.shade900.withOpacity(0.2)
+                          : const Color(0xFFFFF3E0),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: const Color(0xFFFFE0B2),
+                        color: isDarkMode
+                            ? Colors.orange.shade700.withOpacity(0.5)
+                            : const Color(0xFFFFE0B2),
                       ),
                     ),
                     child: Row(
@@ -203,7 +264,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       children: [
                         Icon(
                           Icons.info_outline,
-                          color: const Color(0xFFE65100),
+                          color: isDarkMode
+                              ? Colors.orange.shade400
+                              : const Color(0xFFE65100),
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -211,7 +274,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: Text(
                             _errorMessage!,
                             style: TextStyle(
-                              color: const Color(0xFFE65100),
+                              color: isDarkMode
+                                  ? Colors.orange.shade400
+                                  : const Color(0xFFE65100),
                               fontSize: 14,
                             ),
                           ),
